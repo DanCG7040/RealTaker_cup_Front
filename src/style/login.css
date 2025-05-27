@@ -1,0 +1,150 @@
+/* Caja del formulario */
+.login-form {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  /* Solo el h1 dentro de .page-content */
+  .page-content h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 2rem;
+  }
+  
+  /* Inputs del form */
+  .login-form input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+  }
+  
+  /* Botón */
+  .login-form button {
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-size: 1rem;
+  }
+  .password-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    position: relative;
+  }
+  
+  .password-container input {
+    flex: 1;
+    padding: 10px;
+    font-size: 16px;
+    box-sizing: border-box;
+  }
+  
+  .eye-button {
+    margin-left: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    transition: color 0.3s ease;
+  }
+  
+  .eye-button:hover {
+    color: #000;
+  }
+  
+  .error-message {
+    color: red;
+    margin-top: 10px;
+    font-weight: bold;
+    font-size: 14px;
+  }
+  .success-message{
+    color: green;
+    margin-top: 10px;
+    font-weight: bold;
+    font-size: 14px;
+  }
+  
+  
+  .login-form button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Error solo en login */
+  .login-form p {
+    margin: 0;
+    text-align: center;
+    font-size: 0.9rem;
+  }
+  
+  /* Responsive ajustes */
+  
+  @media (max-width: 768px) {
+    .login-form {
+      padding: 30px 20px;
+    }
+  
+    .page-content h1 {
+      font-size: 1.5rem;
+    }
+  
+    .login-form input, 
+    .login-form button {
+      font-size: 0.9rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .login-form {
+      padding: 20px 15px;
+    }
+  
+    .page-content h1 {
+      font-size: 1.2rem;
+    }
+  
+    .login-form input, 
+    .login-form button {
+      font-size: 0.85rem;
+    }
+  }
+  
+  /* Enlace de olvidé mi contraseña */
+  .forgot-password-link {
+    text-align: center;
+    color: #007bff;
+    text-decoration: none;
+    font-size: 0.9rem;
+    margin-top: 10px;
+  }
+  
+  .forgot-password-link:hover {
+    text-decoration: underline;
+  }
+  
+  /* Instrucciones en el formulario */
+  .instructions {
+    text-align: center;
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    line-height: 1.4;
+  }
+  
