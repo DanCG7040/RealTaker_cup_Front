@@ -21,4 +21,20 @@ export const ADMIN_ROUTES = {
     UPDATE_USER: (nickname) => `${API_URL}/perfil/admin/actualizar/${nickname}`,
     DELETE_USER: (nickname) => `${API_URL}/perfil/admin/eliminar/${nickname}`,
     UPDATE_ROLE: `${API_URL}/perfil/admin/rol`,
+};
+
+export const GAMES_ROUTES = {
+    GET_ALL: `${API_URL}/juegos`,
+    GET_ONE: (id) => `${API_URL}/juegos/${id}`,
+    CREATE: `${API_URL}/juegos`,
+    UPDATE: (id) => `${API_URL}/juegos/${id}`,
+    DELETE: (id) => `${API_URL}/juegos/${id}`
+};
+
+export const CATEGORY_ROUTES = {
+    GET_ALL: `${API_URL}/categoria`,
+    GET_ONE: (id) => `${API_URL}/categoria/${id}`,
+    CREATE: `${API_URL}/categoria`,
+    UPDATE: (id) => `${API_URL}/categoria/${id}`,
+    DELETE: (id) => `${API_URL}/categoria/${id}`,
 }; 
