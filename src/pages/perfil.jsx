@@ -9,12 +9,7 @@ import { PROFILE_ROUTES, ADMIN_ROUTES } from '../routes/api.routes';
 
 export const Perfil = () => {
   const [user, setUser] = useState(null);
-  const [formData, setFormData] = useState({
-    nickname: '',
-    email: '',
-    descripcion: '',
-    foto: ''
-  });
+  const [formData, setFormData] = useState({});
   const [passwordData, setPasswordData] = useState({
     newPassword: '',
     confirmPassword: ''
@@ -29,10 +24,8 @@ export const Perfil = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
-  // Cargar datos del perfil
   useEffect(() => {
     if (!token) {
-      console.log('No hay token, redirigiendo a login');
       navigate('/login');
       return;
     }
@@ -40,28 +33,16 @@ export const Perfil = () => {
     const fetchProfile = async () => {
       try {
         const response = await axios.get(PROFILE_ROUTES.GET_PROFILE, {
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
         
-        const userData = response.data.data;
-        setUser(userData);
-        setFormData({
-          nickname: userData.nickname || '',
-          email: userData.email || '',
-          descripcion: userData.descripcion || '',
-          foto: userData.foto || ''
-        });
+        setUser(response.data.data);
+        setFormData(response.data.data);
       } catch (error) {
-        console.error('Error al cargar el perfil:', error);
+        console.error('Error al obtener perfil', error);
         toast.error(error.response?.data?.error || 'Error al cargar el perfil');
-        
-        if (error.response?.status === 401 || error.response?.status === 403) {
-          localStorage.removeItem('token');
-          navigate('/login');
-        }
+        localStorage.removeItem('token');
+        navigate('/login');
       } finally {
         setLoading(false);
       }
@@ -72,47 +53,22 @@ export const Perfil = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
-  };
-
-  const handlePasswordChange = (e) => {
-    const { name, value } = e.target;
-    setPasswordData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSave = async () => {
-    if (isSaving) return; // Prevenir múltiples envíos
     setIsSaving(true);
   
     try {
-      // Crear una copia del estado actual para comparar cambios
-      const currentFormData = {
-        email: formData.email?.trim() || '',
-        descripcion: formData.descripcion?.trim() || '',
-      };
-
       const formDataToSend = new FormData();
-      
-      // Solo enviar campos que han sido modificados
-      if (currentFormData.email !== user.email) {
-        formDataToSend.append('email', currentFormData.email);
-      }
-      
-      if (currentFormData.descripcion !== user.descripcion) {
-        formDataToSend.append('descripcion', currentFormData.descripcion);
-      }
-
+      formDataToSend.append('email', formData.email || '');
+      formDataToSend.append('descripcion', formData.descripcion || '');
+  
       if (file) {
         formDataToSend.append('foto', file);
       }
 
-      // Validar contraseñas si se proporcionaron
+      // Validar y agregar contraseña si se proporcionó
       if (passwordData.newPassword || passwordData.confirmPassword) {
         if (!passwordData.newPassword || !passwordData.confirmPassword) {
           toast.error('Por favor complete ambos campos de contraseña');
@@ -134,59 +90,32 @@ export const Perfil = () => {
 
         formDataToSend.append('newPassword', passwordData.newPassword.trim());
       }
-
-      // Verificar si hay datos para enviar
-      if ([...formDataToSend.entries()].length === 0) {
-        toast.info('No hay cambios para guardar');
-        setIsSaving(false);
-        return;
-      }
   
-      const response = await axios.put(
-        PROFILE_ROUTES.UPDATE_PROFILE, 
-        formDataToSend,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          }
+      const response = await axios.put(PROFILE_ROUTES.UPDATE_PROFILE, formDataToSend, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
         }
-      );
-
-      const updatedData = response.data.data;
-
-      // Actualizar el estado del usuario preservando datos existentes
-      setUser(prevUser => ({
-        ...prevUser,
-        ...(updatedData.email && { email: updatedData.email }),
-        ...(updatedData.descripcion !== undefined && { descripcion: updatedData.descripcion }),
-        ...(updatedData.foto && { foto: updatedData.foto })
-      }));
-
-      // Actualizar formData preservando datos existentes
-      setFormData(prevFormData => ({
-        ...prevFormData,
-        ...(updatedData.email && { email: updatedData.email }),
-        ...(updatedData.descripcion !== undefined && { descripcion: updatedData.descripcion }),
-        ...(updatedData.foto && { foto: updatedData.foto })
-      }));
-
-      // Resetear estados relacionados con la imagen solo si se actualizó correctamente
-      if (file && updatedData.foto) {
+      });
+  
+      toast.success('Perfil actualizado correctamente');
+      setUser(response.data.data);
+      setFormData(response.data.data);
+      
+      if (file) {
         setFile(null);
         setImagePreview(null);
       }
 
-      // Resetear estados de contraseña solo si se actualizó correctamente
-      if (passwordData.newPassword && response.data.success) {
+      // Limpiar contraseñas después de guardar exitosamente
+      if (passwordData.newPassword) {
         setPasswordData({ newPassword: '', confirmPassword: '' });
+        setShowNewPassword(false);
+        setShowConfirmPassword(false);
       }
-      
-      toast.success('Perfil actualizado correctamente');
     } catch (error) {
       console.error('Error al guardar:', error);
-      const errorMessage = error.response?.data?.error || 'Error al actualizar perfil';
-      toast.error(errorMessage);
+      toast.error(error.response?.data?.error || 'Error al actualizar perfil');
     } finally {
       setIsSaving(false);
     }
@@ -201,10 +130,9 @@ export const Perfil = () => {
     fileInputRef.current.click();
   };
 
-  const handleFileChange = async (e) => {
+  const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
-      // Validaciones de archivo
       if (!selectedFile.type.startsWith('image/')) {
         toast.error('Por favor selecciona una imagen');
         return;
@@ -217,7 +145,6 @@ export const Perfil = () => {
 
       setFile(selectedFile);
 
-      // Crear preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
@@ -226,7 +153,6 @@ export const Perfil = () => {
     }
   };
 
-  // Funciones de ADMIN
   const handleAddUser = async () => {
     const nickname = prompt('Nuevo usuario: nickname');
     const password = prompt('Nuevo usuario: contraseña');
@@ -282,31 +208,24 @@ export const Perfil = () => {
 
   const ProfileContent = () => (
     <div className="space-y-6">
-      {/* Imagen de perfil */}
       <div className="profile-image-container">
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          accept="image/jpeg,image/png,image/gif"
+          style={{ display: 'none' }}
+        />
         <img
           src={imagePreview || formData.foto || '/default-profile.png'}
           alt="Foto de perfil"
           className="profile-image"
           onClick={handleImageClick}
-        />
-        <button
-          onClick={handleImageClick}
-          className="profile-image-button"
-          title="Cambiar foto"
-        >
-          <FaCamera className="w-4 h-4" />
-        </button>
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          className="hidden"
-          accept="image/jpeg,image/png,image/gif"
+          style={{ cursor: 'pointer' }}
+          title="Haz clic para cambiar la foto"
         />
       </div>
 
-      {/* Campos del formulario */}
       <div className="profile-inputs-container">
         <div className="profile-input">
           <input
@@ -335,22 +254,31 @@ export const Perfil = () => {
         <div className="profile-input">
           <textarea
             name="descripcion"
-            value={formData.descripcion || ''}
-            onChange={handleChange}
+            defaultValue={formData.descripcion || ''}
+            onBlur={(e) => {
+              setFormData(prev => ({
+                ...prev,
+                descripcion: e.target.value
+              }));
+            }}
             rows="4"
             placeholder="Describe tu perfil..."
           ></textarea>
           <FaPen className="profile-input-icon" style={{ top: '1.5rem' }} />
         </div>
 
-        {/* Campos de contraseña */}
         <div className="profile-input">
           <div className="password-container">
             <input
               type={showNewPassword ? "text" : "password"}
               name="newPassword"
-              value={passwordData.newPassword || ''}
-              onChange={handlePasswordChange}
+              defaultValue={passwordData.newPassword}
+              onBlur={(e) => {
+                setPasswordData(prev => ({
+                  ...prev,
+                  newPassword: e.target.value
+                }));
+              }}
               placeholder="Nueva contraseña"
               autoComplete="new-password"
             />
@@ -370,8 +298,13 @@ export const Perfil = () => {
             <input
               type={showConfirmPassword ? "text" : "password"}
               name="confirmPassword"
-              value={passwordData.confirmPassword || ''}
-              onChange={handlePasswordChange}
+              defaultValue={passwordData.confirmPassword}
+              onBlur={(e) => {
+                setPasswordData(prev => ({
+                  ...prev,
+                  confirmPassword: e.target.value
+                }));
+              }}
               placeholder="Confirmar nueva contraseña"
               autoComplete="new-password"
             />
@@ -387,7 +320,6 @@ export const Perfil = () => {
         </div>
       </div>
 
-      {/* Botones de acción */}
       <div className="space-y-4">
         <button
           onClick={handleSave}
@@ -465,7 +397,6 @@ export const Perfil = () => {
     </div>
   );
 
-  // Vista diferenciada según el rol
   return (
     <div className="profile-container">
       {user.rol === 0 ? (

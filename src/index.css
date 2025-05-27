@@ -105,6 +105,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-anchor: none;
 }
 
 
@@ -288,22 +289,42 @@ button:focus-visible {
   border: 4px solid #3b82f6;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
 }
 
 .profile-image:hover {
   transform: scale(1.05);
   border-color: #2563eb;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  filter: brightness(0.9);
 }
 
 /* Estilos para los inputs */
+.profile-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.profile-form button[type="submit"] {
+  display: none;
+}
+
+.profile-inputs-container {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
 .profile-input {
   position: relative;
   margin-bottom: 2rem;
   display: flex;
   justify-content: center;
   width: 100%;
-  z-index: 1;
 }
 
 .profile-input input,
@@ -313,32 +334,41 @@ button:focus-visible {
   border: 2px solid #e5e7eb;
   border-radius: 1.5rem;
   font-size: 1rem;
-  transition: all 0.3s ease;
   background-color: white;
   color: #1f2937;
-  min-width: 0;
-  z-index: 2;
+  margin: 0;
+  display: block;
+}
+
+.profile-input textarea {
+  min-height: 120px;
+  resize: vertical;
+  margin: 0;
+}
+
+.profile-input input:focus,
+.profile-input textarea:focus {
+  border-color: #3b82f6;
+  outline: none;
+}
+
+/* Estilos para los campos de contraseña */
+.profile-input .password-container {
   position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.profile-input .password-container input {
+  width: 100%;
+  padding-right: 40px;
 }
 
 .profile-input input:disabled {
   background-color: #f3f4f6;
   cursor: not-allowed;
   opacity: 0.7;
-}
-
-.profile-input textarea {
-  min-height: 120px;
-  resize: vertical;
-}
-
-.profile-input input:focus,
-.profile-input textarea:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
-  outline: none;
-  transform: translateY(-2px);
-  z-index: 3; /* Asegura que el input enfocado esté por encima */
 }
 
 .profile-input-icon {
@@ -356,15 +386,6 @@ button:focus-visible {
 .profile-input textarea ~ .profile-input-icon {
   top: 1.5rem;
   transform: none;
-}
-
-/* Contenedor para inputs */
-.profile-inputs-container {
-  width: 100%;
-  max-width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
 }
 
 /* Ajustes responsive para inputs */
@@ -746,4 +767,9 @@ button:focus-visible {
     border-color: #3b82f6;
     box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
   }
+}
+
+/* Prevenir scroll automático */
+html {
+  scroll-behavior: smooth;
 }
