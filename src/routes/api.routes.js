@@ -18,6 +18,7 @@ export const ROLES_ROUTES = {
 
 export const ADMIN_ROUTES = {
     CREATE_USER: `${API_URL}/perfil/admin/crear`,
+    GET_ALL_USERS: `${API_URL}/perfil/admin/usuarios`,
     UPDATE_USER: (nickname) => `${API_URL}/perfil/admin/actualizar/${nickname}`,
     DELETE_USER: (nickname) => `${API_URL}/perfil/admin/eliminar/${nickname}`,
     UPDATE_ROLE: `${API_URL}/perfil/admin/rol`,

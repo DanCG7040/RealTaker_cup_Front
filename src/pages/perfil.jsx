@@ -34,6 +34,8 @@ export const Perfil = () => {
   const [activeSection, setActiveSection] = useState('perfil');
   const [juegos, setJuegos] = useState([]);
   const [isLoadingJuegos, setIsLoadingJuegos] = useState(false);
+  const [usuarios, setUsuarios] = useState([]);
+  const [isLoadingUsuarios, setIsLoadingUsuarios] = useState(false);
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
@@ -303,21 +305,6 @@ export const Perfil = () => {
     }
   };
 
-  const handleDeleteUser = async () => {
-    const nickname = prompt('Nickname del usuario a eliminar');
-    if (nickname) {
-      try {
-        await axios.delete(ADMIN_ROUTES.DELETE_USER(nickname), {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        toast.success('Usuario eliminado correctamente');
-      } catch (error) {
-        console.error('Error eliminando usuario', error);
-        toast.error(error.response?.data?.message || 'Error al eliminar usuario');
-      }
-    }
-  };
-
   const handleChangeRole = async () => {
     const nickname = prompt('Ingrese el nickname del usuario');
     const newRole = prompt('Ingrese el nuevo rol');
@@ -353,6 +340,21 @@ export const Perfil = () => {
     }
   };
 
+  const handleDeleteUser = async () => {
+    const nickname = prompt('Nickname del usuario a eliminar');
+    if (nickname) {
+      try {
+        await axios.delete(ADMIN_ROUTES.DELETE_USER(nickname), {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        toast.success('Usuario eliminado correctamente');
+      } catch (error) {
+        console.error('Error eliminando usuario', error);
+        toast.error(error.response?.data?.message || 'Error al eliminar usuario');
+      }
+    }
+  };
+
   const fetchJuegos = async () => {
     setIsLoadingJuegos(true);
     try {
@@ -370,9 +372,37 @@ export const Perfil = () => {
     }
   };
 
+  const fetchUsuarios = async () => {
+    setIsLoadingUsuarios(true);
+    try {
+      console.log('Obteniendo usuarios...'); // Debug log
+      const response = await axios.get(ADMIN_ROUTES.GET_ALL_USERS, {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      console.log('Respuesta:', response.data); // Debug log
+      
+      if (response.data.success) {
+        setUsuarios(response.data.data);
+      } else {
+        toast.error('Error al cargar los usuarios');
+      }
+    } catch (error) {
+      console.error('Error al obtener usuarios:', error.response || error);
+      toast.error(error.response?.data?.error || 'Error al cargar los usuarios');
+    } finally {
+      setIsLoadingUsuarios(false);
+    }
+  };
+
   useEffect(() => {
     if (activeSection === 'juegos') {
       fetchJuegos();
+    }
+    if (activeSection === 'usuarios') {
+      fetchUsuarios();
     }
   }, [activeSection]);
 
@@ -782,34 +812,116 @@ export const Perfil = () => {
     </div>
   );
 
-  const UsuariosContent = () => (
-    <div className="content-section">
-      <h2 className="text-2xl font-bold mb-6">Gestión de Usuarios</h2>
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="bg-white p-6 rounded-lg shadow-lg">
-          <h3 className="text-lg font-semibold mb-4">Cambiar Rol de Usuario</h3>
-          <p className="text-gray-600 mb-4">Modifica el nivel de acceso de un usuario</p>
-          <button
-            onClick={handleChangeRole}
-            className="w-full bg-yellow-600 text-white px-4 py-3 rounded-lg hover:bg-yellow-700 transition-colors flex items-center justify-center"
-          >
-            <FaPen className="mr-2" /> Cambiar Rol
-          </button>
+  const UsuariosContent = () => {
+    const handleChangeRoleForUser = async (nickname) => {
+      const newRole = prompt('Ingrese el nuevo rol (0: Admin, 1: Usuario, 2: Jugador)');
+      if (newRole !== null) {
+        try {
+          const rolNumerico = parseInt(newRole);
+          if (isNaN(rolNumerico) || rolNumerico < 0 || rolNumerico > 2) {
+            toast.error('Rol inválido');
+            return;
+          }
+
+          await axios.put(
+            ADMIN_ROUTES.UPDATE_USER(nickname),
+            { rol: rolNumerico },
+            { 
+              headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              } 
+            }
+          );
+          
+          toast.success('Rol actualizado correctamente');
+          fetchUsuarios(); // Recargar la lista
+        } catch (error) {
+          console.error('Error cambiando rol:', error);
+          toast.error(error.response?.data?.message || 'Error al cambiar rol');
+        }
+      }
+    };
+
+    const handleDeleteUserFromTable = async (nickname) => {
+      if (window.confirm(`¿Estás seguro de que quieres eliminar al usuario ${nickname}?`)) {
+        try {
+          await axios.delete(ADMIN_ROUTES.DELETE_USER(nickname), {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          toast.success('Usuario eliminado correctamente');
+          fetchUsuarios(); // Recargar la lista
+        } catch (error) {
+          console.error('Error eliminando usuario:', error);
+          toast.error(error.response?.data?.message || 'Error al eliminar usuario');
+        }
+      }
+    };
+
+    return (
+      <div className="content-section">
+        <div className="games-header">
+          <h2 className="games-title">Gestión de Usuarios</h2>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-lg">
-          <h3 className="text-lg font-semibold mb-4">Eliminar Usuario</h3>
-          <p className="text-gray-600 mb-4">Elimina permanentemente un usuario del sistema</p>
-          <button
-            onClick={handleDeleteUser}
-            className="w-full bg-red-600 text-white px-4 py-3 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center"
-          >
-            <FaTimes className="mr-2" /> Eliminar Usuario
-          </button>
-        </div>
+        {isLoadingUsuarios ? (
+          <div className="loading-spinner">
+            <FaSpinner className="loading-spinner-icon" />
+          </div>
+        ) : (
+          <div className="games-table-container">
+            <table className="games-table">
+              <thead>
+                <tr>
+                  <th>Nickname</th>
+                  <th>Email</th>
+                  <th>Rol Actual</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {usuarios.map((usuario) => (
+                  <tr key={usuario.nickname}>
+                    <td>{usuario.nickname}</td>
+                    <td>{usuario.email}</td>
+                    <td>
+                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
+                        usuario.rol === 0 
+                          ? 'bg-purple-100 text-purple-800'
+                          : usuario.rol === 1
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {usuario.rol === 0 ? 'Admin' : usuario.rol === 1 ? 'Usuario' : 'Jugador'}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="flex gap-2 justify-center">
+                        <button
+                          onClick={() => handleChangeRoleForUser(usuario.nickname)}
+                          className="text-yellow-600 hover:text-yellow-800 transition-colors p-2"
+                          title="Cambiar rol"
+                        >
+                          <FaPen />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteUserFromTable(usuario.nickname)}
+                          className="text-red-600 hover:text-red-800 transition-colors p-2"
+                          title="Eliminar usuario"
+                        >
+                          <FaTimes />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="app-container-perfil">
