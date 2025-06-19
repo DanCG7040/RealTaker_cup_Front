@@ -43,10 +43,12 @@ export const Perfil = () => {
   const [showLogroModal, setShowLogroModal] = useState(false);
   const [showComodinModal, setShowComodinModal] = useState(false);
   const [logroData, setLogroData] = useState({
+    idlogros: null,
     nombre: '',
     descripcion: ''
   });
   const [comodinData, setComodinData] = useState({
+    idcomodines: null,
     nombre: '',
     descripcion: ''
   });
@@ -422,11 +424,14 @@ export const Perfil = () => {
   const fetchLogros = async () => {
     setIsLoadingLogros(true);
     try {
+      console.log('Obteniendo logros...'); // Debug log
       const response = await axios.get(LOGROS_ROUTES.GET_ALL, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      console.log('Respuesta de logros:', response.data); // Debug log
       if (response.data.success) {
         setLogros(response.data.data);
+        console.log('Logros cargados:', response.data.data); // Debug log
       }
     } catch (error) {
       console.error('Error al obtener logros:', error);
@@ -439,11 +444,16 @@ export const Perfil = () => {
   const fetchComodines = async () => {
     setIsLoadingComodines(true);
     try {
+      console.log('Obteniendo comodines...'); // Debug log
       const response = await axios.get(COMODINES_ROUTES.GET_ALL, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      console.log('Respuesta completa de comodines:', response); // Debug log
+      console.log('Respuesta de comodines:', response.data); // Debug log
       if (response.data.success) {
+        console.log('Comodines antes de setState:', response.data.data); // Debug log
         setComodines(response.data.data);
+        console.log('Comodines cargados:', response.data.data); // Debug log
       }
     } catch (error) {
       console.error('Error al obtener comodines:', error);
@@ -502,11 +512,19 @@ export const Perfil = () => {
 
   const LogrosContent = () => {
     const handleDeleteLogro = async (idLogros) => {
+      console.log('Intentando eliminar logro con ID:', idLogros); // Debug log
+      
+      if (!idLogros) {
+        toast.error('ID del logro no válido');
+        return;
+      }
+
       if (!window.confirm('¿Estás seguro de que deseas eliminar este logro?')) {
         return;
       }
 
       try {
+        console.log('Enviando DELETE a:', LOGROS_ROUTES.DELETE(idLogros)); // Debug log
         const response = await axios.delete(LOGROS_ROUTES.DELETE(idLogros), {
           headers: {
             Authorization: `Bearer ${token}`
@@ -514,12 +532,17 @@ export const Perfil = () => {
         });
 
         if (response.data.success) {
-          setLogros(logros.filter(logro => logro.idLogros !== idLogros));
+          setLogros(logros.filter(logro => logro.idlogros !== idLogros));
           toast.success('Logro eliminado exitosamente');
+        } else {
+          toast.error(response.data.message || 'Error al eliminar el logro');
         }
       } catch (error) {
         console.error('Error al eliminar logro:', error);
-        toast.error('Error al eliminar el logro');
+        const errorMessage = error.response?.data?.error || 
+                           error.response?.data?.message || 
+                           'Error al eliminar el logro';
+        toast.error(errorMessage);
       }
     };
 
@@ -528,7 +551,7 @@ export const Perfil = () => {
         <div className="games-header">
           <h2>Logros</h2>
           <button className="add-game-button" onClick={() => {
-            setLogroData({ nombre: '', descripcion: '' });
+            setLogroData({ idlogros: null, nombre: '', descripcion: '' });
             setLogroFile(null);
             setLogroImagePreview(null);
             setShowLogroModal(true);
@@ -541,6 +564,8 @@ export const Perfil = () => {
             <div className="loading-spinner">
               <FaSpinner className="spinner-icon" />
             </div>
+          ) : logros.length === 0 ? (
+            <div className="no-data">No hay logros registrados</div>
           ) : (
             <table className="games-table">
               <thead>
@@ -552,41 +577,49 @@ export const Perfil = () => {
                 </tr>
               </thead>
               <tbody>
-                {logros.map(logro => (
-                  <tr key={logro.idLogros}>
-                    <td>
-                      <img 
-                        src={logro.foto || '/default-achievement.png'} 
-                        alt={logro.nombre}
-                        className="game-image"
-                      />
-                    </td>
-                    <td>{logro.nombre}</td>
-                    <td>{logro.descripcion}</td>
-                    <td>
-                      <button 
-                        className="edit-button"
-                        onClick={() => {
-                          setLogroData({
-                            idLogros: logro.idLogros,
-                            nombre: logro.nombre,
-                            descripcion: logro.descripcion
-                          });
-                          setLogroImagePreview(logro.foto);
-                          setShowLogroModal(true);
-                        }}
-                      >
-                        <FaPen />
-                      </button>
-                      <button 
-                        className="delete-button"
-                        onClick={() => handleDeleteLogro(logro.idLogros)}
-                      >
-                        <FaTimes />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {logros.map(logro => {
+                  console.log('Renderizando logro:', logro); // Debug log
+                  console.log('Campos del logro:', Object.keys(logro)); // Debug log
+                  console.log('ID del logro:', logro.idlogros); // Debug log - corregido a minúsculas
+                  return (
+                    <tr key={logro.idlogros}>
+                      <td>
+                        <img 
+                          src={logro.foto || '/default-achievement.png'} 
+                          alt={logro.nombre}
+                          className="game-image"
+                        />
+                      </td>
+                      <td>{logro.nombre}</td>
+                      <td>{logro.descripcion}</td>
+                      <td>
+                        <button 
+                          className="edit-button"
+                          onClick={() => {
+                            setLogroData({
+                              idlogros: logro.idlogros, // Mantener idLogros para el estado
+                              nombre: logro.nombre,
+                              descripcion: logro.descripcion
+                            });
+                            setLogroImagePreview(logro.foto);
+                            setShowLogroModal(true);
+                          }}
+                        >
+                          <FaPen />
+                        </button>
+                        <button 
+                          className="delete-button"
+                          onClick={() => {
+                            console.log('Click en eliminar logro:', logro.idlogros); // Debug log - corregido
+                            handleDeleteLogro(logro.idlogros);
+                          }}
+                        >
+                          <FaTimes />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}
@@ -597,21 +630,37 @@ export const Perfil = () => {
 
   const ComodinesContent = () => {
     const handleDeleteComodin = async (id) => {
+      console.log('Intentando eliminar comodín con ID:', id); // Debug log
+      
+      if (!id) {
+        toast.error('ID del comodín no válido');
+        return;
+      }
+
       if (!window.confirm('¿Estás seguro de que deseas eliminar este comodín?')) {
         return;
       }
 
       try {
-        await axios.delete(COMODINES_ROUTES.DELETE(id), {
+        console.log('Enviando DELETE a:', COMODINES_ROUTES.DELETE(id)); // Debug log
+        const response = await axios.delete(COMODINES_ROUTES.DELETE(id), {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
-        toast.success('Comodín eliminado correctamente');
-        await fetchComodines();
+        
+        if (response.data.success) {
+          setComodines(comodines.filter(comodin => comodin.idcomodines !== id));
+          toast.success('Comodín eliminado correctamente');
+        } else {
+          toast.error(response.data.message || 'Error al eliminar el comodín');
+        }
       } catch (error) {
         console.error('Error al eliminar comodín:', error);
-        toast.error(error.response?.data?.error || 'Error al eliminar el comodín');
+        const errorMessage = error.response?.data?.error || 
+                           error.response?.data?.message || 
+                           'Error al eliminar el comodín';
+        toast.error(errorMessage);
       }
     };
 
@@ -621,7 +670,7 @@ export const Perfil = () => {
           <h2 className="games-title">Gestión de Comodines</h2>
           <button
             onClick={() => {
-              setComodinData({ nombre: '', descripcion: '' });
+              setComodinData({ idcomodines: null, nombre: '', descripcion: '' });
               setComodinFile(null);
               setComodinImagePreview(null);
               setShowComodinModal(true);
@@ -650,41 +699,49 @@ export const Perfil = () => {
                 </tr>
               </thead>
               <tbody>
-                {comodines.map((comodin) => (
-                  <tr key={comodin.idComodines}>
-                    <td>
-                      <img
-                        src={comodin.foto || '/default-powerup.png'}
-                        alt={comodin.nombre}
-                        className="game-image"
-                      />
-                    </td>
-                    <td>{comodin.nombre}</td>
-                    <td>{comodin.descripcion}</td>
-                    <td>
-                      <div className="flex gap-2 justify-center">
-                        <button
-                          onClick={() => {
-                            setComodinData(comodin);
-                            setComodinImagePreview(comodin.foto);
-                            setShowComodinModal(true);
-                          }}
-                          className="text-blue-600 hover:text-blue-800 transition-colors p-2"
-                          title="Editar comodín"
-                        >
-                          <FaPen />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteComodin(comodin.idComodines)}
-                          className="text-red-600 hover:text-red-800 transition-colors p-2"
-                          title="Eliminar comodín"
-                        >
-                          <FaTimes />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                {comodines.map((comodin) => {
+                  console.log('Renderizando comodín:', comodin); // Debug log
+                  console.log('Campos del comodín:', Object.keys(comodin)); // Debug log
+                  console.log('ID del comodín:', comodin.idcomodines); // Debug log
+                  return (
+                    <tr key={comodin.idcomodines}>
+                      <td>
+                        <img
+                          src={comodin.foto || '/default-powerup.png'}
+                          alt={comodin.nombre}
+                          className="game-image"
+                        />
+                      </td>
+                      <td>{comodin.nombre}</td>
+                      <td>{comodin.descripcion}</td>
+                      <td>
+                        <div className="flex gap-2 justify-center">
+                          <button
+                            onClick={() => {
+                              setComodinData(comodin);
+                              setComodinImagePreview(comodin.foto);
+                              setShowComodinModal(true);
+                            }}
+                            className="text-blue-600 hover:text-blue-800 transition-colors p-2"
+                            title="Editar comodín"
+                          >
+                            <FaPen />
+                          </button>
+                          <button
+                            onClick={() => {
+                              console.log('Click en eliminar comodín:', comodin.idcomodines); // Debug log
+                              handleDeleteComodin(comodin.idcomodines);
+                            }}
+                            className="text-red-600 hover:text-red-800 transition-colors p-2"
+                            title="Eliminar comodín"
+                          >
+                            <FaTimes />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -1238,11 +1295,9 @@ export const Perfil = () => {
         formData.append('nombre', nombreLogro);
         formData.append('descripcion', descripcionLogro);
         
+        // Solo agregar foto si hay un archivo nuevo seleccionado
         if (logroFile) {
           formData.append('foto', logroFile);
-        } 
-        else if (logroData.id && logroImagePreview) {
-          formData.append('foto', logroImagePreview);
         }
 
         const config = {
@@ -1253,8 +1308,8 @@ export const Perfil = () => {
         };
 
         let response;
-        if (logroData.id) {
-          response = await axios.put(LOGROS_ROUTES.UPDATE(logroData.id), formData, config);
+        if (logroData.idlogros) {
+          response = await axios.put(LOGROS_ROUTES.UPDATE(logroData.idlogros), formData, config);
           toast.success('Logro actualizado correctamente');
         } else {
           response = await axios.post(LOGROS_ROUTES.CREATE, formData, config);
@@ -1262,7 +1317,7 @@ export const Perfil = () => {
         }
 
         setShowLogroModal(false);
-        setLogroData({ nombre: '', descripcion: '' });
+        setLogroData({ idlogros: null, nombre: '', descripcion: '' });
         setLogroFile(null);
         setLogroImagePreview(null);
         
@@ -1280,12 +1335,12 @@ export const Perfil = () => {
         <div className="game-modal-content">
           <div className="game-modal-header">
             <h3 className="game-modal-title">
-              {logroData.id ? 'Editar Logro' : 'Agregar Nuevo Logro'}
+              {logroData.idlogros ? 'Editar Logro' : 'Agregar Nuevo Logro'}
             </h3>
             <button
               onClick={() => {
                 setShowLogroModal(false);
-                setLogroData({ nombre: '', descripcion: '' });
+                setLogroData({ idlogros: null, nombre: '', descripcion: '' });
                 setLogroFile(null);
                 setLogroImagePreview(null);
               }}
@@ -1334,7 +1389,7 @@ export const Perfil = () => {
                     <div className="upload-placeholder">
                       <FaCamera className="text-gray-400 text-3xl mb-2" />
                       <span className="text-sm text-gray-500 text-center px-2">
-                        {logroData.id ? 'Cambiar imagen' : 'Subir imagen'}
+                        {logroData.idlogros ? 'Cambiar imagen' : 'Subir imagen'}
                       </span>
                     </div>
                   )}
@@ -1388,7 +1443,7 @@ export const Perfil = () => {
               ) : (
                 <>
                   <FaCheck />
-                  <span>{logroData.id ? 'Guardar Cambios' : 'Crear Logro'}</span>
+                  <span>{logroData.idlogros ? 'Guardar Cambios' : 'Crear Logro'}</span>
                 </>
               )}
             </button>
@@ -1441,11 +1496,9 @@ export const Perfil = () => {
         formData.append('nombre', nombreComodin);
         formData.append('descripcion', descripcionComodin);
         
+        // Solo agregar foto si hay un archivo nuevo seleccionado
         if (comodinFile) {
           formData.append('foto', comodinFile);
-        } 
-        else if (comodinData.id && comodinImagePreview) {
-          formData.append('foto', comodinImagePreview);
         }
 
         const config = {
@@ -1456,8 +1509,8 @@ export const Perfil = () => {
         };
 
         let response;
-        if (comodinData.id) {
-          response = await axios.put(COMODINES_ROUTES.UPDATE(comodinData.id), formData, config);
+        if (comodinData.idcomodines) {
+          response = await axios.put(COMODINES_ROUTES.UPDATE(comodinData.idcomodines), formData, config);
           toast.success('Comodín actualizado correctamente');
         } else {
           response = await axios.post(COMODINES_ROUTES.CREATE, formData, config);
@@ -1465,7 +1518,7 @@ export const Perfil = () => {
         }
 
         setShowComodinModal(false);
-        setComodinData({ nombre: '', descripcion: '' });
+        setComodinData({ idcomodines: null, nombre: '', descripcion: '' });
         setComodinFile(null);
         setComodinImagePreview(null);
         
@@ -1483,12 +1536,12 @@ export const Perfil = () => {
         <div className="game-modal-content">
           <div className="game-modal-header">
             <h3 className="game-modal-title">
-              {comodinData.id ? 'Editar Comodín' : 'Agregar Nuevo Comodín'}
+              {comodinData.idcomodines ? 'Editar Comodín' : 'Agregar Nuevo Comodín'}
             </h3>
             <button
               onClick={() => {
                 setShowComodinModal(false);
-                setComodinData({ nombre: '', descripcion: '' });
+                setComodinData({ idcomodines: null, nombre: '', descripcion: '' });
                 setComodinFile(null);
                 setComodinImagePreview(null);
               }}
@@ -1537,7 +1590,7 @@ export const Perfil = () => {
                     <div className="upload-placeholder">
                       <FaCamera className="text-gray-400 text-3xl mb-2" />
                       <span className="text-sm text-gray-500 text-center px-2">
-                        {comodinData.id ? 'Cambiar imagen' : 'Subir imagen'}
+                        {comodinData.idcomodines ? 'Cambiar imagen' : 'Subir imagen'}
                       </span>
                     </div>
                   )}
@@ -1591,7 +1644,7 @@ export const Perfil = () => {
               ) : (
                 <>
                   <FaCheck />
-                  <span>{comodinData.id ? 'Guardar Cambios' : 'Crear Comodín'}</span>
+                  <span>{comodinData.idcomodines ? 'Guardar Cambios' : 'Crear Comodín'}</span>
                 </>
               )}
             </button>
