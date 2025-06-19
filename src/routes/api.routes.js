@@ -38,4 +38,20 @@ export const CATEGORY_ROUTES = {
     CREATE: `${API_URL}/categoria`,
     UPDATE: (id) => `${API_URL}/categoria/${id}`,
     DELETE: (id) => `${API_URL}/categoria/${id}`,
+};
+
+export const LOGROS_ROUTES = {
+    GET_ALL: `${API_URL}/logros`,
+    GET_BY_ID: (idLogros) => `${API_URL}/logros/${idLogros}`,
+    CREATE: `${API_URL}/logros`,
+    UPDATE: (idLogros) => `${API_URL}/logros/${idLogros}`,
+    DELETE: (idLogros) => `${API_URL}/logros/${idLogros}`
+};
+
+export const COMODINES_ROUTES = {
+    GET_ALL: `${API_URL}/comodines`,
+    GET_BY_ID: (idComodines) => `${API_URL}/comodines/${idComodines}`,
+    CREATE: `${API_URL}/comodines`,
+    UPDATE: (idComodines) => `${API_URL}/comodines/${idComodines}`,
+    DELETE: (idComodines) => `${API_URL}/comodines/${idComodines}`
 }; 

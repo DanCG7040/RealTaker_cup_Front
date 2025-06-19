@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { FaCamera, FaCheck, FaTimes, FaSpinner, FaUser, FaEnvelope, FaPen, FaLock, FaGamepad, FaMedal, FaStar, FaBook } from 'react-icons/fa';
+import { FaCamera, FaCheck, FaTimes, FaSpinner, FaUser, FaEnvelope, FaPen, FaLock, FaGamepad, FaMedal, FaStar, FaBook, FaUsers } from 'react-icons/fa';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { PROFILE_ROUTES, ADMIN_ROUTES, GAMES_ROUTES, CATEGORY_ROUTES } from '../routes/api.routes';
+import { PROFILE_ROUTES, ADMIN_ROUTES, GAMES_ROUTES, CATEGORY_ROUTES, LOGROS_ROUTES, COMODINES_ROUTES } from '../routes/api.routes';
 import '../styles/perfil.css';
 
 export const Perfil = () => {
@@ -36,10 +36,32 @@ export const Perfil = () => {
   const [isLoadingJuegos, setIsLoadingJuegos] = useState(false);
   const [usuarios, setUsuarios] = useState([]);
   const [isLoadingUsuarios, setIsLoadingUsuarios] = useState(false);
+  const [logros, setLogros] = useState([]);
+  const [isLoadingLogros, setIsLoadingLogros] = useState(false);
+  const [comodines, setComodines] = useState([]);
+  const [isLoadingComodines, setIsLoadingComodines] = useState(false);
+  const [showLogroModal, setShowLogroModal] = useState(false);
+  const [showComodinModal, setShowComodinModal] = useState(false);
+  const [logroData, setLogroData] = useState({
+    nombre: '',
+    descripcion: ''
+  });
+  const [comodinData, setComodinData] = useState({
+    nombre: '',
+    descripcion: ''
+  });
+  const [logroFile, setLogroFile] = useState(null);
+  const [comodinFile, setComodinFile] = useState(null);
+  const [logroImagePreview, setLogroImagePreview] = useState(null);
+  const [comodinImagePreview, setComodinImagePreview] = useState(null);
+  const [isSavingLogro, setIsSavingLogro] = useState(false);
+  const [isSavingComodin, setIsSavingComodin] = useState(false);
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const gameFileInputRef = useRef(null);
+  const logroFileInputRef = useRef(null);
+  const comodinFileInputRef = useRef(null);
 
   useEffect(() => {
     if (!token) {
@@ -397,12 +419,52 @@ export const Perfil = () => {
     }
   };
 
+  const fetchLogros = async () => {
+    setIsLoadingLogros(true);
+    try {
+      const response = await axios.get(LOGROS_ROUTES.GET_ALL, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.data.success) {
+        setLogros(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error al obtener logros:', error);
+      toast.error('Error al cargar los logros');
+    } finally {
+      setIsLoadingLogros(false);
+    }
+  };
+
+  const fetchComodines = async () => {
+    setIsLoadingComodines(true);
+    try {
+      const response = await axios.get(COMODINES_ROUTES.GET_ALL, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.data.success) {
+        setComodines(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error al obtener comodines:', error);
+      toast.error('Error al cargar los comodines');
+    } finally {
+      setIsLoadingComodines(false);
+    }
+  };
+
   useEffect(() => {
     if (activeSection === 'juegos') {
       fetchJuegos();
     }
     if (activeSection === 'usuarios') {
       fetchUsuarios();
+    }
+    if (activeSection === 'logros') {
+      fetchLogros();
+    }
+    if (activeSection === 'comodines') {
+      fetchComodines();
     }
   }, [activeSection]);
 
@@ -437,6 +499,199 @@ export const Perfil = () => {
       fetchCategorias();
     }
   }, [showGameModal]);
+
+  const LogrosContent = () => {
+    const handleDeleteLogro = async (idLogros) => {
+      if (!window.confirm('¿Estás seguro de que deseas eliminar este logro?')) {
+        return;
+      }
+
+      try {
+        const response = await axios.delete(LOGROS_ROUTES.DELETE(idLogros), {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (response.data.success) {
+          setLogros(logros.filter(logro => logro.idLogros !== idLogros));
+          toast.success('Logro eliminado exitosamente');
+        }
+      } catch (error) {
+        console.error('Error al eliminar logro:', error);
+        toast.error('Error al eliminar el logro');
+      }
+    };
+
+    return (
+      <div className="content-section">
+        <div className="games-header">
+          <h2>Logros</h2>
+          <button className="add-game-button" onClick={() => {
+            setLogroData({ nombre: '', descripcion: '' });
+            setLogroFile(null);
+            setLogroImagePreview(null);
+            setShowLogroModal(true);
+          }}>
+            <FaMedal /> Agregar Logro
+          </button>
+        </div>
+        <div className="games-table-container">
+          {isLoadingLogros ? (
+            <div className="loading-spinner">
+              <FaSpinner className="spinner-icon" />
+            </div>
+          ) : (
+            <table className="games-table">
+              <thead>
+                <tr>
+                  <th>Imagen</th>
+                  <th>Nombre</th>
+                  <th>Descripción</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {logros.map(logro => (
+                  <tr key={logro.idLogros}>
+                    <td>
+                      <img 
+                        src={logro.foto || '/default-achievement.png'} 
+                        alt={logro.nombre}
+                        className="game-image"
+                      />
+                    </td>
+                    <td>{logro.nombre}</td>
+                    <td>{logro.descripcion}</td>
+                    <td>
+                      <button 
+                        className="edit-button"
+                        onClick={() => {
+                          setLogroData({
+                            idLogros: logro.idLogros,
+                            nombre: logro.nombre,
+                            descripcion: logro.descripcion
+                          });
+                          setLogroImagePreview(logro.foto);
+                          setShowLogroModal(true);
+                        }}
+                      >
+                        <FaPen />
+                      </button>
+                      <button 
+                        className="delete-button"
+                        onClick={() => handleDeleteLogro(logro.idLogros)}
+                      >
+                        <FaTimes />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const ComodinesContent = () => {
+    const handleDeleteComodin = async (id) => {
+      if (!window.confirm('¿Estás seguro de que deseas eliminar este comodín?')) {
+        return;
+      }
+
+      try {
+        await axios.delete(COMODINES_ROUTES.DELETE(id), {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        toast.success('Comodín eliminado correctamente');
+        await fetchComodines();
+      } catch (error) {
+        console.error('Error al eliminar comodín:', error);
+        toast.error(error.response?.data?.error || 'Error al eliminar el comodín');
+      }
+    };
+
+    return (
+      <div className="content-section">
+        <div className="games-header">
+          <h2 className="games-title">Gestión de Comodines</h2>
+          <button
+            onClick={() => {
+              setComodinData({ nombre: '', descripcion: '' });
+              setComodinFile(null);
+              setComodinImagePreview(null);
+              setShowComodinModal(true);
+            }}
+            className="add-game-button"
+          >
+            <FaStar /> Agregar Comodín
+          </button>
+        </div>
+
+        {isLoadingComodines ? (
+          <div className="loading-spinner">
+            <FaSpinner className="loading-spinner-icon" />
+          </div>
+        ) : comodines.length === 0 ? (
+          <div className="no-data">No hay comodines registrados</div>
+        ) : (
+          <div className="games-table-container">
+            <table className="games-table">
+              <thead>
+                <tr>
+                  <th>Imagen</th>
+                  <th>Nombre</th>
+                  <th>Descripción</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {comodines.map((comodin) => (
+                  <tr key={comodin.idComodines}>
+                    <td>
+                      <img
+                        src={comodin.foto || '/default-powerup.png'}
+                        alt={comodin.nombre}
+                        className="game-image"
+                      />
+                    </td>
+                    <td>{comodin.nombre}</td>
+                    <td>{comodin.descripcion}</td>
+                    <td>
+                      <div className="flex gap-2 justify-center">
+                        <button
+                          onClick={() => {
+                            setComodinData(comodin);
+                            setComodinImagePreview(comodin.foto);
+                            setShowComodinModal(true);
+                          }}
+                          className="text-blue-600 hover:text-blue-800 transition-colors p-2"
+                          title="Editar comodín"
+                        >
+                          <FaPen />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteComodin(comodin.idComodines)}
+                          className="text-red-600 hover:text-red-800 transition-colors p-2"
+                          title="Eliminar comodín"
+                        >
+                          <FaTimes />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   if (loading) return <div className="text-center py-8">Cargando perfil...</div>;
   if (!user) return null;
@@ -677,7 +932,6 @@ export const Perfil = () => {
                 className="game-image-preview cursor-pointer" 
                 onClick={handleGameImageClick}
                 style={{ 
-                 
                   height: '200px', 
                   position: 'relative', 
                   overflow: 'hidden',
@@ -800,12 +1054,30 @@ export const Perfil = () => {
           Juegos
         </button>
         <button
+          onClick={() => setActiveSection('logros')}
+          className={`admin-menu-button ${
+            activeSection === 'logros' ? 'admin-menu-button-active' : ''
+          }`}
+        >
+          <FaMedal className="w-4 h-4 mr-2" />
+          Logros
+        </button>
+        <button
+          onClick={() => setActiveSection('comodines')}
+          className={`admin-menu-button ${
+            activeSection === 'comodines' ? 'admin-menu-button-active' : ''
+          }`}
+        >
+          <FaStar className="w-4 h-4 mr-2" />
+          Comodines
+        </button>
+        <button
           onClick={() => setActiveSection('usuarios')}
           className={`admin-menu-button ${
             activeSection === 'usuarios' ? 'admin-menu-button-active' : ''
           }`}
         >
-          <FaUser className="w-4 h-4 mr-2" />
+          <FaUsers className="w-4 h-4 mr-2" />
           Usuarios
         </button>
       </nav>
@@ -923,6 +1195,412 @@ export const Perfil = () => {
     );
   };
 
+  const LogroModal = () => {
+    const handleLogroImageClick = () => {
+      logroFileInputRef.current.click();
+    };
+
+    const handleLogroFileChange = (e) => {
+      const selectedFile = e.target.files[0];
+      if (selectedFile) {
+        if (!selectedFile.type.startsWith('image/')) {
+          toast.error('Por favor selecciona una imagen');
+          return;
+        }
+
+        if (selectedFile.size > 2 * 1024 * 1024) {
+          toast.error('La imagen no puede ser mayor a 2MB');
+          return;
+        }
+
+        setLogroFile(selectedFile);
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setLogroImagePreview(reader.result);
+        };
+        reader.readAsDataURL(selectedFile);
+      }
+    };
+
+    const handleAddLogro = async () => {
+      const nombreLogro = logroData.nombre?.trim();
+      const descripcionLogro = logroData.descripcion?.trim();
+
+      if (!nombreLogro) {
+        toast.error('Por favor ingresa un nombre');
+        return;
+      }
+
+      setIsSavingLogro(true);
+      try {
+        const formData = new FormData();
+        formData.append('nombre', nombreLogro);
+        formData.append('descripcion', descripcionLogro);
+        
+        if (logroFile) {
+          formData.append('foto', logroFile);
+        } 
+        else if (logroData.id && logroImagePreview) {
+          formData.append('foto', logroImagePreview);
+        }
+
+        const config = {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        };
+
+        let response;
+        if (logroData.id) {
+          response = await axios.put(LOGROS_ROUTES.UPDATE(logroData.id), formData, config);
+          toast.success('Logro actualizado correctamente');
+        } else {
+          response = await axios.post(LOGROS_ROUTES.CREATE, formData, config);
+          toast.success('Logro agregado correctamente');
+        }
+
+        setShowLogroModal(false);
+        setLogroData({ nombre: '', descripcion: '' });
+        setLogroFile(null);
+        setLogroImagePreview(null);
+        
+        await fetchLogros();
+      } catch (error) {
+        console.error('Error al guardar logro:', error);
+        toast.error(error.response?.data?.error || 'Error al guardar el logro');
+      } finally {
+        setIsSavingLogro(false);
+      }
+    };
+
+    return (
+      <div className="game-modal">
+        <div className="game-modal-content">
+          <div className="game-modal-header">
+            <h3 className="game-modal-title">
+              {logroData.id ? 'Editar Logro' : 'Agregar Nuevo Logro'}
+            </h3>
+            <button
+              onClick={() => {
+                setShowLogroModal(false);
+                setLogroData({ nombre: '', descripcion: '' });
+                setLogroFile(null);
+                setLogroImagePreview(null);
+              }}
+              className="game-modal-close"
+            >
+              <FaTimes />
+            </button>
+          </div>
+
+          <div className="game-form-container">
+            <div className="game-form-row">
+              <div className="game-form-image-section">
+                <label className="game-form-label">Imagen del logro</label>
+                <div 
+                  className="game-image-preview cursor-pointer" 
+                  onClick={handleLogroImageClick}
+                  style={{ 
+                    height: '200px', 
+                    position: 'relative', 
+                    overflow: 'hidden',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'end',
+                    borderRadius: '0.5rem',
+                    border: '2px dashed #e5e7eb'
+                  }}
+                >
+                  <input
+                    type="file"
+                    ref={logroFileInputRef}
+                    onChange={handleLogroFileChange}
+                    accept="image/jpeg,image/png,image/gif"
+                    className="hidden"
+                  />
+                  {logroImagePreview ? (
+                    <img
+                      src={logroImagePreview}
+                      alt="Vista previa"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain'
+                      }}
+                    />
+                  ) : (
+                    <div className="upload-placeholder">
+                      <FaCamera className="text-gray-400 text-3xl mb-2" />
+                      <span className="text-sm text-gray-500 text-center px-2">
+                        {logroData.id ? 'Cambiar imagen' : 'Subir imagen'}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="game-form-fields-section">
+                <div className="game-form-group">
+                  <label className="game-form-label">Nombre del logro</label>
+                  <input
+                    type="text"
+                    className="game-form-input"
+                    placeholder="Ej: Primer Victoria"
+                    defaultValue={logroData.nombre || ''}
+                    onBlur={(e) => {
+                      setLogroData(prev => ({
+                        ...prev,
+                        nombre: e.target.value
+                      }));
+                    }}
+                  />
+                </div>
+
+                <div className="game-form-group">
+                  <label className="game-form-label">Descripción</label>
+                  <textarea
+                    className="game-form-input"
+                    placeholder="Describe el logro..."
+                    defaultValue={logroData.descripcion || ''}
+                    onBlur={(e) => {
+                      setLogroData(prev => ({
+                        ...prev,
+                        descripcion: e.target.value
+                      }));
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={handleAddLogro}
+              disabled={isSavingLogro}
+              className="game-form-submit"
+            >
+              {isSavingLogro ? (
+                <>
+                  <FaSpinner className="spinner" />
+                  <span>Guardando...</span>
+                </>
+              ) : (
+                <>
+                  <FaCheck />
+                  <span>{logroData.id ? 'Guardar Cambios' : 'Crear Logro'}</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const ComodinModal = () => {
+    const handleComodinImageClick = () => {
+      comodinFileInputRef.current.click();
+    };
+
+    const handleComodinFileChange = (e) => {
+      const selectedFile = e.target.files[0];
+      if (selectedFile) {
+        if (!selectedFile.type.startsWith('image/')) {
+          toast.error('Por favor selecciona una imagen');
+          return;
+        }
+
+        if (selectedFile.size > 2 * 1024 * 1024) {
+          toast.error('La imagen no puede ser mayor a 2MB');
+          return;
+        }
+
+        setComodinFile(selectedFile);
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setComodinImagePreview(reader.result);
+        };
+        reader.readAsDataURL(selectedFile);
+      }
+    };
+
+    const handleAddComodin = async () => {
+      const nombreComodin = comodinData.nombre?.trim();
+      const descripcionComodin = comodinData.descripcion?.trim();
+
+      if (!nombreComodin) {
+        toast.error('Por favor ingresa un nombre');
+        return;
+      }
+
+      setIsSavingComodin(true);
+      try {
+        const formData = new FormData();
+        formData.append('nombre', nombreComodin);
+        formData.append('descripcion', descripcionComodin);
+        
+        if (comodinFile) {
+          formData.append('foto', comodinFile);
+        } 
+        else if (comodinData.id && comodinImagePreview) {
+          formData.append('foto', comodinImagePreview);
+        }
+
+        const config = {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        };
+
+        let response;
+        if (comodinData.id) {
+          response = await axios.put(COMODINES_ROUTES.UPDATE(comodinData.id), formData, config);
+          toast.success('Comodín actualizado correctamente');
+        } else {
+          response = await axios.post(COMODINES_ROUTES.CREATE, formData, config);
+          toast.success('Comodín agregado correctamente');
+        }
+
+        setShowComodinModal(false);
+        setComodinData({ nombre: '', descripcion: '' });
+        setComodinFile(null);
+        setComodinImagePreview(null);
+        
+        await fetchComodines();
+      } catch (error) {
+        console.error('Error al guardar comodín:', error);
+        toast.error(error.response?.data?.error || 'Error al guardar el comodín');
+      } finally {
+        setIsSavingComodin(false);
+      }
+    };
+
+    return (
+      <div className="game-modal">
+        <div className="game-modal-content">
+          <div className="game-modal-header">
+            <h3 className="game-modal-title">
+              {comodinData.id ? 'Editar Comodín' : 'Agregar Nuevo Comodín'}
+            </h3>
+            <button
+              onClick={() => {
+                setShowComodinModal(false);
+                setComodinData({ nombre: '', descripcion: '' });
+                setComodinFile(null);
+                setComodinImagePreview(null);
+              }}
+              className="game-modal-close"
+            >
+              <FaTimes />
+            </button>
+          </div>
+
+          <div className="game-form-container">
+            <div className="game-form-row">
+              <div className="game-form-image-section">
+                <label className="game-form-label">Imagen del comodín</label>
+                <div 
+                  className="game-image-preview cursor-pointer" 
+                  onClick={handleComodinImageClick}
+                  style={{ 
+                    height: '200px', 
+                    position: 'relative', 
+                    overflow: 'hidden',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'end',
+                    borderRadius: '0.5rem',
+                    border: '2px dashed #e5e7eb'
+                  }}
+                >
+                  <input
+                    type="file"
+                    ref={comodinFileInputRef}
+                    onChange={handleComodinFileChange}
+                    accept="image/jpeg,image/png,image/gif"
+                    className="hidden"
+                  />
+                  {comodinImagePreview ? (
+                    <img
+                      src={comodinImagePreview}
+                      alt="Vista previa"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain'
+                      }}
+                    />
+                  ) : (
+                    <div className="upload-placeholder">
+                      <FaCamera className="text-gray-400 text-3xl mb-2" />
+                      <span className="text-sm text-gray-500 text-center px-2">
+                        {comodinData.id ? 'Cambiar imagen' : 'Subir imagen'}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="game-form-fields-section">
+                <div className="game-form-group">
+                  <label className="game-form-label">Nombre del comodín</label>
+                  <input
+                    type="text"
+                    className="game-form-input"
+                    placeholder="Ej: Vida Extra"
+                    defaultValue={comodinData.nombre || ''}
+                    onBlur={(e) => {
+                      setComodinData(prev => ({
+                        ...prev,
+                        nombre: e.target.value
+                      }));
+                    }}
+                  />
+                </div>
+
+                <div className="game-form-group">
+                  <label className="game-form-label">Descripción</label>
+                  <textarea
+                    className="game-form-input"
+                    placeholder="Describe el comodín..."
+                    defaultValue={comodinData.descripcion || ''}
+                    onBlur={(e) => {
+                      setComodinData(prev => ({
+                        ...prev,
+                        descripcion: e.target.value
+                      }));
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={handleAddComodin}
+              disabled={isSavingComodin}
+              className="game-form-submit"
+            >
+              {isSavingComodin ? (
+                <>
+                  <FaSpinner className="spinner" />
+                  <span>Guardando...</span>
+                </>
+              ) : (
+                <>
+                  <FaCheck />
+                  <span>{comodinData.id ? 'Guardar Cambios' : 'Crear Comodín'}</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="app-container-perfil">
       {user.rol === 0 && <AdminMenu />}
@@ -936,11 +1614,15 @@ export const Perfil = () => {
               </div>
             )}
             {activeSection === 'juegos' && <JuegosContent />}
+            {activeSection === 'logros' && <LogrosContent />}
+            {activeSection === 'comodines' && <ComodinesContent />}
             {activeSection === 'usuarios' && <UsuariosContent />}
             {showGameModal && <GameModal />}
+            {showLogroModal && <LogroModal />}
+            {showComodinModal && <ComodinModal />}
           </>
         ) : (
-          <div className="profile-user-view">
+          <div className="profile-edit-section">
             <h2 className="section-title">Mi Perfil</h2>
             <ProfileContent />
           </div>
