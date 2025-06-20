@@ -54,4 +54,37 @@ export const COMODINES_ROUTES = {
     CREATE: `${API_URL}/comodines`,
     UPDATE: (idComodines) => `${API_URL}/comodines/${idComodines}`,
     DELETE: (idComodines) => `${API_URL}/comodines/${idComodines}`
+};
+
+export const EDICION_ROUTES = {
+    GET_ALL: `${API_URL}/edicion`,
+    GET_BY_ID: (idEdicion) => `${API_URL}/edicion/${idEdicion}`,
+    CREATE: `${API_URL}/edicion`,
+    UPDATE: (idEdicion) => `${API_URL}/edicion/${idEdicion}`,
+    DELETE: (idEdicion) => `${API_URL}/edicion/${idEdicion}`,
+    ASIGNAR_JUEGOS: (idEdicion) => `${API_URL}/edicion/${idEdicion}/juegos`,
+    ASIGNAR_JUGADORES: (idEdicion) => `${API_URL}/edicion/${idEdicion}/jugadores`,
+    GET_JUEGOS_BY_EDICION: (idEdicion) => `${API_URL}/edicion/${idEdicion}/juegos`,
+    GET_JUGADORES_BY_EDICION: (idEdicion) => `${API_URL}/edicion/${idEdicion}/jugadores`
+};
+
+export const PUNTOS_ROUTES = {
+    GET_ALL: `${API_URL}/puntos`,
+    GET_BY_TIPO: (tipo) => `${API_URL}/puntos/${tipo}`,
+    CREATE_OR_UPDATE: `${API_URL}/puntos`,
+    DELETE: (id) => `${API_URL}/puntos/${id}`
+};
+
+export const PARTIDAS_ROUTES = {
+    GET_EDICIONES_ACTIVAS: `${API_URL}/partidas/ediciones-activas`,
+    GET_JUGADORES_BY_EDICION: (idEdicion) => `${API_URL}/partidas/jugadores/${idEdicion}`,
+    GET_PERFIL_JUGADOR: (nickname) => `${API_URL}/partidas/perfil/${nickname}`,
+    GET_ALL: `${API_URL}/partidas`,
+    GET_BY_ID: (id) => `${API_URL}/partidas/${id}`,
+    CREATE: `${API_URL}/partidas`,
+    UPDATE: (id) => `${API_URL}/partidas/${id}`,
+    DELETE: (id) => `${API_URL}/partidas/${id}`,
+    REGISTRAR_RESULTADO: (id) => `${API_URL}/partidas/${id}/resultado`,
+    GET_RESULTADO: (id) => `${API_URL}/partidas/${id}/resultado`,
+    LIMPIAR_TABLA_GENERAL: `${API_URL}/partidas/limpiar-tabla-general`
 }; 

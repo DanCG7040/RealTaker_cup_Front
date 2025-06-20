@@ -3,6 +3,7 @@ import { Inicio } from "./pages/Inicio";
 import { Login } from "./pages/Login";
 import { Registro } from "./pages/Registro";
 import { Perfil } from "./pages/perfil";
+import { Historico } from "./pages/historico";
 import { ForgotPassword } from "./pages/forgot-password";
 import { ResetPassword } from "./pages/reset-password";
 import { ToastContainer } from 'react-toastify';
@@ -43,6 +44,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/inicio" />} />
           <Route path="/inicio" element={<Inicio />} />
+          <Route path="/historico" element={<Historico />} />
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

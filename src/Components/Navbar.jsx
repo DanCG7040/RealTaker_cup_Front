@@ -42,12 +42,18 @@ export const Navbar = () => {
     navigate('/inicio'); 
   };
 
+  const handleHistoricoClick = () => {
+    navigate('/historico');
+  };
+
   return (
     <>
       <nav className="navbar">
         <div className="navbar-container">
           {/* Izquierda */}
-          <div className="navbar-title">Histórico</div>
+          <div onClick={handleHistoricoClick} style={{ cursor: 'pointer' }} className="navbar-title">
+            Histórico
+          </div>
 
           {/* Centro */}
           <div onClick={handleLogoClick} style={{ cursor: 'pointer' }}>

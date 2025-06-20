@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { FaCamera, FaCheck, FaTimes, FaSpinner, FaUser, FaEnvelope, FaPen, FaLock, FaGamepad, FaMedal, FaStar, FaBook, FaUsers } from 'react-icons/fa';
+import { FaCamera, FaCheck, FaTimes, FaSpinner, FaUser, FaEnvelope, FaPen, FaLock, FaGamepad, FaMedal, FaStar, FaBook, FaUsers, FaTrophy, FaPlus, FaCheckCircle, FaEye } from 'react-icons/fa';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { PROFILE_ROUTES, ADMIN_ROUTES, GAMES_ROUTES, CATEGORY_ROUTES, LOGROS_ROUTES, COMODINES_ROUTES } from '../routes/api.routes';
+import { PROFILE_ROUTES, ADMIN_ROUTES, GAMES_ROUTES, CATEGORY_ROUTES, LOGROS_ROUTES, COMODINES_ROUTES, EDICION_ROUTES, PUNTOS_ROUTES, PARTIDAS_ROUTES } from '../routes/api.routes';
 import '../styles/perfil.css';
 
 export const Perfil = () => {
@@ -58,6 +58,81 @@ export const Perfil = () => {
   const [comodinImagePreview, setComodinImagePreview] = useState(null);
   const [isSavingLogro, setIsSavingLogro] = useState(false);
   const [isSavingComodin, setIsSavingComodin] = useState(false);
+  
+  // Estados para el torneo
+  const [showTorneoModal, setShowTorneoModal] = useState(false);
+  const [torneoData, setTorneoData] = useState({
+    idEdicion: '',
+    fecha_inicio: '',
+    fecha_fin: ''
+  });
+  const [isSavingTorneo, setIsSavingTorneo] = useState(false);
+  const [showJuegosModal, setShowJuegosModal] = useState(false);
+  const [showJugadoresModal, setShowJugadoresModal] = useState(false);
+  const [juegosSeleccionados, setJuegosSeleccionados] = useState([]);
+  const [jugadoresSeleccionados, setJugadoresSeleccionados] = useState([]);
+  const [isAsignandoJuegos, setIsAsignandoJuegos] = useState(false);
+  const [isAsignandoJugadores, setIsAsignandoJugadores] = useState(false);
+  const [edicionActual, setEdicionActual] = useState(null);
+  const [jugadoresDisponibles, setJugadoresDisponibles] = useState([]);
+  
+  // Estados para listar torneos
+  const [torneos, setTorneos] = useState([]);
+  const [isLoadingTorneos, setIsLoadingTorneos] = useState(false);
+  const [showEditTorneoModal, setShowEditTorneoModal] = useState(false);
+  const [editingTorneo, setEditingTorneo] = useState(null);
+  const [isCreatingNewTorneo, setIsCreatingNewTorneo] = useState(false);
+  
+  // Estados para el módulo de puntos
+  const [puntosData, setPuntosData] = useState({
+    tipoPartida: 'PVP',
+    puntosPVP: {
+      posicion1: 10,
+      posicion2: 5
+    },
+    puntosTodosContraTodos: Array.from({ length: 10 }, (_, i) => ({
+      posicion: i + 1,
+      puntos: i < 5 ? 10 - (i * 2) : 0
+    }))
+  });
+  const [isSavingPuntos, setIsSavingPuntos] = useState(false);
+  const [puntosExistentes, setPuntosExistentes] = useState([]);
+  const [isLoadingPuntos, setIsLoadingPuntos] = useState(false);
+  const [showPuntosModal, setShowPuntosModal] = useState(false);
+  
+  // Estados para el módulo de partidas
+  const [edicionesActivas, setEdicionesActivas] = useState([]);
+  const [edicionSeleccionada, setEdicionSeleccionada] = useState(null);
+  const [jugadoresEdicion, setJugadoresEdicion] = useState([]);
+  const [isLoadingJugadores, setIsLoadingJugadores] = useState(false);
+  const [showCrearPartidaModal, setShowCrearPartidaModal] = useState(false);
+  const [partidaData, setPartidaData] = useState({
+    tipo: 'PVP',
+    fecha: '',
+    jugadores: [],
+    juego_id: null,
+    fase: 'Grupos',
+    video_url: ''
+  });
+  const [isSavingPartida, setIsSavingPartida] = useState(false);
+  const [showPerfilModal, setShowPerfilModal] = useState(false);
+  const [jugadorSeleccionado, setJugadorSeleccionado] = useState(null);
+  const [partidas, setPartidas] = useState([]);
+  const [isLoadingPartidas, setIsLoadingPartidas] = useState(false);
+  const [serverError, setServerError] = useState(false);
+  
+  // Estados para resultados de partidas
+  const [showResultadoModal, setShowResultadoModal] = useState(false);
+  const [partidaResultado, setPartidaResultado] = useState(null);
+  const [resultadosData, setResultadosData] = useState([]);
+  const [isSavingResultado, setIsSavingResultado] = useState(false);
+  
+  // Estado para limpiar tabla general
+  const [isLimpiandoTabla, setIsLimpiandoTabla] = useState(false);
+  
+  const [juegosEdicion, setJuegosEdicion] = useState([]);
+  const [isLoadingJuegosEdicion, setIsLoadingJuegosEdicion] = useState(false);
+  
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
@@ -476,7 +551,38 @@ export const Perfil = () => {
     if (activeSection === 'comodines') {
       fetchComodines();
     }
+    if (activeSection === 'torneo') {
+      fetchTorneos();
+    }
+    if (activeSection === 'puntos') {
+      fetchPuntosExistentes();
+    }
+    if (activeSection === 'partidas') {
+      fetchUltimaEdicion();
+      fetchPartidas();
+    }
   }, [activeSection]);
+
+  // Cargar jugadores disponibles cuando se abre el modal de jugadores
+  useEffect(() => {
+    if (showJugadoresModal && jugadoresDisponibles.length === 0) {
+      fetchJugadoresDisponibles();
+    }
+  }, [showJugadoresModal]);
+
+  // Cargar juegos cuando se abre el modal de juegos
+  useEffect(() => {
+    if (showJuegosModal && juegos.length === 0) {
+      fetchJuegos();
+    }
+  }, [showJuegosModal]);
+
+  // Cargar juegos de la edición cuando se abre el modal de crear partida
+  useEffect(() => {
+    if (showCrearPartidaModal && edicionSeleccionada && juegosEdicion.length === 0) {
+      fetchJuegosByEdicion(edicionSeleccionada);
+    }
+  }, [showCrearPartidaModal, edicionSeleccionada]);
 
   const handleDeleteGame = async (id) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este juego?')) {
@@ -1137,6 +1243,33 @@ export const Perfil = () => {
           <FaUsers className="w-4 h-4 mr-2" />
           Usuarios
         </button>
+        <button
+          onClick={() => setActiveSection('puntos')}
+          className={`admin-menu-button ${
+            activeSection === 'puntos' ? 'admin-menu-button-active' : ''
+          }`}
+        >
+          <FaStar className="w-4 h-4 mr-2" />
+          Puntos por Partida
+        </button>
+        <button
+          onClick={() => setActiveSection('partidas')}
+          className={`admin-menu-button ${
+            activeSection === 'partidas' ? 'admin-menu-button-active' : ''
+          }`}
+        >
+          <FaGamepad className="w-4 h-4 mr-2" />
+          Partidas
+        </button>
+        <button
+          onClick={() => setActiveSection('torneo')}
+          className={`admin-menu-button ${
+            activeSection === 'torneo' ? 'admin-menu-button-active' : ''
+          }`}
+        >
+          <FaTrophy className="w-4 h-4 mr-2" />
+          Torneos
+        </button>
       </nav>
     </div>
   );
@@ -1654,33 +1787,2546 @@ export const Perfil = () => {
     );
   };
 
-  return (
-    <div className="app-container-perfil">
-      {user.rol === 0 && <AdminMenu />}
-      <div className="main-content">
-        {user.rol === 0 ? (
-          <>
-            {activeSection === 'perfil' && (
-              <div className="profile-edit-section">
-                <h2 className="section-title">Editar Perfil</h2>
-                <ProfileContent />
+  const fetchJugadoresDisponibles = async () => {
+    try {
+      const response = await axios.get(ADMIN_ROUTES.GET_ALL_USERS, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        // Filtrar solo usuarios con rol 2 (jugadores)
+        const jugadores = response.data.data.filter(usuario => usuario.rol === 2);
+        setJugadoresDisponibles(jugadores);
+      }
+    } catch (error) {
+      console.error('Error al obtener jugadores disponibles:', error);
+      toast.error('Error al cargar los jugadores disponibles');
+    }
+  };
+
+  const fetchTorneos = async () => {
+    setIsLoadingTorneos(true);
+    try {
+      const response = await axios.get(EDICION_ROUTES.GET_ALL, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        setTorneos(response.data.data);
+      } else {
+        toast.error('Error al cargar los torneos');
+      }
+    } catch (error) {
+      console.error('Error al obtener torneos:', error);
+      toast.error('Error al cargar los torneos');
+    } finally {
+      setIsLoadingTorneos(false);
+    }
+  };
+
+  const handleDeleteTorneo = async (idEdicion) => {
+    if (!window.confirm('¿Estás seguro de que quieres eliminar este torneo? Esta acción no se puede deshacer.')) {
+      return;
+    }
+
+    try {
+      const response = await axios.delete(EDICION_ROUTES.DELETE(idEdicion), {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.data.success) {
+        toast.success('Torneo eliminado correctamente');
+        await fetchTorneos(); // Recargar la lista
+      } else {
+        toast.error(response.data.message || 'Error al eliminar el torneo');
+      }
+    } catch (error) {
+      console.error('Error al eliminar torneo:', error);
+      toast.error(error.response?.data?.message || 'Error al eliminar el torneo');
+    }
+  };
+
+  const handleEditTorneo = (torneo) => {
+    setEditingTorneo(torneo);
+    setTorneoData({
+      idEdicion: torneo.idEdicion,
+      fecha_inicio: torneo.fecha_inicio,
+      fecha_fin: torneo.fecha_fin
+    });
+    setShowEditTorneoModal(true);
+  };
+
+  const handleUpdateTorneo = async () => {
+    const { idEdicion, fecha_inicio, fecha_fin } = torneoData;
+
+    if (!fecha_inicio || !fecha_fin) {
+      toast.error('Por favor completa todos los campos');
+      return;
+    }
+
+    if (new Date(fecha_fin) <= new Date(fecha_inicio)) {
+      toast.error('La fecha de fin debe ser posterior a la fecha de inicio');
+      return;
+    }
+
+    setIsSavingTorneo(true);
+    try {
+      const response = await axios.put(EDICION_ROUTES.UPDATE(idEdicion), {
+        fecha_inicio,
+        fecha_fin
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.data.success) {
+        toast.success('Torneo actualizado exitosamente');
+        setShowEditTorneoModal(false);
+        setEditingTorneo(null);
+        setTorneoData({ idEdicion: '', fecha_inicio: '', fecha_fin: '' });
+        await fetchTorneos(); // Recargar la lista
+      }
+    } catch (error) {
+      console.error('Error al actualizar torneo:', error);
+      toast.error(error.response?.data?.message || 'Error al actualizar el torneo');
+    } finally {
+      setIsSavingTorneo(false);
+    }
+  };
+
+  const handleCreateTorneo = async () => {
+    const { idEdicion, fecha_inicio, fecha_fin } = torneoData;
+
+    if (!idEdicion || !fecha_inicio || !fecha_fin) {
+      toast.error('Por favor completa todos los campos');
+      return;
+    }
+
+    if (isNaN(idEdicion) || idEdicion < 2020 || idEdicion > 2030) {
+      toast.error('El año debe ser un número válido entre 2020 y 2030');
+      return;
+    }
+
+    if (new Date(fecha_fin) <= new Date(fecha_inicio)) {
+      toast.error('La fecha de fin debe ser posterior a la fecha de inicio');
+      return;
+    }
+
+    setIsSavingTorneo(true);
+    try {
+      const response = await axios.post(EDICION_ROUTES.CREATE, torneoData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.data.success) {
+        toast.success('Torneo creado exitosamente');
+        // Guardar la edición creada para el flujo de asignación
+        const torneoCreado = response.data.data;
+        setEdicionActual(torneoCreado);
+        setIsCreatingNewTorneo(true); // Marcar como torneo nuevo
+        setShowTorneoModal(false);
+        setShowJuegosModal(true);
+        setTorneoData({ idEdicion: '', fecha_inicio: '', fecha_fin: '' });
+        // Actualizar la lista de torneos automáticamente
+        await fetchTorneos();
+      }
+    } catch (error) {
+      console.error('Error al crear torneo:', error);
+      toast.error(error.response?.data?.message || 'Error al crear el torneo');
+    } finally {
+      setIsSavingTorneo(false);
+    }
+  };
+
+  const handleAsignarJuegos = async () => {
+    if (juegosSeleccionados.length === 0) {
+      toast.error('Debe seleccionar al menos un juego');
+      return;
+    }
+
+    setIsAsignandoJuegos(true);
+    try {
+      const response = await axios.post(
+        EDICION_ROUTES.ASIGNAR_JUEGOS(edicionActual.idEdicion),
+        { juegos: juegosSeleccionados },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.data.success) {
+        toast.success('Juegos asignados exitosamente');
+        setShowJuegosModal(false);
+        setJuegosSeleccionados([]);
+        
+        // Actualizar la lista de torneos
+        await fetchTorneos();
+        
+        // Si es un torneo nuevo, continuar con jugadores
+        if (isCreatingNewTorneo) {
+          setShowJugadoresModal(true);
+        } else {
+          setEdicionActual(null);
+        }
+      }
+    } catch (error) {
+      console.error('Error al asignar juegos:', error);
+      toast.error(error.response?.data?.message || 'Error al asignar juegos');
+    } finally {
+      setIsAsignandoJuegos(false);
+    }
+  };
+
+  const handleAsignarJugadores = async () => {
+    if (jugadoresSeleccionados.length === 0) {
+      toast.error('Debe seleccionar al menos un jugador');
+      return;
+    }
+
+    setIsAsignandoJugadores(true);
+    try {
+      const response = await axios.post(
+        EDICION_ROUTES.ASIGNAR_JUGADORES(edicionActual.idEdicion),
+        { jugadores: jugadoresSeleccionados },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.data.success) {
+        toast.success('Jugadores asignados exitosamente');
+        setShowJugadoresModal(false);
+        setJugadoresSeleccionados([]);
+        setEdicionActual(null);
+        setIsCreatingNewTorneo(false); // Resetear el estado
+        // Actualizar la lista de torneos
+        await fetchTorneos();
+        
+        // Si es un torneo nuevo (recién creado), mostrar mensaje de éxito
+        toast.success('¡Torneo configurado completamente!');
+      }
+    } catch (error) {
+      console.error('Error al asignar jugadores:', error);
+      toast.error(error.response?.data?.message || 'Error al asignar jugadores');
+    } finally {
+      setIsAsignandoJugadores(false);
+    }
+  };
+
+  const handleJuegoToggle = (juegoId) => {
+    setJuegosSeleccionados(prev => 
+      prev.includes(juegoId) 
+        ? prev.filter(id => id !== juegoId)
+        : [...prev, juegoId]
+    );
+  };
+
+  const handleJugadorToggle = (nickname) => {
+    setJugadoresSeleccionados(prev => 
+      prev.includes(nickname) 
+        ? prev.filter(nick => nick !== nickname)
+        : [...prev, nickname]
+    );
+  };
+
+  const TorneoContent = () => (
+    <div className="content-section">
+      <div className="games-header">
+        <h2 className="games-title">Gestión de Torneos</h2>
+        <button
+          onClick={() => {
+            setTorneoData({ idEdicion: '', fecha_inicio: '', fecha_fin: '' });
+            setShowTorneoModal(true);
+          }}
+          className="add-game-button"
+        >
+          <FaTrophy /> Crear Nuevo Torneo
+        </button>
+      </div>
+      
+      {isLoadingTorneos ? (
+        <div className="loading-spinner">
+          <FaSpinner className="spinner-icon" />
+          <span>Cargando torneos...</span>
+        </div>
+      ) : torneos.length === 0 ? (
+        <div className="no-data">
+          <p>No hay torneos registrados</p>
+          <p className="text-sm text-gray-500 mt-2">Crea tu primer torneo haciendo clic en "Crear Nuevo Torneo"</p>
+        </div>
+      ) : (
+        <div className="games-table-container">
+          <table className="games-table">
+            <thead>
+              <tr>
+                <th>Año</th>
+                <th>Fecha de Inicio</th>
+                <th>Fecha de Fin</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {torneos.map((torneo) => {
+                const fechaInicio = new Date(torneo.fecha_inicio);
+                const fechaFin = new Date(torneo.fecha_fin);
+                const hoy = new Date();
+                let estado = 'Pendiente';
+                let estadoClass = 'torneo-status pending';
+                
+                if (hoy >= fechaInicio && hoy <= fechaFin) {
+                  estado = 'En Curso';
+                  estadoClass = 'torneo-status active';
+                } else if (hoy > fechaFin) {
+                  estado = 'Finalizado';
+                  estadoClass = 'torneo-status finished';
+                }
+                
+                return (
+                  <tr key={torneo.idEdicion}>
+                    <td>
+                      <span className="font-semibold text-lg">{torneo.idEdicion}</span>
+                    </td>
+                    <td>{fechaInicio.toLocaleDateString('es-ES')}</td>
+                    <td>{fechaFin.toLocaleDateString('es-ES')}</td>
+                    <td>
+                      <span className={estadoClass}>
+                        {estado}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="torneo-actions">
+                        <button
+                          onClick={() => handleEditTorneo(torneo)}
+                          className="torneo-action-btn edit"
+                          title="Editar torneo"
+                        >
+                          <FaPen />
+                        </button>
+                        <button
+                          onClick={async () => {
+                            setEdicionActual(torneo);
+                            setIsCreatingNewTorneo(false); // No es un torneo nuevo
+                            setShowJuegosModal(true);
+                            // Cargar juegos ya asignados
+                            await fetchJuegosAsignados(torneo.idEdicion);
+                          }}
+                          className="torneo-action-btn games"
+                          title="Gestionar juegos"
+                        >
+                          <FaGamepad />
+                        </button>
+                        <button
+                          onClick={async () => {
+                            setEdicionActual(torneo);
+                            setIsCreatingNewTorneo(false); // No es un torneo nuevo
+                            setShowJugadoresModal(true);
+                            // Cargar jugadores ya asignados
+                            await fetchJugadoresAsignados(torneo.idEdicion);
+                          }}
+                          className="torneo-action-btn players"
+                          title="Gestionar jugadores"
+                        >
+                          <FaUsers />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTorneo(torneo.idEdicion)}
+                          className="torneo-action-btn delete"
+                          title="Eliminar torneo"
+                        >
+                          <FaTimes />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+
+  const PuntosContent = () => (
+    <div className="content-section">
+      <div className="games-header">
+        <h2 className="games-title">Asignar Puntos por Tipo de Partida</h2>
+      </div>
+      
+      {isLoadingPuntos ? (
+        <div className="loading-spinner">
+          <FaSpinner className="spinner-icon" />
+          <span>Cargando configuración de puntos...</span>
+        </div>
+      ) : (
+        <div className="puntos-container">
+          {/* Selector de tipo de partida */}
+          <div className="tipo-partida-selector">
+            <h3 className="text-lg font-semibold mb-4">Seleccionar Tipo de Partida</h3>
+            <div className="tipo-partida-buttons">
+              <button
+                onClick={() => setPuntosData(prev => ({ ...prev, tipoPartida: 'PVP' }))}
+                className={`tipo-partida-btn ${puntosData.tipoPartida === 'PVP' ? 'active' : ''}`}
+              >
+                <FaGamepad className="mr-2" />
+                PVP (1 vs 1)
+              </button>
+              <button
+                onClick={() => setPuntosData(prev => ({ ...prev, tipoPartida: 'TodosContraTodos' }))}
+                className={`tipo-partida-btn ${puntosData.tipoPartida === 'TodosContraTodos' ? 'active' : ''}`}
+              >
+                <FaUsers className="mr-2" />
+                Todos Contra Todos
+              </button>
+            </div>
+          </div>
+
+          {/* Formulario PVP */}
+          {puntosData.tipoPartida === 'PVP' && (
+            <div className="puntos-form-section">
+              <h3 className="text-lg font-semibold mb-4">Configuración de Puntos - PVP</h3>
+              <div className="puntos-pvp-form">
+                <div className="punto-input-group">
+                  <label className="punto-label">
+                    <span className="punto-posicion">🥇 Posición 1 (Ganador)</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={puntosData.puntosPVP.posicion1}
+                      onChange={(e) => setPuntosData(prev => ({
+                        ...prev,
+                        puntosPVP: {
+                          ...prev.puntosPVP,
+                          posicion1: parseInt(e.target.value) || 0
+                        }
+                      }))}
+                      className="punto-input"
+                      placeholder="Ej: 10"
+                    />
+                    <span className="punto-unidad">puntos</span>
+                  </label>
+                </div>
+                
+                <div className="punto-input-group">
+                  <label className="punto-label">
+                    <span className="punto-posicion">🥈 Posición 2 (Perdedor)</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={puntosData.puntosPVP.posicion2}
+                      onChange={(e) => setPuntosData(prev => ({
+                        ...prev,
+                        puntosPVP: {
+                          ...prev.puntosPVP,
+                          posicion2: parseInt(e.target.value) || 0
+                        }
+                      }))}
+                      className="punto-input"
+                      placeholder="Ej: 5"
+                    />
+                    <span className="punto-unidad">puntos</span>
+                  </label>
+                </div>
               </div>
+            </div>
+          )}
+
+          {/* Formulario Todos Contra Todos */}
+          {puntosData.tipoPartida === 'TodosContraTodos' && (
+            <div className="puntos-form-section">
+              <h3 className="text-lg font-semibold mb-4">Configuración de Puntos - Todos Contra Todos</h3>
+              <p className="text-gray-600 mb-4">
+                Define los puntos para cada posición. Las posiciones no definidas automáticamente valdrán 0 puntos.
+              </p>
+              
+              <div className="puntos-tct-grid">
+                {puntosData.puntosTodosContraTodos.map((punto, index) => (
+                  <div key={punto.posicion} className="punto-tct-item">
+                    <div className="punto-tct-header">
+                      <div className="punto-tct-header-left">
+                        <span className="punto-tct-posicion">
+                          {punto.posicion === 1 && '🥇'}
+                          {punto.posicion === 2 && '🥈'}
+                          {punto.posicion === 3 && '🥉'}
+                          {punto.posicion > 3 && `#${punto.posicion}`}
+                        </span>
+                        <span className="punto-tct-title">Posición {punto.posicion}</span>
+                      </div>
+                      {punto.posicion > 1 && (
+                        <button
+                          onClick={() => handleRemovePosicion(punto.posicion)}
+                          className="remove-posicion-btn"
+                          title="Eliminar posición"
+                        >
+                          <FaTimes />
+                        </button>
+                      )}
+                    </div>
+                    <div className="punto-tct-input-container">
+                      <input
+                        type="number"
+                        min="0"
+                        value={punto.puntos}
+                        onChange={(e) => handlePuntosTodosContraTodosChange(punto.posicion, e.target.value)}
+                        className="punto-tct-input"
+                        placeholder="0"
+                      />
+                      <span className="punto-tct-unidad">pts</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="puntos-tct-actions">
+                <button
+                  onClick={handleAddPosicion}
+                  className="add-posicion-btn"
+                  title="Añadir nueva posición"
+                >
+                  <FaPlus />
+                  <span>Añadir Posición</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Botón de guardar */}
+          <div className="puntos-actions">
+            <button
+              onClick={handleSavePuntos}
+              disabled={isSavingPuntos}
+              className="puntos-save-btn"
+            >
+              {isSavingPuntos ? (
+                <>
+                  <FaSpinner className="spinner" />
+                  <span>Guardando...</span>
+                </>
+              ) : (
+                <>
+                  <FaCheck />
+                  <span>Guardar Puntos para {puntosData.tipoPartida}</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Vista previa de puntos existentes */}
+          {puntosExistentes.length > 0 && (
+            <div className="puntos-preview">
+              <h3 className="text-lg font-semibold mb-4">Puntos Actualmente Configurados</h3>
+              <div className="puntos-preview-grid">
+                {['PVP', 'TodosContraTodos'].map(tipo => {
+                  const puntosTipo = puntosExistentes.filter(p => p.tipo === tipo);
+                  if (puntosTipo.length === 0) return null;
+                  
+                  return (
+                    <div key={tipo} className="puntos-preview-section">
+                      <h4 className="puntos-preview-title">{tipo}</h4>
+                      <div className="puntos-preview-list">
+                        {puntosTipo
+                          .sort((a, b) => a.posicion - b.posicion)
+                          .map(punto => (
+                            <div key={`${punto.tipo}-${punto.posicion}`} className="punto-preview-item">
+                              <span className="punto-preview-posicion">Posición {punto.posicion}:</span>
+                              <span className="punto-preview-valor">{punto.puntos} pts</span>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  const PartidasContent = () => (
+    <div className="content-section">
+      <div className="games-header">
+        <h2 className="games-title">Gestión de Partidas</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-start' }}>
+          <button
+            onClick={() => setShowCrearPartidaModal(true)}
+            className="add-game-button"
+            disabled={!edicionSeleccionada || serverError}
+            style={{ marginBottom: '8px' }}
+          >
+            <FaGamepad /> Crear Nueva Partida
+          </button>
+          <button
+            onClick={handleLimpiarTablaGeneral}
+            disabled={isLimpiandoTabla}
+            className="add-game-button"
+            style={{ 
+              backgroundColor: '#dc2626', 
+              borderColor: '#dc2626',
+              color: 'white',
+              marginTop: '8px'
+            }}
+            title="Limpiar tabla general para el próximo torneo"
+          >
+            {isLimpiandoTabla ? (
+              <>
+                <FaSpinner className="animate-spin" />
+                Limpiando...
+              </>
+            ) : (
+              <>
+                <FaTimes />
+                Limpiar Tabla General
+              </>
             )}
-            {activeSection === 'juegos' && <JuegosContent />}
-            {activeSection === 'logros' && <LogrosContent />}
-            {activeSection === 'comodines' && <ComodinesContent />}
-            {activeSection === 'usuarios' && <UsuariosContent />}
-            {showGameModal && <GameModal />}
-            {showLogroModal && <LogroModal />}
-            {showComodinModal && <ComodinModal />}
-          </>
+          </button>
+        </div>
+      </div>
+      
+      {/* Selector de edición activa */}
+      <div className="edicion-selector-section">
+        <h3 className="text-lg font-semibold mb-4">Seleccionar Última Edición</h3>
+        {serverError ? (
+          <div className="no-data">
+            <p>⚠️ Servidor no disponible</p>
+            <p className="text-sm text-gray-500 mt-2">
+              No se puede conectar al servidor backend para cargar las partidas.
+              <br />
+              Por favor, inicia el servidor ejecutando <code>npm start</code> en la carpeta backend.
+            </p>
+          </div>
+        ) : edicionesActivas.length === 0 ? (
+          <div className="no-data">
+            <p>No hay ediciones disponibles</p>
+            <p className="text-sm text-gray-500 mt-2">Crea una edición en la sección "Torneos" para poder crear partidas</p>
+          </div>
         ) : (
-          <div className="profile-edit-section">
-            <h2 className="section-title">Mi Perfil</h2>
-            <ProfileContent />
+          <div className="edicion-buttons">
+            {edicionesActivas.map(edicion => (
+              <button
+                key={edicion.idEdicion}
+                onClick={() => handleEdicionChange(edicion.idEdicion)}
+                className={`edicion-btn ${edicionSeleccionada === edicion.idEdicion ? 'active' : ''}`}
+              >
+                <FaTrophy className="mr-2" />
+                <span>Torneo {edicion.idEdicion}</span>
+                <small className="block text-xs opacity-75">
+                  {new Date(edicion.fecha_inicio).toLocaleDateString('es-ES')} - {new Date(edicion.fecha_fin).toLocaleDateString('es-ES')}
+                </small>
+              </button>
+            ))}
           </div>
         )}
       </div>
+
+      {/* Lista de partidas */}
+      <div className="partidas-section">
+        <h3 className="text-lg font-semibold mb-4">Partidas Creadas</h3>
+        {serverError ? (
+          <div className="no-data">
+            <p>⚠️ Servidor no disponible</p>
+            <p className="text-sm text-gray-500 mt-2">
+              No se puede conectar al servidor backend para cargar las partidas.
+              <br />
+              Por favor, inicia el servidor ejecutando <code>npm start</code> en la carpeta backend.
+            </p>
+          </div>
+        ) : isLoadingPartidas ? (
+          <div className="loading-spinner">
+            <FaSpinner className="spinner-icon" />
+            <span>Cargando partidas...</span>
+          </div>
+        ) : partidas.length === 0 ? (
+          <div className="no-data">
+            <p>No hay partidas registradas</p>
+            <p className="text-sm text-gray-500 mt-2">Crea tu primera partida seleccionando una edición activa</p>
+          </div>
+        ) : (
+          <div className="games-table-container">
+            <table className="games-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Torneo</th>
+                  <th>Juego</th>
+                  <th>Tipo</th>
+                  <th>Jugadores</th>
+                  <th>Fecha</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {partidas.map((partida) => (
+                  <tr key={partida.id}>
+                    <td>
+                      <span className="font-semibold">#{partida.id}</span>
+                    </td>
+                    <td>
+                      <span className="font-semibold text-lg">{partida.idEdicion}</span>
+                    </td>
+                    <td>
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={partida.juego_foto || '/default-game.png'}
+                          alt={partida.juego_nombre}
+                          className="game-image"
+                        />
+                        <span>{partida.juego_nombre}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
+                        partida.tipo === 'PVP' 
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-purple-100 text-purple-800'
+                      }`}>
+                        {partida.tipo}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="jugadores-participantes">
+                        {partida.jugadores && partida.jugadores.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {partida.jugadores.map((jugador, index) => (
+                              <span 
+                                key={jugador} 
+                                className="inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
+                                title={jugador}
+                              >
+                                {jugador}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 text-sm">Sin jugadores</span>
+                        )}
+                      </div>
+                    </td>
+                    <td>{new Date(partida.fecha).toLocaleDateString('es-ES')}</td>
+                    <td>
+                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
+                        partida.tiene_resultado 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {partida.tiene_resultado ? 'Finalizada' : 'Pendiente'}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="flex gap-2 justify-center">
+                        <button
+                          onClick={() => handleEditPartida(partida)}
+                          className="text-blue-600 hover:text-blue-800 transition-colors p-2"
+                          title="Editar/Actualizar partida"
+                        >
+                          <FaPen />
+                        </button>
+                        <button
+                          onClick={() => partida.tiene_resultado ? handleVerResultado(partida) : handleRegistrarResultado(partida)}
+                          className={`transition-colors p-2 ${
+                            partida.tiene_resultado 
+                              ? 'text-purple-600 hover:text-purple-800' 
+                              : 'text-green-600 hover:text-green-800'
+                          }`}
+                          title={partida.tiene_resultado ? 'Ver resultado' : 'Registrar resultado'}
+                        >
+                          {partida.tiene_resultado ? <FaEye /> : <FaTrophy />}
+                        </button>
+                        <button
+                          onClick={() => handleDeletePartida(partida.id)}
+                          className="text-red-600 hover:text-red-800 transition-colors p-2"
+                          title="Eliminar partida"
+                        >
+                          <FaTimes />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const TorneoModal = () => (
+    <div className="game-modal">
+      <div className="game-modal-content">
+        <div className="game-modal-header">
+          <h3 className="game-modal-title">Crear Nueva Edición del Torneo</h3>
+          <button
+            onClick={() => setShowTorneoModal(false)}
+            className="game-modal-close"
+          >
+            <FaTimes />
+          </button>
+        </div>
+
+        <div className="game-form-container">
+          <div className="game-form-group">
+            <label className="game-form-label">Año del Torneo</label>
+            <input
+              type="number"
+              className="game-form-input"
+              placeholder="Ej: 2025"
+              min="2020"
+              max="2030"
+              defaultValue={torneoData.idEdicion}
+              onBlur={(e) => setTorneoData(prev => ({ ...prev, idEdicion: e.target.value }))}
+            />
+          </div>
+
+          <div className="game-form-group">
+            <label className="game-form-label">Fecha de Inicio</label>
+            <input
+              type="date"
+              className="game-form-input"
+              defaultValue={torneoData.fecha_inicio}
+              onBlur={(e) => setTorneoData(prev => ({ ...prev, fecha_inicio: e.target.value }))}
+            />
+          </div>
+
+          <div className="game-form-group">
+            <label className="game-form-label">Fecha de Fin</label>
+            <input
+              type="date"
+              className="game-form-input"
+              defaultValue={torneoData.fecha_fin}
+              onBlur={(e) => setTorneoData(prev => ({ ...prev, fecha_fin: e.target.value }))}
+            />
+          </div>
+
+          <button
+            onClick={handleCreateTorneo}
+            disabled={isSavingTorneo}
+            className="game-form-submit"
+          >
+            {isSavingTorneo ? (
+              <>
+                <FaSpinner className="spinner" />
+                <span>Creando...</span>
+              </>
+            ) : (
+              <>
+                <FaCheck />
+                <span>Crear Torneo</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const EditTorneoModal = () => (
+    <div className="game-modal">
+      <div className="game-modal-content">
+        <div className="game-modal-header">
+          <h3 className="game-modal-title">Editar Torneo {editingTorneo?.idEdicion}</h3>
+          <button
+            onClick={() => {
+              setShowEditTorneoModal(false);
+              setEditingTorneo(null);
+              setTorneoData({ idEdicion: '', fecha_inicio: '', fecha_fin: '' });
+            }}
+            className="game-modal-close"
+          >
+            <FaTimes />
+          </button>
+        </div>
+
+        <div className="game-form-container">
+          <div className="game-form-group">
+            <label className="game-form-label">Año del Torneo</label>
+            <input
+              type="number"
+              className="game-form-input"
+              value={torneoData.idEdicion}
+              disabled
+              style={{ backgroundColor: '#f3f4f6', cursor: 'not-allowed' }}
+            />
+            <small className="text-gray-500">El año no se puede modificar</small>
+          </div>
+
+          <div className="game-form-group">
+            <label className="game-form-label">Fecha de Inicio</label>
+            <input
+              type="date"
+              className="game-form-input"
+              defaultValue={torneoData.fecha_inicio}
+              onBlur={(e) => setTorneoData(prev => ({ ...prev, fecha_inicio: e.target.value }))}
+            />
+          </div>
+
+          <div className="game-form-group">
+            <label className="game-form-label">Fecha de Fin</label>
+            <input
+              type="date"
+              className="game-form-input"
+              defaultValue={torneoData.fecha_fin}
+              onBlur={(e) => setTorneoData(prev => ({ ...prev, fecha_fin: e.target.value }))}
+            />
+          </div>
+
+          <button
+            onClick={handleUpdateTorneo}
+            disabled={isSavingTorneo}
+            className="game-form-submit"
+          >
+            {isSavingTorneo ? (
+              <>
+                <FaSpinner className="spinner" />
+                <span>Actualizando...</span>
+              </>
+            ) : (
+              <>
+                <FaCheck />
+                <span>Actualizar Torneo</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const JuegosModal = () => {
+    const [juegosAsignados, setJuegosAsignados] = useState([]);
+    const [isLoadingAsignados, setIsLoadingAsignados] = useState(false);
+
+    // Cargar juegos asignados cuando se abre el modal
+    useEffect(() => {
+      if (showJuegosModal && edicionActual?.idEdicion) {
+        fetchJuegosAsignadosModal();
+      }
+    }, [showJuegosModal, edicionActual]);
+
+    const fetchJuegosAsignadosModal = async () => {
+      setIsLoadingAsignados(true);
+      try {
+        const response = await axios.get(EDICION_ROUTES.GET_JUEGOS_BY_EDICION(edicionActual.idEdicion), {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (response.data.success) {
+          setJuegosAsignados(response.data.data);
+        }
+      } catch (error) {
+        console.error('Error al obtener juegos asignados:', error);
+        setJuegosAsignados([]);
+      } finally {
+        setIsLoadingAsignados(false);
+      }
+    };
+
+    return (
+      <div className="game-modal">
+        <div className="game-modal-content">
+          <div className="game-modal-header">
+            <h3 className="game-modal-title">
+              {edicionActual?.idEdicion ? 
+                `Gestionar Juegos del Torneo ${edicionActual.idEdicion}` : 
+                'Seleccionar Juegos para el Torneo'
+              }
+            </h3>
+            <button
+              onClick={() => {
+                setShowJuegosModal(false);
+                setEdicionActual(null);
+                setJuegosSeleccionados([]);
+                setJuegosAsignados([]);
+                setIsCreatingNewTorneo(false); // Resetear estado
+              }}
+              className="game-modal-close"
+            >
+              <FaTimes />
+            </button>
+          </div>
+
+          <div className="game-form-container">
+            {/* Sección de juegos ya asignados */}
+            {edicionActual?.idEdicion && (
+              <div className="juegos-asignados-section">
+                <h4 className="text-lg font-semibold mb-3">Juegos Asignados Actualmente</h4>
+                {isLoadingAsignados ? (
+                  <div className="loading-spinner">
+                    <FaSpinner className="spinner-icon" />
+                    <span>Cargando juegos asignados...</span>
+                  </div>
+                ) : juegosAsignados.length === 0 ? (
+                  <div className="no-data">No hay juegos asignados a este torneo</div>
+                ) : (
+                  <div className="juegos-asignados-grid">
+                    {juegosAsignados.map(juego => (
+                      <div key={juego.id} className="juego-asignado-item">
+                        <img
+                          src={juego.foto || '/default-game.png'}
+                          alt={juego.nombre}
+                          className="juego-thumbnail"
+                        />
+                        <span className="juego-nombre">{juego.nombre}</span>
+                        <button
+                          onClick={() => handleQuitarJuego(juego.id)}
+                          className="quitar-juego-btn"
+                          title="Quitar juego del torneo"
+                        >
+                          <FaTimes />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Sección para agregar nuevos juegos */}
+            <div className="juegos-seleccion">
+              <h4 className="text-lg font-semibold mb-3">
+                {edicionActual?.idEdicion ? 'Agregar Nuevos Juegos' : 'Seleccionar Juegos'}
+              </h4>
+              <p className="text-gray-600 mb-4">
+                Selecciona los juegos que se usarán en esta edición:
+              </p>
+              {isLoadingJuegos ? (
+                <div className="loading-spinner">
+                  <FaSpinner className="spinner-icon" />
+                  <span>Cargando juegos...</span>
+                </div>
+              ) : juegos.length === 0 ? (
+                <div className="no-data">No hay juegos disponibles</div>
+              ) : (
+                <div className="juegos-grid">
+                  {juegos.map(juego => (
+                    <div key={juego.id} className="juego-checkbox">
+                      <input
+                        type="checkbox"
+                        id={`juego-${juego.id}`}
+                        checked={juegosSeleccionados.includes(juego.id)}
+                        onChange={() => handleJuegoToggle(juego.id)}
+                        className="checkbox-input"
+                      />
+                      <label htmlFor={`juego-${juego.id}`} className="checkbox-label">
+                        <img
+                          src={juego.foto || '/default-game.png'}
+                          alt={juego.nombre}
+                          className="juego-thumbnail"
+                        />
+                        <span>{juego.nombre}</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={handleAsignarJuegos}
+                disabled={isAsignandoJuegos || juegos.length === 0}
+                className="game-form-submit flex-1"
+              >
+                {isAsignandoJuegos ? (
+                  <>
+                    <FaSpinner className="spinner" />
+                    <span>Asignando...</span>
+                  </>
+                ) : (
+                  <>
+                    <FaCheck />
+                    <span>Asignar Juegos</span>
+                  </>
+                )}
+              </button>
+              
+              {!edicionActual?.idEdicion && (
+                <button
+                  onClick={() => {
+                    setShowJuegosModal(false);
+                    setShowJugadoresModal(true);
+                  }}
+                  disabled={juegosSeleccionados.length === 0}
+                  className="game-form-submit flex-1"
+                  style={{ backgroundColor: '#10b981' }}
+                >
+                  <FaUsers />
+                  <span>Siguiente: Jugadores</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const JugadoresModal = () => {
+    const [jugadoresAsignados, setJugadoresAsignados] = useState([]);
+    const [isLoadingAsignados, setIsLoadingAsignados] = useState(false);
+
+    // Cargar jugadores asignados cuando se abre el modal
+    useEffect(() => {
+      if (showJugadoresModal && edicionActual?.idEdicion) {
+        fetchJugadoresAsignadosModal();
+      }
+    }, [showJugadoresModal, edicionActual]);
+
+    const fetchJugadoresAsignadosModal = async () => {
+      setIsLoadingAsignados(true);
+      try {
+        const response = await axios.get(EDICION_ROUTES.GET_JUGADORES_BY_EDICION(edicionActual.idEdicion), {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (response.data.success) {
+          setJugadoresAsignados(response.data.data);
+        }
+      } catch (error) {
+        console.error('Error al obtener jugadores asignados:', error);
+        setJugadoresAsignados([]);
+      } finally {
+        setIsLoadingAsignados(false);
+      }
+    };
+
+    return (
+      <div className="game-modal">
+        <div className="game-modal-content">
+          <div className="game-modal-header">
+            <h3 className="game-modal-title">
+              {edicionActual?.idEdicion ? 
+                `Gestionar Jugadores del Torneo ${edicionActual.idEdicion}` : 
+                'Asignar Jugadores al Torneo'
+              }
+            </h3>
+            <button
+              onClick={() => {
+                setShowJugadoresModal(false);
+                setEdicionActual(null);
+                setJugadoresSeleccionados([]);
+                setJugadoresAsignados([]);
+                setIsCreatingNewTorneo(false); // Resetear estado
+              }}
+              className="game-modal-close"
+            >
+              <FaTimes />
+            </button>
+          </div>
+
+          <div className="game-form-container">
+            {/* Sección de jugadores ya asignados */}
+            {edicionActual?.idEdicion && (
+              <div className="jugadores-asignados-section">
+                <h4 className="text-lg font-semibold mb-3">Jugadores Asignados Actualmente</h4>
+                {isLoadingAsignados ? (
+                  <div className="loading-spinner">
+                    <FaSpinner className="spinner-icon" />
+                    <span>Cargando jugadores asignados...</span>
+                  </div>
+                ) : jugadoresAsignados.length === 0 ? (
+                  <div className="no-data">No hay jugadores asignados a este torneo</div>
+                ) : (
+                  <div className="jugadores-asignados-grid">
+                    {jugadoresAsignados.map(jugador => (
+                      <div key={jugador.nickname} className="jugador-asignado-item">
+                        <img
+                          src={jugador.foto || '/default-profile.png'}
+                          alt={jugador.nickname}
+                          className="jugador-thumbnail"
+                        />
+                        <div className="jugador-info">
+                          <span className="jugador-nickname">{jugador.nickname}</span>
+                          <span className="jugador-email">{jugador.email}</span>
+                        </div>
+                        <button
+                          onClick={() => handleQuitarJugador(jugador.nickname)}
+                          className="quitar-jugador-btn"
+                          title="Quitar jugador del torneo"
+                        >
+                          <FaTimes />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Sección para agregar nuevos jugadores */}
+            <div className="jugadores-seleccion">
+              <h4 className="text-lg font-semibold mb-3">
+                {edicionActual?.idEdicion ? 'Agregar Nuevos Jugadores' : 'Seleccionar Jugadores'}
+              </h4>
+              <p className="text-gray-600 mb-4">
+                Selecciona los jugadores que participarán (solo usuarios con rol de jugador):
+              </p>
+              {jugadoresDisponibles.length === 0 ? (
+                <div className="loading-spinner">
+                  <FaSpinner className="spinner-icon" />
+                  <span>Cargando jugadores...</span>
+                </div>
+              ) : (
+                <div className="jugadores-grid">
+                  {jugadoresDisponibles.map(jugador => (
+                    <div key={jugador.nickname} className="jugador-checkbox">
+                      <input
+                        type="checkbox"
+                        id={`jugador-${jugador.nickname}`}
+                        checked={jugadoresSeleccionados.includes(jugador.nickname)}
+                        onChange={() => handleJugadorToggle(jugador.nickname)}
+                        className="checkbox-input"
+                      />
+                      <label htmlFor={`jugador-${jugador.nickname}`} className="checkbox-label">
+                        <img
+                          src={jugador.foto || '/default-profile.png'}
+                          alt={jugador.nickname}
+                          className="jugador-thumbnail"
+                        />
+                        <div className="jugador-info">
+                          <span className="jugador-nickname">{jugador.nickname}</span>
+                          <span className="jugador-email">{jugador.email}</span>
+                        </div>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={handleAsignarJugadores}
+              disabled={isAsignandoJugadores || jugadoresDisponibles.length === 0}
+              className="game-form-submit"
+            >
+              {isAsignandoJugadores ? (
+                <>
+                  <FaSpinner className="spinner" />
+                  <span>Asignando...</span>
+                </>
+              ) : (
+                <>
+                  <FaCheck />
+                  <span>
+                    {edicionActual?.idEdicion ? 'Actualizar Jugadores' : 'Asignar Jugadores'}
+                  </span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const fetchJuegosAsignados = async (idEdicion) => {
+    try {
+      const response = await axios.get(EDICION_ROUTES.GET_JUEGOS_BY_EDICION(idEdicion), {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        const juegosIds = response.data.data.map(juego => juego.id);
+        setJuegosSeleccionados(juegosIds);
+      }
+    } catch (error) {
+      console.error('Error al obtener juegos asignados:', error);
+      // Si no hay juegos asignados, simplemente inicializar como array vacío
+      setJuegosSeleccionados([]);
+    }
+  };
+
+  const fetchJugadoresAsignados = async (idEdicion) => {
+    try {
+      const response = await axios.get(EDICION_ROUTES.GET_JUGADORES_BY_EDICION(idEdicion), {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        const jugadoresNicknames = response.data.data.map(jugador => jugador.nickname);
+        setJugadoresSeleccionados(jugadoresNicknames);
+      }
+    } catch (error) {
+      console.error('Error al obtener jugadores asignados:', error);
+      // Si no hay jugadores asignados, simplemente inicializar como array vacío
+      setJugadoresSeleccionados([]);
+    }
+  };
+
+  const handleQuitarJuego = async (juegoId) => {
+    if (!edicionActual?.idEdicion) return;
+
+    try {
+      // Obtener los juegos actualmente asignados
+      const response = await axios.get(EDICION_ROUTES.GET_JUEGOS_BY_EDICION(edicionActual.idEdicion), {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        // Filtrar el juego que se quiere quitar
+        const juegosRestantes = response.data.data
+          .filter(juego => juego.id !== juegoId)
+          .map(juego => juego.id);
+        
+        // Reasignar los juegos restantes
+        const reasignarResponse = await axios.post(
+          EDICION_ROUTES.ASIGNAR_JUEGOS(edicionActual.idEdicion),
+          { juegos: juegosRestantes },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (reasignarResponse.data.success) {
+          toast.success('Juego removido del torneo');
+          // Actualizar la lista de juegos seleccionados
+          setJuegosSeleccionados(prev => prev.filter(id => id !== juegoId));
+          // Actualizar la lista de torneos
+          await fetchTorneos();
+        }
+      }
+    } catch (error) {
+      console.error('Error al quitar juego:', error);
+      toast.error('Error al quitar el juego del torneo');
+    }
+  };
+
+  const handleQuitarJugador = async (nickname) => {
+    if (!edicionActual?.idEdicion) return;
+
+    try {
+      // Obtener los jugadores actualmente asignados
+      const response = await axios.get(EDICION_ROUTES.GET_JUGADORES_BY_EDICION(edicionActual.idEdicion), {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        // Filtrar el jugador que se quiere quitar
+        const jugadoresRestantes = response.data.data
+          .filter(jugador => jugador.nickname !== nickname)
+          .map(jugador => jugador.nickname);
+        
+        // Reasignar los jugadores restantes
+        const reasignarResponse = await axios.post(
+          EDICION_ROUTES.ASIGNAR_JUGADORES(edicionActual.idEdicion),
+          { jugadores: jugadoresRestantes },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (reasignarResponse.data.success) {
+          toast.success('Jugador removido del torneo');
+          // Actualizar la lista de jugadores seleccionados
+          setJugadoresSeleccionados(prev => prev.filter(nick => nick !== nickname));
+          // Actualizar la lista de torneos
+          await fetchTorneos();
+        }
+      }
+    } catch (error) {
+      console.error('Error al quitar jugador:', error);
+      toast.error('Error al quitar el jugador del torneo');
+    }
+  };
+
+  // Funciones para el módulo de puntos
+  const fetchPuntosExistentes = async () => {
+    setIsLoadingPuntos(true);
+    try {
+      const response = await axios.get(PUNTOS_ROUTES.GET_ALL, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        setPuntosExistentes(response.data.data);
+        // Cargar los puntos existentes en el formulario
+        cargarPuntosExistentes(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error al obtener puntos:', error);
+      // Si no hay puntos, usar valores por defecto
+    } finally {
+      setIsLoadingPuntos(false);
+    }
+  };
+
+  const cargarPuntosExistentes = (puntos) => {
+    const puntosPVP = puntos.filter(p => p.tipo === 'PVP');
+    const puntosTodosContraTodos = puntos.filter(p => p.tipo === 'TodosContraTodos');
+
+    // Cargar puntos PVP
+    if (puntosPVP.length > 0) {
+      const pvpData = {};
+      puntosPVP.forEach(p => {
+        pvpData[`posicion${p.posicion}`] = p.puntos;
+      });
+      setPuntosData(prev => ({
+        ...prev,
+        puntosPVP: {
+          posicion1: pvpData.posicion1 || 10,
+          posicion2: pvpData.posicion2 || 5
+        }
+      }));
+    }
+
+    // Cargar puntos TodosContraTodos
+    if (puntosTodosContraTodos.length > 0) {
+      const tctData = Array.from({ length: 10 }, (_, i) => ({
+        posicion: i + 1,
+        puntos: puntosTodosContraTodos.find(p => p.posicion === i + 1)?.puntos || 0
+      }));
+      setPuntosData(prev => ({
+        ...prev,
+        puntosTodosContraTodos: tctData
+      }));
+    }
+  };
+
+  const handleSavePuntos = async () => {
+    setIsSavingPuntos(true);
+    try {
+      const { tipoPartida, puntosPVP, puntosTodosContraTodos } = puntosData;
+      
+      let puntosToSave = [];
+      
+      if (tipoPartida === 'PVP') {
+        puntosToSave = [
+          { tipo: 'PVP', posicion: 1, puntos: puntosPVP.posicion1 },
+          { tipo: 'PVP', posicion: 2, puntos: puntosPVP.posicion2 }
+        ];
+      } else {
+        puntosToSave = puntosTodosContraTodos.map(p => ({
+          tipo: 'TodosContraTodos',
+          posicion: p.posicion,
+          puntos: p.puntos
+        }));
+      }
+
+      const response = await axios.post(PUNTOS_ROUTES.CREATE_OR_UPDATE, {
+        puntos: puntosToSave
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.data.success) {
+        toast.success(`Puntos guardados exitosamente para ${tipoPartida}`);
+        await fetchPuntosExistentes(); // Recargar datos
+      }
+    } catch (error) {
+      console.error('Error al guardar puntos:', error);
+      toast.error(error.response?.data?.message || 'Error al guardar los puntos');
+    } finally {
+      setIsSavingPuntos(false);
+    }
+  };
+
+  const handlePuntosTodosContraTodosChange = (posicion, puntos) => {
+    setPuntosData(prev => ({
+      ...prev,
+      puntosTodosContraTodos: prev.puntosTodosContraTodos.map(p => 
+        p.posicion === posicion ? { ...p, puntos: parseInt(puntos) || 0 } : p
+      )
+    }));
+  };
+
+  const handleAddPosicion = () => {
+    setPuntosData(prev => ({
+      ...prev,
+      puntosTodosContraTodos: [
+        ...prev.puntosTodosContraTodos,
+        {
+          posicion: prev.puntosTodosContraTodos.length + 1,
+          puntos: 0
+        }
+      ]
+    }));
+  };
+
+  const handleRemovePosicion = (posicion) => {
+    if (posicion <= 1) {
+      toast.error('No se puede eliminar la posición 1');
+      return;
+    }
+    
+    setPuntosData(prev => ({
+      ...prev,
+      puntosTodosContraTodos: prev.puntosTodosContraTodos
+        .filter(p => p.posicion !== posicion)
+        .map((p, index) => ({
+          ...p,
+          posicion: index + 1
+        }))
+    }));
+  };
+
+  // Funciones para el módulo de partidas
+  const fetchEdicionesActivas = async () => {
+    try {
+      const response = await axios.get(PARTIDAS_ROUTES.GET_EDICIONES_ACTIVAS, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        setEdicionesActivas(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error al obtener ediciones activas:', error);
+      toast.error('Error al cargar las ediciones activas');
+    }
+  };
+
+  const fetchJugadoresByEdicion = async (idEdicion) => {
+    setIsLoadingJugadores(true);
+    try {
+      const response = await axios.get(PARTIDAS_ROUTES.GET_JUGADORES_BY_EDICION(idEdicion), {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        setJugadoresEdicion(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error al obtener jugadores:', error);
+      toast.error('Error al cargar los jugadores');
+    } finally {
+      setIsLoadingJugadores(false);
+    }
+  };
+
+  const fetchPartidas = async () => {
+    setIsLoadingPartidas(true);
+    try {
+      setServerError(false);
+      const response = await axios.get(PARTIDAS_ROUTES.GET_ALL, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        setPartidas(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error al obtener partidas:', error);
+      if (error.code === 'ERR_NETWORK' || error.message.includes('Network Error')) {
+        setServerError(true);
+        toast.error('No se puede conectar al servidor. Verifica que el servidor backend esté corriendo.');
+      } else {
+        toast.error('Error al cargar las partidas');
+      }
+    } finally {
+      setIsLoadingPartidas(false);
+    }
+  };
+
+  const handleEdicionChange = (idEdicion) => {
+    console.log('Cambiando edición a:', idEdicion);
+    setEdicionSeleccionada(idEdicion);
+    if (idEdicion) {
+      fetchJugadoresByEdicion(idEdicion);
+      fetchJuegosByEdicion(idEdicion);
+    } else {
+      setJugadoresEdicion([]);
+      setJuegosEdicion([]);
+    }
+  };
+
+  const handleJugadorPartidaToggle = (nickname) => {
+    setPartidaData(prev => ({
+      ...prev,
+      jugadores: prev.jugadores.includes(nickname)
+        ? prev.jugadores.filter(nick => nick !== nickname)
+        : [...prev.jugadores, nickname]
+    }));
+  };
+
+  const handleCrearPartida = async () => {
+    const { id, tipo, fecha, jugadores, juego_id, fase, video_url } = partidaData;
+    
+    if (!edicionSeleccionada) {
+      toast.error('Debe seleccionar una edición');
+      return;
+    }
+    
+    if (!fecha) {
+      toast.error('Debe seleccionar una fecha');
+      return;
+    }
+    
+    if (!juego_id) {
+      toast.error('Debe seleccionar un juego');
+      return;
+    }
+    
+    if (jugadores.length === 0) {
+      toast.error('Debe seleccionar al menos un jugador');
+      return;
+    }
+    
+    if (tipo === 'PVP' && jugadores.length !== 2) {
+      toast.error('Para PVP debe seleccionar exactamente 2 jugadores');
+      return;
+    }
+    
+    if (tipo === 'TodosContraTodos' && jugadores.length < 3) {
+      toast.error('Para Todos Contra Todos debe seleccionar al menos 3 jugadores');
+      return;
+    }
+    
+    setIsSavingPartida(true);
+    try {
+      const partidaDataToSend = {
+        torneo_id: edicionSeleccionada,
+        juego_id: juego_id,
+        fecha,
+        tipo,
+        jugadores,
+        fase: fase || 'Grupos',
+        video_url: video_url || ''
+      };
+
+      let response;
+      if (id) {
+        // Actualizar partida existente
+        response = await axios.put(PARTIDAS_ROUTES.UPDATE(id), partidaDataToSend, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        toast.success('Partida actualizada exitosamente');
+      } else {
+        // Crear nueva partida
+        response = await axios.post(PARTIDAS_ROUTES.CREATE, partidaDataToSend, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        toast.success('Partida creada exitosamente');
+      }
+      
+      if (response.data.success) {
+        setShowCrearPartidaModal(false);
+        setPartidaData({ tipo: 'PVP', fecha: '', jugadores: [], juego_id: null, fase: 'Grupos', video_url: '' });
+        await fetchPartidas();
+      }
+    } catch (error) {
+      console.error('Error al guardar partida:', error);
+      toast.error(error.response?.data?.message || 'Error al guardar la partida');
+    } finally {
+      setIsSavingPartida(false);
+    }
+  };
+
+  const handleVerPerfil = async (nickname) => {
+    try {
+      const response = await axios.get(PARTIDAS_ROUTES.GET_PERFIL_JUGADOR(nickname), {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        setJugadorSeleccionado(response.data.data);
+        setShowPerfilModal(true);
+      }
+    } catch (error) {
+      console.error('Error al obtener perfil:', error);
+      toast.error('Error al cargar el perfil del jugador');
+    }
+  };
+
+  const handleDeletePartida = async (id) => {
+    if (!window.confirm('¿Estás seguro de que quieres eliminar esta partida?')) {
+      return;
+    }
+    
+    try {
+      const response = await axios.delete(PARTIDAS_ROUTES.DELETE(id), {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        toast.success('Partida eliminada exitosamente');
+        await fetchPartidas();
+      }
+    } catch (error) {
+      console.error('Error al eliminar partida:', error);
+      toast.error('Error al eliminar la partida');
+    }
+  };
+
+  const handleLimpiarTablaGeneral = async () => {
+    if (!window.confirm('¿Estás seguro de que quieres limpiar la tabla general? Esta acción eliminará todos los puntos acumulados de todos los jugadores y no se puede deshacer.')) {
+      return;
+    }
+    
+    setIsLimpiandoTabla(true);
+    try {
+      const response = await axios.delete(PARTIDAS_ROUTES.LIMPIAR_TABLA_GENERAL, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        toast.success(`Tabla general limpiada exitosamente. Se eliminaron ${response.data.data.registrosEliminados} registros.`);
+      }
+    } catch (error) {
+      console.error('Error al limpiar tabla general:', error);
+      toast.error(error.response?.data?.message || 'Error al limpiar la tabla general');
+    } finally {
+      setIsLimpiandoTabla(false);
+    }
+  };
+
+  const PuntosModal = () => (
+    <div className="modal-overlay" onClick={() => setShowPuntosModal(false)}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="modal-title">Configuración de Puntos</h2>
+          <button
+            onClick={() => setShowPuntosModal(false)}
+            className="modal-close"
+          >
+            <FaTimes />
+          </button>
+        </div>
+        <div className="modal-body">
+          <p className="text-gray-600 mb-4">
+            Los puntos se han guardado exitosamente para el tipo de partida: <strong>{puntosData.tipoPartida}</strong>
+          </p>
+          <div className="puntos-preview-modal">
+            {puntosData.tipoPartida === 'PVP' ? (
+              <div className="puntos-pvp-preview">
+                <div className="punto-preview-item">
+                  <span className="punto-preview-posicion">🥇 Posición 1:</span>
+                  <span className="punto-preview-valor">{puntosData.puntosPVP.posicion1} puntos</span>
+                </div>
+                <div className="punto-preview-item">
+                  <span className="punto-preview-posicion">🥈 Posición 2:</span>
+                  <span className="punto-preview-valor">{puntosData.puntosPVP.posicion2} puntos</span>
+                </div>
+              </div>
+            ) : (
+              <div className="puntos-tct-preview">
+                {puntosData.puntosTodosContraTodos.map(punto => (
+                  <div key={punto.posicion} className="punto-preview-item">
+                    <span className="punto-preview-posicion">
+                      {punto.posicion === 1 && '🥇'}
+                      {punto.posicion === 2 && '🥈'}
+                      {punto.posicion === 3 && '🥉'}
+                      {punto.posicion > 3 && `#${punto.posicion}`}
+                      Posición {punto.posicion}:
+                    </span>
+                    <span className="punto-preview-valor">{punto.puntos} puntos</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button
+            onClick={() => setShowPuntosModal(false)}
+            className="modal-button primary"
+          >
+            Entendido
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const CrearPartidaModal = () => (
+    <div className="game-modal">
+      <div className="game-modal-content" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
+        <div className="game-modal-header">
+          <h3 className="game-modal-title">{partidaData.id ? 'Editar Partida' : 'Crear Nueva Partida'}</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            {partidaData.id && (
+              <button
+                onClick={() => setEditandoPartida(prev => !prev)}
+                className="game-modal-edit"
+                title="Editar datos de la partida"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#3b82f6', fontSize: '1.2rem' }}
+              >
+                <FaPen />
+              </button>
+            )}
+            <button
+              onClick={() => setShowCrearPartidaModal(false)}
+              className="game-modal-close"
+            >
+              <FaTimes />
+            </button>
+          </div>
+        </div>
+        <div className="game-form-container">
+          {/* Información de la edición seleccionada */}
+          <div className="game-form-group">
+            <label className="game-form-label">Torneo</label>
+            <div className="edicion-card" style={{display:'flex',alignItems:'center',gap:'1rem'}}>
+              <FaTrophy className="text-yellow-500 text-2xl" />
+              <div>
+                <span className="font-semibold text-lg">Torneo {edicionSeleccionada}</span>
+                <p className="text-sm text-gray-600">
+                  Última edición creada
+                  {edicionesActivas.find(e => e.idEdicion === edicionSeleccionada)?.fecha_inicio && 
+                   edicionesActivas.find(e => e.idEdicion === edicionSeleccionada)?.fecha_fin &&
+                   ` • ${new Date(edicionesActivas.find(e => e.idEdicion === edicionSeleccionada).fecha_inicio).toLocaleDateString('es-ES')} - ${new Date(edicionesActivas.find(e => e.idEdicion === edicionSeleccionada).fecha_fin).toLocaleDateString('es-ES')}`
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Configuración de la partida */}
+          <div className="game-form-group">
+            <label className="game-form-label">Tipo de Partida</label>
+            <div className="tipo-partida-buttons">
+              <button
+                onClick={() => setPartidaData(prev => ({ ...prev, tipo: 'PVP' }))}
+                className={`tipo-partida-btn ${partidaData.tipo === 'PVP' ? 'active' : ''}`}
+                type="button"
+              >
+                <FaGamepad className="mr-2" />
+                PVP (1 vs 1)
+              </button>
+              <button
+                onClick={() => setPartidaData(prev => ({ ...prev, tipo: 'TodosContraTodos' }))}
+                className={`tipo-partida-btn ${partidaData.tipo === 'TodosContraTodos' ? 'active' : ''}`}
+                type="button"
+              >
+                <FaUsers className="mr-2" />
+                Todos Contra Todos
+              </button>
+            </div>
+          </div>
+
+          <div className="game-form-group">
+            <label className="game-form-label">Fecha y Hora de la Partida</label>
+            <input
+              type="datetime-local"
+              value={partidaData.fecha}
+              onChange={(e) => setPartidaData(prev => ({ ...prev, fecha: e.target.value }))}
+              className="game-form-input"
+              min={new Date().toISOString().slice(0, 16)}
+            />
+            <small className="text-gray-500">Selecciona fecha y hora para la partida</small>
+          </div>
+
+          <div className="game-form-group">
+            <label className="game-form-label">Juego</label>
+            {console.log('Renderizando select de juegos. Estado:', { isLoadingJuegosEdicion, juegosEdicion: juegosEdicion.length, edicionSeleccionada })}
+            {isLoadingJuegosEdicion ? (
+              <div className="loading-spinner">
+                <FaSpinner className="spinner-icon" />
+                <span>Cargando juegos...</span>
+              </div>
+            ) : juegosEdicion.length === 0 ? (
+              <div className="no-data">
+                <p>❌ No hay juegos asignados a esta edición</p>
+                <p className="text-sm text-gray-500 mt-2">Primero debes asignar juegos al torneo desde la sección "Torneos"</p>
+              </div>
+            ) : (
+              <select
+                value={partidaData.juego_id || ''}
+                onChange={(e) => setPartidaData(prev => ({ ...prev, juego_id: e.target.value }))}
+                className="game-form-select"
+              >
+                <option value="">Selecciona un juego</option>
+                {juegosEdicion.map((juego) => (
+                  <option key={juego.id} value={juego.id}>
+                    {juego.nombre}
+                  </option>
+                ))}
+              </select>
+            )}
+            <small className="text-gray-500">Selecciona el juego para la partida</small>
+          </div>
+
+          {/* Selección de jugadores */}
+          <div className="game-form-group">
+            <label className="game-form-label">Seleccionar Jugadores</label>
+            {isLoadingJugadores ? (
+              <div className="loading-spinner">
+                <FaSpinner className="spinner-icon" />
+                <span>Cargando jugadores...</span>
+              </div>
+            ) : jugadoresEdicion.length === 0 ? (
+              <div className="no-data">
+                <p>❌ No hay jugadores inscritos en esta edición</p>
+                <p className="text-sm text-gray-500 mt-2">Primero debes asignar jugadores al torneo desde la sección "Torneos"</p>
+              </div>
+            ) : (
+              <>
+                <div className="info-card" style={{marginBottom:'1rem'}}>
+                  <div className="info-item">
+                    <span className="info-label">Jugadores disponibles:</span>
+                    <span className="info-value">{jugadoresEdicion.length}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Jugadores seleccionados:</span>
+                    <span className="info-value">{partidaData.jugadores.length}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Requeridos para {partidaData.tipo}:</span>
+                    <span className="info-value">
+                      {partidaData.tipo === 'PVP' ? '2 jugadores' : 'Mínimo 3 jugadores'}
+                    </span>
+                  </div>
+                </div>
+                <div className="jugadores-grid">
+                  {jugadoresEdicion.map((jugador) => (
+                    <div
+                      key={jugador.nickname}
+                      className={`jugador-card ${partidaData.jugadores.includes(jugador.nickname) ? 'selected' : ''}`}
+                      onClick={() => handleJugadorPartidaToggle(jugador.nickname)}
+                    >
+                      <div className="jugador-avatar-container">
+                        <img
+                          src={jugador.foto || '/default-avatar.png'}
+                          alt={jugador.nickname}
+                          className="jugador-avatar"
+                        />
+                        <div className="jugador-selection-indicator">
+                          {partidaData.jugadores.includes(jugador.nickname) && (
+                            <FaCheck className="check-icon" />
+                          )}
+                        </div>
+                      </div>
+                      <div className="jugador-info">
+                        <span className="jugador-nickname">{jugador.nickname}</span>
+                        {jugador.descripcion && (
+                          <span className="jugador-descripcion">{jugador.descripcion}</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {partidaData.jugadores.length > 0 && (
+                  <div className="jugadores-seleccionados-list" style={{marginTop:'1rem'}}>
+                    {partidaData.jugadores.map((nickname) => {
+                      const jugador = jugadoresEdicion.find(j => j.nickname === nickname);
+                      return (
+                        <div key={nickname} className="jugador-seleccionado-item">
+                          <img
+                            src={jugador?.foto || '/default-avatar.png'}
+                            alt={nickname}
+                            className="jugador-seleccionado-avatar"
+                          />
+                          <span className="jugador-seleccionado-nickname">{nickname}</span>
+                          <button
+                            onClick={() => handleJugadorPartidaToggle(nickname)}
+                            className="remove-jugador-btn"
+                            title="Quitar jugador"
+                          >
+                            <FaTimes />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <div className="validaciones mt-4">
+                  {partidaData.tipo === 'PVP' && (
+                    <div className={`validacion ${partidaData.jugadores.length === 2 ? 'valid' : 'invalid'}`}> 
+                      <FaCheckCircle className={partidaData.jugadores.length === 2 ? 'text-green-500' : 'text-red-500'} />
+                      <span>PVP requiere exactamente 2 jugadores</span>
+                    </div>
+                  )}
+                  {partidaData.tipo === 'TodosContraTodos' && (
+                    <div className={`validacion ${partidaData.jugadores.length >= 3 ? 'valid' : 'invalid'}`}>
+                      <FaCheckCircle className={partidaData.jugadores.length >= 3 ? 'text-green-500' : 'text-red-500'} />
+                      <span>Todos Contra Todos requiere al menos 3 jugadores</span>
+                    </div>
+                  )}
+                  {!partidaData.fecha && (
+                    <div className="validacion invalid">
+                      <FaTimes className="text-red-500" />
+                      <span>Debes seleccionar una fecha y hora para la partida</span>
+                    </div>
+                  )}
+                  {!partidaData.juego_id && (
+                    <div className="validacion invalid">
+                      <FaTimes className="text-red-500" />
+                      <span>Debes seleccionar un juego para la partida</span>
+                    </div>
+                  )}
+                  {partidaData.juego_id && juegosEdicion.length === 0 && (
+                    <div className="validacion invalid">
+                      <FaTimes className="text-red-500" />
+                      <span>No hay juegos disponibles en esta edición</span>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+          <div className="game-form-group">
+            <label className="game-form-label">Fase</label>
+            <select
+              value={partidaData.fase}
+              onChange={e => setPartidaData(prev => ({ ...prev, fase: e.target.value }))}
+              className="game-form-select"
+            >
+              <option value="Grupos">Grupos</option>
+              <option value="Cuartos">Cuartos</option>
+              <option value="Semifinal">Semifinal</option>
+              <option value="Final">Final</option>
+            </select>
+            <small className="text-gray-500">Selecciona la fase de la partida</small>
+          </div>
+
+          <div className="game-form-group">
+            <label className="game-form-label">Video (opcional)</label>
+            <input
+              type="text"
+              value={partidaData.video_url}
+              onChange={e => setPartidaData(prev => ({ ...prev, video_url: e.target.value }))}
+              className="game-form-input"
+              placeholder="URL del video de la partida (opcional)"
+            />
+            <small className="text-gray-500">Puedes pegar un enlace de YouTube, Twitch, etc.</small>
+          </div>
+
+          <div className="game-form-actions" style={{display:'flex',gap:'1rem'}}>
+            <button
+              onClick={() => setShowCrearPartidaModal(false)}
+              className="game-form-cancel"
+              type="button"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleCrearPartida}
+              disabled={isSavingPartida || 
+                !partidaData.fecha || 
+                !partidaData.juego_id ||
+                juegosEdicion.length === 0 ||
+                partidaData.jugadores.length === 0 ||
+                (partidaData.tipo === 'PVP' && partidaData.jugadores.length !== 2) ||
+                (partidaData.tipo === 'TodosContraTodos' && partidaData.jugadores.length < 3)
+              }
+              className="game-form-submit"
+              type="button"
+            >
+              {isSavingPartida ? (
+                <>
+                  <FaSpinner className="spinner" />
+                  <span>{partidaData.id ? 'Guardando...' : 'Creando...'}</span>
+                </>
+              ) : (
+                <>
+                  <FaGamepad />
+                  <span>{partidaData.id ? 'Guardar Cambios' : 'Crear Partida'}</span>
+                </>
+              )}
+            </button>
+            {/* Botón de actualizar datos eliminado */}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const PerfilJugadorModal = () => (
+    <div className="modal-overlay" onClick={() => setShowPerfilModal(false)}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="modal-title">Perfil del Jugador</h2>
+          <button
+            onClick={() => setShowPerfilModal(false)}
+            className="modal-close"
+          >
+            <FaTimes />
+          </button>
+        </div>
+        <div className="modal-body">
+          {jugadorSeleccionado && (
+            <div className="perfil-jugador-content">
+              <div className="perfil-jugador-avatar">
+                <img
+                  src={jugadorSeleccionado.foto || '/default-avatar.png'}
+                  alt={jugadorSeleccionado.nickname}
+                  className="jugador-perfil-foto"
+                />
+              </div>
+              <div className="perfil-jugador-info">
+                <h3 className="perfil-jugador-nickname">{jugadorSeleccionado.nickname}</h3>
+                <div className="perfil-jugador-descripcion">
+                  <p>{jugadorSeleccionado.descripcion || 'Sin descripción disponible'}</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="modal-footer">
+          <button
+            onClick={() => setShowPerfilModal(false)}
+            className="modal-button primary"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const fetchUltimaEdicion = async () => {
+    try {
+      setServerError(false);
+      const response = await axios.get(PARTIDAS_ROUTES.GET_EDICIONES_ACTIVAS, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        setEdicionesActivas(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error al obtener la última edición:', error);
+      if (error.code === 'ERR_NETWORK' || error.message.includes('Network Error')) {
+        setServerError(true);
+        toast.error('No se puede conectar al servidor. Verifica que el servidor backend esté corriendo.');
+      } else {
+        toast.error('Error al cargar la última edición');
+      }
+    }
+  };
+
+  const fetchJuegosByEdicion = async (idEdicion) => {
+    setIsLoadingJuegosEdicion(true);
+    try {
+      console.log('Cargando juegos para edición:', idEdicion);
+      const response = await axios.get(EDICION_ROUTES.GET_JUEGOS_BY_EDICION(idEdicion), {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      console.log('Respuesta de juegos:', response.data);
+      if (response.data.success) {
+        setJuegosEdicion(response.data.data);
+        console.log('Juegos cargados:', response.data.data);
+      }
+    } catch (error) {
+      console.error('Error al obtener juegos de la edición:', error);
+      toast.error('Error al cargar los juegos de la edición');
+    } finally {
+      setIsLoadingJuegosEdicion(false);
+    }
+  };
+
+  const handleEditPartida = (partida) => {
+    // Configurar la edición seleccionada
+    setEdicionSeleccionada(partida.torneo_id);
+    
+    // Cargar los jugadores de la edición
+    fetchJugadoresByEdicion(partida.torneo_id);
+    
+    // Cargar los juegos de la edición
+    fetchJuegosByEdicion(partida.torneo_id);
+    
+    // Configurar los datos de la partida
+    setPartidaData({
+      id: partida.id,
+      tipo: partida.tipo,
+      fecha: partida.fecha ? partida.fecha.slice(0, 16) : '',
+      jugadores: partida.jugadores || [], // Ahora sí tenemos los jugadores desde el backend
+      juego_id: partida.juego_id,
+      fase: partida.fase || 'Grupos',
+      video_url: partida.video_url || ''
+    });
+    
+    setShowCrearPartidaModal(true);
+  };
+
+  const handleRegistrarResultado = async (partida) => {
+    setPartidaResultado(partida);
+    
+    try {
+      // Cargar los puntos configurados para el tipo de partida
+      const response = await axios.get(PUNTOS_ROUTES.GET_BY_TIPO(partida.tipo), {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      let puntosConfigurados = [];
+      if (response.data.success) {
+        puntosConfigurados = response.data.data;
+      }
+      
+      // Inicializar los datos de resultados con los jugadores de la partida
+      const resultadosIniciales = partida.jugadores.map((jugador, index) => {
+        // Buscar los puntos correspondientes a la posición
+        const puntosParaPosicion = puntosConfigurados.find(p => p.posicion === index + 1);
+        const puntos = puntosParaPosicion ? puntosParaPosicion.puntos : 0;
+        
+        return {
+          jugador_nickname: jugador,
+          posicion: index + 1,
+          gano: false,
+          puntos: puntos
+        };
+      });
+      
+      setResultadosData(resultadosIniciales);
+      setShowResultadoModal(true);
+    } catch (error) {
+      console.error('Error al cargar puntos configurados:', error);
+      // Si no se pueden cargar los puntos, usar valores por defecto
+      const resultadosIniciales = partida.jugadores.map((jugador, index) => ({
+        jugador_nickname: jugador,
+        posicion: index + 1,
+        gano: false,
+        puntos: 0
+      }));
+      
+      setResultadosData(resultadosIniciales);
+      setShowResultadoModal(true);
+    }
+  };
+
+  const handleVerResultado = async (partida) => {
+    try {
+      const response = await axios.get(PARTIDAS_ROUTES.GET_RESULTADO(partida.id), {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        setPartidaResultado(partida);
+        setResultadosData(response.data.data.map(resultado => ({
+          jugador_nickname: resultado.jugador_nickname,
+          posicion: resultado.posicion,
+          gano: resultado.gano === 1,
+          puntos: resultado.puntos
+        })));
+        setShowResultadoModal(true);
+      }
+    } catch (error) {
+      console.error('Error al obtener resultado:', error);
+      toast.error('Error al cargar el resultado de la partida');
+    }
+  };
+
+  const ResultadoModal = () => {
+    const isViewingExisting = partidaResultado?.tiene_resultado;
+    const [puntosConfigurados, setPuntosConfigurados] = useState([]);
+    
+    // Cargar puntos configurados cuando se abre el modal
+    useEffect(() => {
+      if (partidaResultado && !isViewingExisting) {
+        cargarPuntosConfigurados();
+      }
+    }, [partidaResultado]);
+    
+    const cargarPuntosConfigurados = async () => {
+      try {
+        const response = await axios.get(PUNTOS_ROUTES.GET_BY_TIPO(partidaResultado.tipo), {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (response.data.success) {
+          setPuntosConfigurados(response.data.data);
+        }
+      } catch (error) {
+        console.error('Error al cargar puntos configurados:', error);
+        setPuntosConfigurados([]);
+      }
+    };
+    
+    const handleGanadorChange = (jugadorNickname) => {
+      if (isViewingExisting) return; // No permitir cambios en modo vista
+      setResultadosData(prev => prev.map(resultado => ({
+        ...resultado,
+        gano: resultado.jugador_nickname === jugadorNickname
+      })));
+    };
+
+    const handlePosicionChange = (jugadorNickname, nuevaPosicion) => {
+      if (isViewingExisting) return; // No permitir cambios en modo vista
+      
+      // Buscar los puntos para la nueva posición
+      const puntosParaPosicion = puntosConfigurados.find(p => p.posicion === nuevaPosicion);
+      const nuevosPuntos = puntosParaPosicion ? puntosParaPosicion.puntos : 0;
+      
+      setResultadosData(prev => prev.map(resultado => ({
+        ...resultado,
+        posicion: resultado.jugador_nickname === jugadorNickname ? nuevaPosicion : resultado.posicion,
+        puntos: resultado.jugador_nickname === jugadorNickname ? nuevosPuntos : resultado.puntos
+      })));
+    };
+
+    const handlePuntosChange = (jugadorNickname, puntos) => {
+      if (isViewingExisting) return; // No permitir cambios en modo vista
+      setResultadosData(prev => prev.map(resultado => ({
+        ...resultado,
+        puntos: resultado.jugador_nickname === jugadorNickname ? parseInt(puntos) || 0 : resultado.puntos
+      })));
+    };
+
+    const handleGuardarResultado = async () => {
+      if (!partidaResultado) return;
+
+      // Validar que solo haya un ganador
+      const ganadores = resultadosData.filter(r => r.gano);
+      if (ganadores.length !== 1) {
+        toast.error('Debe seleccionar exactamente un ganador');
+        return;
+      }
+
+      // Validar que las posiciones sean únicas
+      const posiciones = resultadosData.map(r => r.posicion);
+      const posicionesUnicas = new Set(posiciones);
+      if (posicionesUnicas.size !== posiciones.length) {
+        toast.error('Las posiciones deben ser únicas');
+        return;
+      }
+
+      setIsSavingResultado(true);
+      try {
+        const response = await axios.post(
+          PARTIDAS_ROUTES.REGISTRAR_RESULTADO(partidaResultado.id),
+          {
+            resultados: resultadosData,
+            fase: partidaResultado.fase
+          },
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+
+        if (response.data.success) {
+          toast.success('Resultado registrado exitosamente');
+          setShowResultadoModal(false);
+          setPartidaResultado(null);
+          setResultadosData([]);
+          await fetchPartidas(); // Recargar partidas para mostrar el estado actualizado
+        }
+      } catch (error) {
+        console.error('Error al registrar resultado:', error);
+        toast.error(error.response?.data?.message || 'Error al registrar el resultado');
+      } finally {
+        setIsSavingResultado(false);
+      }
+    };
+
+    return (
+      <div className="game-modal">
+        <div className="game-modal-content" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
+          <div className="game-modal-header">
+            <h3 className="game-modal-title">
+              {isViewingExisting ? 'Ver Resultado' : 'Registrar Resultado'} - Partida #{partidaResultado?.id}
+            </h3>
+            <button
+              onClick={() => setShowResultadoModal(false)}
+              className="game-modal-close"
+            >
+              <FaTimes />
+            </button>
+          </div>
+
+          <div className="game-form-container">
+            {/* Información de la partida */}
+            <div className="partida-info-card">
+              <h4 className="text-lg font-semibold mb-3">Información de la Partida</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="font-medium">Juego:</span>
+                  <span className="ml-2">{partidaResultado?.juego_nombre}</span>
+                </div>
+                <div>
+                  <span className="font-medium">Tipo:</span>
+                  <span className="ml-2">{partidaResultado?.tipo}</span>
+                </div>
+                <div>
+                  <span className="font-medium">Fase:</span>
+                  <span className="ml-2">{partidaResultado?.fase}</span>
+                </div>
+                <div>
+                  <span className="font-medium">Fecha:</span>
+                  <span className="ml-2">{partidaResultado?.fecha ? new Date(partidaResultado.fecha).toLocaleDateString('es-ES') : 'N/A'}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Información de puntos configurados */}
+            {!isViewingExisting && puntosConfigurados.length > 0 && (
+              <div className="puntos-configurados-card">
+                <h4 className="text-lg font-semibold mb-3">Puntos Configurados para {partidaResultado?.tipo}</h4>
+                <div className="puntos-configurados-grid">
+                  {puntosConfigurados
+                    .sort((a, b) => a.posicion - b.posicion)
+                    .map(punto => (
+                      <div key={punto.posicion} className="punto-configurado-item">
+                        <span className="punto-posicion">
+                          {punto.posicion === 1 && '🥇'}
+                          {punto.posicion === 2 && '🥈'}
+                          {punto.posicion === 3 && '🥉'}
+                          {punto.posicion > 3 && `#${punto.posicion}`}
+                        </span>
+                        <span className="punto-valor">{punto.puntos} pts</span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* Tabla de resultados */}
+            <div className="resultados-section">
+              <h4 className="text-lg font-semibold mb-3">Resultados de los Jugadores</h4>
+              <div className="resultados-table-container">
+                <table className="resultados-table">
+                  <thead>
+                    <tr>
+                      <th>Jugador</th>
+                      <th>Posición</th>
+                      <th>Ganador</th>
+                      <th>Puntos</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {resultadosData.map((resultado, index) => (
+                      <tr key={resultado.jugador_nickname}>
+                        <td>
+                          <div className="flex items-center gap-2">
+                            <img
+                              src="/default-avatar.png"
+                              alt={resultado.jugador_nickname}
+                              className="jugador-avatar-small"
+                            />
+                            <span>{resultado.jugador_nickname}</span>
+                          </div>
+                        </td>
+                        <td>
+                          {isViewingExisting ? (
+                            <span className="posicion-display">{resultado.posicion}</span>
+                          ) : (
+                            <select
+                              value={resultado.posicion}
+                              onChange={(e) => handlePosicionChange(resultado.jugador_nickname, parseInt(e.target.value))}
+                              className="posicion-select"
+                            >
+                              {resultadosData.map((_, i) => (
+                                <option key={i + 1} value={i + 1}>
+                                  {i + 1}
+                                </option>
+                              ))}
+                            </select>
+                          )}
+                        </td>
+                        <td>
+                          {isViewingExisting ? (
+                            <span className={`ganador-display ${resultado.gano ? 'ganador' : 'no-ganador'}`}>
+                              {resultado.gano ? '🥇 Ganador' : '-'}
+                            </span>
+                          ) : (
+                            <input
+                              type="radio"
+                              name="ganador"
+                              checked={resultado.gano}
+                              onChange={() => handleGanadorChange(resultado.jugador_nickname)}
+                              className="ganador-radio"
+                            />
+                          )}
+                        </td>
+                        <td>
+                          {isViewingExisting ? (
+                            <span className="puntos-display">{resultado.puntos} pts</span>
+                          ) : (
+                            <input
+                              type="number"
+                              value={resultado.puntos}
+                              onChange={(e) => handlePuntosChange(resultado.jugador_nickname, e.target.value)}
+                              className="puntos-input"
+                              min="0"
+                              placeholder="0"
+                            />
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Información sobre puntos */}
+            {partidaResultado?.fase === 'Grupos' && (
+              <div className="puntos-info">
+                <p className="text-sm text-gray-600">
+                  <strong>Nota:</strong> Los puntos se sumarán a la tabla general solo en la fase de Grupos.
+                </p>
+              </div>
+            )}
+
+            {/* Botones de acción */}
+            <div className="game-form-actions" style={{display:'flex',gap:'1rem'}}>
+              <button
+                onClick={() => setShowResultadoModal(false)}
+                className="game-form-cancel"
+                type="button"
+              >
+                {isViewingExisting ? 'Cerrar' : 'Cancelar'}
+              </button>
+              {!isViewingExisting && (
+                <button
+                  onClick={handleGuardarResultado}
+                  disabled={isSavingResultado}
+                  className="game-form-submit"
+                  type="button"
+                >
+                  {isSavingResultado ? (
+                    <>
+                      <FaSpinner className="spinner" />
+                      <span>Guardando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <FaTrophy />
+                      <span>Guardar Resultado</span>
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="app-container-perfil">
+      {loading ? (
+        <div className="loading-spinner">
+          <FaSpinner className="spinner-icon" />
+          <span>Cargando perfil...</span>
+        </div>
+      ) : !user ? (
+        <div className="no-data">
+          <p>No se pudo cargar el perfil</p>
+        </div>
+      ) : (
+        <>
+          {user.rol === 0 && <AdminMenu />}
+          <div className="main-content">
+            {user.rol === 0 ? (
+              <>
+                {activeSection === 'perfil' && (
+                  <div className="profile-edit-section">
+                    <h2 className="section-title">Editar Perfil</h2>
+                    <ProfileContent />
+                  </div>
+                )}
+                {activeSection === 'juegos' && <JuegosContent />}
+                {activeSection === 'logros' && <LogrosContent />}
+                {activeSection === 'comodines' && <ComodinesContent />}
+                {activeSection === 'usuarios' && <UsuariosContent />}
+                {activeSection === 'torneo' && <TorneoContent />}
+                {activeSection === 'puntos' && <PuntosContent />}
+                {activeSection === 'partidas' && <PartidasContent />}
+                {showGameModal && <GameModal />}
+                {showLogroModal && <LogroModal />}
+                {showComodinModal && <ComodinModal />}
+                {showTorneoModal && <TorneoModal />}
+                {showJuegosModal && <JuegosModal />}
+                {showJugadoresModal && <JugadoresModal />}
+                {showEditTorneoModal && <EditTorneoModal />}
+                {showPuntosModal && <PuntosModal />}
+                {showCrearPartidaModal && <CrearPartidaModal />}
+                {showResultadoModal && <ResultadoModal />}
+              </>
+            ) : (
+              <div className="profile-edit-section">
+                <h2 className="section-title">Mi Perfil</h2>
+                <ProfileContent />
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 };
