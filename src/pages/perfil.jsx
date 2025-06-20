@@ -169,14 +169,10 @@ export const Perfil = () => {
   const [ruletaData, setRuletaData] = useState({
     id: null,
     nombre: '',
-    descripcion: '',
     tipo: 'comodin',
     comodin_id: null,
-    texto_personalizado: '',
-    imagen_url: '',
-    probabilidad: 1.00,
-    activo: true,
-    orden: 0
+    puntos: 0,
+    activo: true
   });
   const [ruletaFile, setRuletaFile] = useState(null);
   const [ruletaImagePreview, setRuletaImagePreview] = useState(null);
@@ -710,6 +706,13 @@ export const Perfil = () => {
       fetchCategorias();
     }
   }, [showGameModal]);
+
+  // Cargar comodines cuando se abre el modal de ruleta
+  useEffect(() => {
+    if (showRuletaModal && comodines.length === 0) {
+      fetchComodines();
+    }
+  }, [showRuletaModal]);
 
   const LogrosContent = () => {
     const handleDeleteLogro = async (idLogros) => {
@@ -5243,7 +5246,7 @@ export const Perfil = () => {
   };
 
   const handleSaveRuletaItem = async () => {
-    const { nombre, descripcion, tipo, comodin_id, texto_personalizado, probabilidad, activo, orden } = ruletaData;
+    const { nombre, tipo, comodin_id, puntos, activo } = ruletaData;
 
     if (!nombre.trim()) {
       toast.error('Por favor ingresa un nombre');
@@ -5255,54 +5258,46 @@ export const Perfil = () => {
       return;
     }
 
-    if (tipo === 'personalizado' && !texto_personalizado.trim()) {
-      toast.error('Por favor ingresa el texto personalizado');
+    if (tipo === 'puntos' && puntos === 0) {
+      toast.error('Por favor ingresa la cantidad de puntos');
       return;
     }
 
     setIsSavingRuleta(true);
     try {
-      const formData = new FormData();
-      formData.append('nombre', nombre.trim());
-      formData.append('descripcion', descripcion.trim());
-      formData.append('tipo', tipo);
-      formData.append('probabilidad', probabilidad);
-      formData.append('activo', activo);
-      formData.append('orden', orden);
+      const data = {
+        nombre: nombre.trim(),
+        tipo: tipo,
+        activo: activo
+      };
 
       if (tipo === 'comodin') {
-        formData.append('comodin_id', comodin_id);
-      } else {
-        formData.append('texto_personalizado', texto_personalizado.trim());
-      }
-
-      if (ruletaFile) {
-        formData.append('imagen', ruletaFile);
+        data.comodin_id = comodin_id;
+      } else if (tipo === 'puntos') {
+        data.puntos = puntos;
       }
 
       let response;
       if (ruletaData.id) {
-        response = await axios.put(`/api/ruleta/${ruletaData.id}`, formData, {
+        response = await axios.put(`/api/ruleta/${ruletaData.id}`, data, {
           headers: { 
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
+            'Content-Type': 'application/json'
           }
         });
         toast.success('Elemento de ruleta actualizado correctamente');
       } else {
-        response = await axios.post('/api/ruleta', formData, {
+        response = await axios.post('/api/ruleta', data, {
           headers: { 
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
+            'Content-Type': 'application/json'
           }
         });
         toast.success('Elemento de ruleta creado correctamente');
       }
 
       setShowRuletaModal(false);
-      setRuletaData({ id: null, nombre: '', descripcion: '', tipo: 'comodin', comodin_id: null, texto_personalizado: '', imagen_url: '', probabilidad: 1.00, activo: true, orden: 0 });
-      setRuletaFile(null);
-      setRuletaImagePreview(null);
+      setRuletaData({ id: null, nombre: '', tipo: 'comodin', comodin_id: null, puntos: 0, activo: true });
       await fetchRuletaItems();
     } catch (error) {
       console.error('Error al guardar elemento de ruleta:', error);
@@ -5331,8 +5326,12 @@ export const Perfil = () => {
 
   const handleEditRuletaItem = (item) => {
     setRuletaData(item);
-    setRuletaImagePreview(item.imagen_url);
     setShowRuletaModal(true);
+    
+    // Cargar comodines si no están cargados y el elemento es de tipo comodín
+    if (item.tipo === 'comodin' && comodines.length === 0) {
+      fetchComodines();
+    }
   };
 
   const handleSaveConfiguracionRuleta = async () => {
@@ -5444,10 +5443,11 @@ export const Perfil = () => {
         <button
           className="add-game-button"
           onClick={() => {
-            setRuletaData({ id: null, nombre: '', descripcion: '', tipo: 'comodin', comodin_id: null, texto_personalizado: '', imagen_url: '', probabilidad: 1.00, activo: true, orden: ruletaItems.length + 1 });
-            setRuletaFile(null);
-            setRuletaImagePreview(null);
+            setRuletaData({ id: null, nombre: '', tipo: 'comodin', comodin_id: null, puntos: 0, activo: true });
             setShowRuletaModal(true);
+            if (comodines.length === 0) {
+              fetchComodines();
+            }
           }}
         >
           <FaPlus /> Nuevo Elemento
@@ -5504,36 +5504,42 @@ export const Perfil = () => {
           <table className="games-table">
             <thead>
               <tr>
-                <th>Imagen</th>
                 <th>Nombre</th>
                 <th>Tipo</th>
-                <th>Probabilidad</th>
+                <th>Valor</th>
                 <th>Estado</th>
-                <th>Orden</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {ruletaItems.sort((a, b) => a.orden - b.orden).map((item) => (
+              {ruletaItems.map((item) => (
                 <tr key={item.id}>
-                  <td>
-                    <img
-                      src={item.imagen_url || (item.tipo === 'comodin' ? item.comodin_foto : '/default-ruleta.png')}
-                      alt={item.nombre}
-                      className="game-image"
-                    />
-                  </td>
                   <td>{item.nombre}</td>
                   <td>
                     <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
                       item.tipo === 'comodin' 
                         ? 'bg-blue-100 text-blue-800'
+                        : item.tipo === 'puntos'
+                        ? 'bg-green-100 text-green-800'
                         : 'bg-purple-100 text-purple-800'
                     }`}>
-                      {item.tipo === 'comodin' ? 'Comodín' : 'Personalizado'}
+                      {item.tipo === 'comodin' ? 'Comodín' : 
+                       item.tipo === 'puntos' ? 'Puntos' : 'Personalizado'}
                     </span>
                   </td>
-                  <td>{item.probabilidad}%</td>
+                  <td>
+                    {item.tipo === 'comodin' && item.comodin_nombre && (
+                      <span className="text-blue-600">{item.comodin_nombre}</span>
+                    )}
+                    {item.tipo === 'puntos' && (
+                      <span className={`font-bold ${item.puntos > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {item.puntos > 0 ? '+' : ''}{item.puntos} puntos
+                      </span>
+                    )}
+                    {item.tipo === 'personalizado' && (
+                      <span className="text-gray-600">{item.texto_personalizado}</span>
+                    )}
+                  </td>
                   <td>
                     <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
                       item.activo 
@@ -5543,7 +5549,6 @@ export const Perfil = () => {
                       {item.activo ? 'Activo' : 'Inactivo'}
                     </span>
                   </td>
-                  <td>{item.orden}</td>
                   <td>
                     <div className="flex gap-2 justify-center">
                       <button
@@ -5583,147 +5588,119 @@ export const Perfil = () => {
               </button>
             </div>
             <div className="game-form-container">
-              <div className="game-form-row">
-                <div className="game-form-image-section">
-                  <label className="game-form-label">Imagen (opcional)</label>
-                  <div 
-                    className="game-image-preview cursor-pointer" 
-                    onClick={handleRuletaImageClick}
-                    style={{ 
-                      height: '200px', 
-                      position: 'relative', 
-                      overflow: 'hidden',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderRadius: '0.5rem',
-                      border: '2px dashed #e5e7eb'
-                    }}
-                  >
-                    <input
-                      type="file"
-                      ref={ruletaFileInputRef}
-                      onChange={handleRuletaFileChange}
-                      accept="image/jpeg,image/png,image/gif"
-                      className="hidden"
-                    />
-                    {ruletaImagePreview ? (
-                      <img
-                        src={ruletaImagePreview}
-                        alt="Vista previa"
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'contain'
-                        }}
-                      />
-                    ) : (
-                      <div className="upload-placeholder">
-                        <FaCamera className="text-gray-400 text-3xl mb-2" />
-                        <span className="text-sm text-gray-500 text-center px-2">
-                          {ruletaData.id ? 'Cambiar imagen' : 'Subir imagen'}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="game-form-fields-section">
-                  <div className="game-form-group">
-                    <label className="game-form-label">Nombre</label>
-                    <input
-                      type="text"
-                      className="game-form-input"
-                      value={ruletaData.nombre}
-                      onChange={e => setRuletaData(prev => ({ ...prev, nombre: e.target.value }))}
-                      placeholder="Nombre del elemento"
-                    />
-                  </div>
-                  <div className="game-form-group">
-                    <label className="game-form-label">Descripción</label>
-                    <textarea
-                      className="game-form-input"
-                      value={ruletaData.descripcion}
-                      onChange={e => setRuletaData(prev => ({ ...prev, descripcion: e.target.value }))}
-                      placeholder="Descripción del elemento"
-                      rows={3}
-                    />
-                  </div>
-                  <div className="game-form-group">
-                    <label className="game-form-label">Tipo</label>
-                    <select
-                      className="game-form-select"
-                      value={ruletaData.tipo}
-                      onChange={e => setRuletaData(prev => ({ ...prev, tipo: e.target.value }))}
-                    >
-                      <option value="comodin">Comodín existente</option>
-                      <option value="personalizado">Elemento personalizado</option>
-                    </select>
-                  </div>
-                  {ruletaData.tipo === 'comodin' && (
-                    <div className="game-form-group">
-                      <label className="game-form-label">Seleccionar Comodín</label>
-                      <select
-                        className="game-form-select"
-                        value={ruletaData.comodin_id || ''}
-                        onChange={e => setRuletaData(prev => ({ ...prev, comodin_id: e.target.value }))}
-                      >
-                        <option value="">Selecciona un comodín</option>
-                        {comodines.map(comodin => (
-                          <option key={comodin.idcomodines} value={comodin.idcomodines}>
-                            {comodin.nombre}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-                  {ruletaData.tipo === 'personalizado' && (
-                    <div className="game-form-group">
-                      <label className="game-form-label">Texto Personalizado</label>
-                      <input
-                        type="text"
-                        className="game-form-input"
-                        value={ruletaData.texto_personalizado}
-                        onChange={e => setRuletaData(prev => ({ ...prev, texto_personalizado: e.target.value }))}
-                        placeholder="Ej: ¡Mejor suerte la próxima vez!"
-                      />
-                    </div>
-                  )}
-                  <div className="game-form-group">
-                    <label className="game-form-label">Probabilidad (%)</label>
-                    <input
-                      type="number"
-                      className="game-form-input"
-                      value={ruletaData.probabilidad}
-                      onChange={e => setRuletaData(prev => ({ ...prev, probabilidad: parseFloat(e.target.value) }))}
-                      min="0.01"
-                      max="100"
-                      step="0.01"
-                    />
-                  </div>
-                  <div className="game-form-group">
-                    <label className="game-form-label">Orden</label>
-                    <input
-                      type="number"
-                      className="game-form-input"
-                      value={ruletaData.orden}
-                      onChange={e => setRuletaData(prev => ({ ...prev, orden: parseInt(e.target.value) }))}
-                      min="1"
-                    />
-                  </div>
-                  <div className="game-form-group">
-                    <label className="game-form-label">
-                      <input
-                        type="checkbox"
-                        checked={ruletaData.activo}
-                        onChange={e => setRuletaData(prev => ({ ...prev, activo: e.target.checked }))}
-                        className="mr-2"
-                      />
-                      Activo
-                    </label>
-                  </div>
-                </div>
+              <div className="game-form-group">
+                <label className="game-form-label">Tipo</label>
+                <select
+                  className="game-form-select"
+                  value={ruletaData.tipo}
+                  onChange={e => {
+                    const newTipo = e.target.value;
+                    let newNombre = '';
+                    
+                    // Generar nombre automático según el tipo
+                    if (newTipo === 'puntos') {
+                      newNombre = `${ruletaData.puntos > 0 ? '+' : ''}${ruletaData.puntos} puntos`;
+                    } else if (newTipo === 'comodin' && ruletaData.comodin_id) {
+                      const comodinSeleccionado = comodines.find(c => c.idcomodines == ruletaData.comodin_id);
+                      newNombre = comodinSeleccionado ? comodinSeleccionado.nombre : '';
+                    }
+                    
+                    setRuletaData(prev => ({ 
+                      ...prev, 
+                      tipo: newTipo, 
+                      nombre: newNombre 
+                    }));
+                  }}
+                >
+                  <option value="comodin">Comodín existente</option>
+                  <option value="puntos">Puntos (+/-)</option>
+                  <option value="personalizado">Elemento personalizado</option>
+                </select>
               </div>
+              
+              {ruletaData.tipo === 'comodin' && (
+                <div className="game-form-group">
+                  <label className="game-form-label">Seleccionar Comodín</label>
+                  <select
+                    className="game-form-select"
+                    value={ruletaData.comodin_id || ''}
+                    onChange={e => {
+                      const comodinId = e.target.value;
+                      const comodinSeleccionado = comodines.find(c => c.idcomodines == comodinId);
+                      setRuletaData(prev => ({ 
+                        ...prev, 
+                        comodin_id: comodinId,
+                        nombre: comodinSeleccionado ? comodinSeleccionado.nombre : ''
+                      }));
+                    }}
+                    disabled={isLoadingComodines}
+                  >
+                    <option value="">
+                      {isLoadingComodines ? 'Cargando comodines...' : 'Selecciona un comodín'}
+                    </option>
+                    {comodines.map(comodin => (
+                      <option key={comodin.idcomodines} value={comodin.idcomodines}>
+                        {comodin.nombre}
+                      </option>
+                    ))}
+                  </select>
+                  {isLoadingComodines && (
+                    <div className="text-sm text-gray-500 mt-1">
+                      <FaSpinner className="inline animate-spin mr-1" />
+                      Cargando comodines...
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {ruletaData.tipo === 'puntos' && (
+                <div className="game-form-group">
+                  <label className="game-form-label">Cantidad de Puntos</label>
+                  <input
+                    type="number"
+                    className="game-form-input"
+                    value={ruletaData.puntos}
+                    onChange={e => {
+                      const puntos = parseInt(e.target.value) || 0;
+                      setRuletaData(prev => ({ 
+                        ...prev, 
+                        puntos: puntos,
+                        nombre: `${puntos > 0 ? '+' : ''}${puntos} puntos`
+                      }));
+                    }}
+                    placeholder="Ej: 10, -5, 25, -15"
+                  />
+                  <small className="text-gray-500">
+                    Usa números positivos para sumar puntos, negativos para restar. Ejemplos: 10, -5, 25
+                  </small>
+                </div>
+              )}
+              
+              {ruletaData.tipo === 'personalizado' && (
+                <div className="game-form-group">
+                  <label className="game-form-label">Nombre</label>
+                  <input
+                    type="text"
+                    className="game-form-input"
+                    defaultValue={ruletaData.nombre}
+                    onBlur={(e) => setRuletaData(prev => ({ ...prev, nombre: e.target.value }))}
+                    placeholder="Nombre del elemento personalizado"
+                  />
+                </div>
+              )}
+              
+              <div className="game-form-group">
+                <label className="game-form-label">
+                  <input
+                    type="checkbox"
+                    checked={ruletaData.activo}
+                    onChange={e => setRuletaData(prev => ({ ...prev, activo: e.target.checked }))}
+                    className="mr-2"
+                  />
+                  Activo
+                </label>
+              </div>
+              
               <button
                 onClick={handleSaveRuletaItem}
                 disabled={isSavingRuleta}
