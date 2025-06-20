@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useLocation } from 'react-router-dom';
 import { FaSearch, FaTrophy, FaGamepad, FaUsers, FaCalendar, FaEye, FaSpinner, FaFilter, FaTimes, FaMedal } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { EDICION_ROUTES, PARTIDAS_ROUTES } from '../routes/api.routes';
+import { EDICION_ROUTES, PARTIDAS_ROUTES, HISTORICO_ROUTES } from '../routes/api.routes.js';
 import '../styles/historico.css';
 
 export const Historico = () => {
@@ -18,6 +19,11 @@ export const Historico = () => {
   const [jugadorSeleccionado, setJugadorSeleccionado] = useState(null);
   const [isLoadingPerfil, setIsLoadingPerfil] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [edicionesHistoricas, setEdicionesHistoricas] = useState([]);
+  const [showTablaHistorica, setShowTablaHistorica] = useState(false);
+  const [tablaHistorica, setTablaHistorica] = useState(null);
+  const [isLoadingTablaHistorica, setIsLoadingTablaHistorica] = useState(false);
+  const location = useLocation();
 
   const token = localStorage.getItem('token');
 
@@ -25,6 +31,25 @@ export const Historico = () => {
   useEffect(() => {
     loadInitialData();
   }, []);
+
+  // Aplicar filtros recibidos desde la navegación
+  useEffect(() => {
+    if (location.state) {
+      const { filterType, searchTerm: initialSearchTerm, juegoId } = location.state;
+      
+      if (filterType && initialSearchTerm) {
+        setFilterType(filterType);
+        setSearchTerm(initialSearchTerm);
+        
+        // Aplicar el filtro automáticamente cuando los datos estén cargados
+        if (allPartidas.length > 0) {
+          setTimeout(() => {
+            handleSearchWithParams(filterType, initialSearchTerm, juegoId);
+          }, 100);
+        }
+      }
+    }
+  }, [location.state, allPartidas]);
 
   const loadInitialData = async () => {
     setIsLoading(true);
@@ -39,6 +64,11 @@ export const Historico = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
 
+      // Cargar ediciones históricas
+      const historicoResponse = await axios.get(HISTORICO_ROUTES.GET_EDICIONES, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
       if (edicionesResponse.data.success) {
         setEdiciones(edicionesResponse.data.data);
       }
@@ -46,6 +76,10 @@ export const Historico = () => {
       if (partidasResponse.data.success) {
         setAllPartidas(partidasResponse.data.data);
         setFilteredPartidas(partidasResponse.data.data);
+      }
+
+      if (historicoResponse.data.success) {
+        setEdicionesHistoricas(historicoResponse.data.data);
       }
     } catch (error) {
       console.error('Error al cargar datos:', error);
@@ -99,10 +133,29 @@ export const Historico = () => {
           partida.tipo.toLowerCase().includes(searchTerm.toLowerCase())
         );
         break;
+
+      case 'tabla_historica':
+        // Filtrar ediciones históricas que coincidan con la búsqueda
+        const edicionesFiltradas = edicionesHistoricas.filter(edicion => 
+          edicion.idEdicion.toString().includes(searchTerm) ||
+          edicion.motivo.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        
+        // Si hay coincidencias en ediciones históricas, mostrar solo esa sección
+        if (edicionesFiltradas.length > 0) {
+          setEdicionesHistoricas(edicionesFiltradas);
+          setFilteredPartidas([]); // Ocultar partidas para mostrar solo tablas históricas
+          toast.success(`Se encontraron ${edicionesFiltradas.length} tablas históricas para "${searchTerm}"`);
+          return;
+        } else {
+          setFilteredPartidas([]);
+          toast.info(`No se encontraron tablas históricas para "${searchTerm}"`);
+          return;
+        }
       
       default:
-        // Búsqueda general
-        filtered = allPartidas.filter(partida => 
+        // Búsqueda general - incluir tablas históricas
+        const partidasFiltradas = allPartidas.filter(partida => 
           partida.idEdicion.toString().includes(searchTerm) ||
           (partida.jugadores && partida.jugadores.some(jugador => 
             jugador.toLowerCase().includes(searchTerm.toLowerCase())
@@ -114,12 +167,65 @@ export const Historico = () => {
           (partida.tipo && 
            partida.tipo.toLowerCase().includes(searchTerm.toLowerCase()))
         );
+
+        // También buscar en ediciones históricas
+        const edicionesHistoricasFiltradas = edicionesHistoricas.filter(edicion => 
+          edicion.idEdicion.toString().includes(searchTerm) ||
+          edicion.motivo.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
+        setFilteredPartidas(partidasFiltradas);
+        
+        // Si hay coincidencias en ediciones históricas, filtrarlas también
+        if (edicionesHistoricasFiltradas.length > 0) {
+          setEdicionesHistoricas(edicionesHistoricasFiltradas);
+        }
+        
+        if (partidasFiltradas.length === 0 && edicionesHistoricasFiltradas.length === 0) {
+          toast.info(`No se encontraron resultados para "${searchTerm}"`);
+        }
+        return;
     }
 
     setFilteredPartidas(filtered);
     
     if (filtered.length === 0) {
       toast.info(`No se encontraron resultados para "${searchTerm}"`);
+    }
+  };
+
+  // Función para aplicar búsqueda con parámetros específicos (usada desde navegación)
+  const handleSearchWithParams = (type, term, juegoId = null) => {
+    let filtered = [...allPartidas];
+
+    switch (type) {
+      case 'game':
+        if (juegoId) {
+          // Filtrar por ID del juego si está disponible
+          filtered = allPartidas.filter(partida => 
+            partida.juego_id === juegoId
+          );
+        } else {
+          // Filtrar por nombre del juego
+          filtered = allPartidas.filter(partida => 
+            partida.juego_nombre && 
+            partida.juego_nombre.toLowerCase().includes(term.toLowerCase())
+          );
+        }
+        break;
+      
+      default:
+        // Usar la lógica normal de búsqueda
+        handleSearch();
+        return;
+    }
+
+    setFilteredPartidas(filtered);
+    
+    if (filtered.length === 0) {
+      toast.info(`No se encontraron partidas para "${term}"`);
+    } else {
+      toast.success(`Se encontraron ${filtered.length} partidas para "${term}"`);
     }
   };
 
@@ -165,6 +271,8 @@ export const Historico = () => {
     setFilterType('year');
     setFilteredPartidas(allPartidas);
     setSelectedEdicion(null);
+    // Restaurar ediciones históricas originales
+    loadInitialData();
   };
 
   // Agrupar partidas por edición
@@ -181,18 +289,40 @@ export const Historico = () => {
 
   const groupedPartidas = groupPartidasByEdicion();
 
+  // Cargar tabla general histórica
+  const cargarTablaHistorica = async (idEdicion) => {
+    setIsLoadingTablaHistorica(true);
+    try {
+      const response = await axios.get(HISTORICO_ROUTES.GET_TABLA_GENERAL(idEdicion), {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        setTablaHistorica(response.data.data);
+        setShowTablaHistorica(true);
+      }
+    } catch (error) {
+      console.error('Error al cargar tabla histórica:', error);
+      toast.error('Error al cargar la tabla histórica');
+    } finally {
+      setIsLoadingTablaHistorica(false);
+    }
+  };
+
   return (
     <div className="historico-container">
       {/* Header */}
       <div className="historico-header">
         <h1 className="historico-title">
-          <FaTrophy className="title-icon" />
+          <FaTrophy className="historico-icon" />
           Histórico de Torneos
         </h1>
         <p className="historico-subtitle">
           Explora el historial completo de torneos, partidas y resultados
         </p>
       </div>
+
+     
 
       {/* Filtros avanzados */}
       <div className="filters-section">
@@ -227,6 +357,7 @@ export const Historico = () => {
                   <option value="game">Por Juego</option>
                   <option value="phase">Por Fase</option>
                   <option value="type">Por Tipo de Partida</option>
+                  <option value="tabla_historica">Por Tabla Histórica</option>
                   <option value="all">Búsqueda General</option>
                 </select>
               </div>
@@ -268,13 +399,15 @@ export const Historico = () => {
                 <div className="suggestion-item">
                   <strong>Jugadores:</strong> Nombre del jugador
                 </div>
+                <div className="suggestion-item">
+                  <strong>Tablas Históricas:</strong> Año del torneo o "Nueva edición"
+                </div>
               </div>
             </div>
           </div>
         )}
       </div>
-
-      {/* Estadísticas */}
+       {/* Estadísticas */}
       <div className="stats-section">
         <div className="stats-grid">
           <div className="stat-card">
@@ -311,6 +444,54 @@ export const Historico = () => {
           </div>
         </div>
       </div>
+       {/* Sección de Tablas Generales Históricas */}
+      {edicionesHistoricas.length > 0 && (
+        <div className="historico-tablas-section">
+          <h2 className="section-title">
+            <FaTrophy className="section-icon" />
+            Tablas Generales Históricas
+          </h2>
+          <div className="historico-tablas-grid">
+            {edicionesHistoricas.map((edicion) => (
+              <div key={edicion.idEdicion} className="historico-tabla-card">
+                <div className="historico-tabla-header">
+                  <h3 className="historico-tabla-title">
+                    Torneo {edicion.idEdicion}
+                  </h3>
+                  <span className="historico-tabla-date">
+                    {new Date(edicion.fecha_historico).toLocaleDateString('es-ES')}
+                  </span>
+                </div>
+                <div className="historico-tabla-info">
+                  <p className="historico-tabla-motivo">{edicion.motivo}</p>
+                  <p className="historico-tabla-jugadores">
+                    {edicion.total_jugadores} jugadores
+                  </p>
+                  {edicion.fecha_inicio && edicion.fecha_fin && (
+                    <p className="historico-tabla-periodo">
+                      {new Date(edicion.fecha_inicio).toLocaleDateString('es-ES')} - {new Date(edicion.fecha_fin).toLocaleDateString('es-ES')}
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={() => cargarTablaHistorica(edicion.idEdicion)}
+                  className="ver-tabla-btn"
+                  disabled={isLoadingTablaHistorica}
+                >
+                  {isLoadingTablaHistorica ? (
+                    <FaSpinner className="spinner" />
+                  ) : (
+                    <FaEye />
+                  )}
+                  Ver Tabla General
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+     
 
       {/* Resultados */}
       <div className="results-section">
@@ -369,6 +550,14 @@ export const Historico = () => {
           onClose={() => setShowPerfilModal(false)}
         />
       )}
+
+      {/* Modal de tabla general histórica */}
+      {showTablaHistorica && tablaHistorica && (
+        <TablaHistoricaModal
+          data={tablaHistorica}
+          onClose={() => setShowTablaHistorica(false)}
+        />
+      )}
     </div>
   );
 };
@@ -381,6 +570,7 @@ const getPlaceholderText = (filterType) => {
     case 'game': return 'Nombre del juego';
     case 'phase': return 'Grupos, Cuartos, Semifinal, Final';
     case 'type': return 'PVP, TodosContraTodos';
+    case 'tabla_historica': return 'Año del torneo o motivo del histórico';
     default: return 'Buscar en todos los campos...';
   }
 };
@@ -529,6 +719,78 @@ const PerfilJugadorModal = ({ jugador, onClose }) => {
               </div>
             </div>
           )}
+        </div>
+        <div className="modal-footer">
+          <button onClick={onClose} className="modal-button primary">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Modal para mostrar tabla general histórica
+const TablaHistoricaModal = ({ data, onClose }) => {
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content historico-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="modal-title">
+            Tabla General - Torneo {data.edicion?.idEdicion}
+          </h2>
+          <button onClick={onClose} className="modal-close">
+            ×
+          </button>
+        </div>
+        <div className="modal-body">
+          <div className="historico-info">
+            <p className="historico-fecha">
+              <strong>Fecha del histórico:</strong> {new Date(data.fecha_historico).toLocaleDateString('es-ES')}
+            </p>
+            <p className="historico-motivo">
+              <strong>Motivo:</strong> {data.motivo}
+            </p>
+            {data.edicion && (
+              <p className="historico-periodo">
+                <strong>Período:</strong> {new Date(data.edicion.fecha_inicio).toLocaleDateString('es-ES')} - {new Date(data.edicion.fecha_fin).toLocaleDateString('es-ES')}
+              </p>
+            )}
+          </div>
+          
+          <div className="tabla-historica-container">
+            <table className="tabla-historica">
+              <thead>
+                <tr>
+                  <th>Posición</th>
+                  <th>Jugador</th>
+                  <th>Puntos</th>
+                  <th>Partidas</th>
+                  <th>Victorias</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.tabla_general.map((jugador, index) => (
+                  <tr key={jugador.jugador_nickname} className={index < 3 ? 'top-3' : ''}>
+                    <td className="posicion">
+                      {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                    </td>
+                    <td className="jugador-info">
+                      <img 
+                        src={jugador.foto || '/default-profile.png'} 
+                        alt={jugador.jugador_nickname} 
+                        className="jugador-avatar"
+                      />
+                      <span>{jugador.jugador_nickname}</span>
+                    </td>
+                    <td className="puntos">{jugador.puntos_totales}</td>
+                    <td>{jugador.partidas_jugadas}</td>
+                    <td>{jugador.partidas_ganadas}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
         <div className="modal-footer">
           <button onClick={onClose} className="modal-button primary">

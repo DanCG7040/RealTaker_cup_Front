@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import axios from '../axiosConfig.js';
 import { useNavigate } from 'react-router-dom';
-import { FaCamera, FaCheck, FaTimes, FaSpinner, FaUser, FaEnvelope, FaPen, FaLock, FaGamepad, FaMedal, FaStar, FaBook, FaUsers, FaTrophy, FaPlus, FaCheckCircle, FaEye } from 'react-icons/fa';
+import { FaCamera, FaCheck, FaTimes, FaSpinner, FaUser, FaEnvelope, FaPen, FaLock, FaGamepad, FaMedal, FaStar, FaBook, FaUsers, FaTrophy, FaPlus, FaCheckCircle, FaEye, FaSave } from 'react-icons/fa';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { PROFILE_ROUTES, ADMIN_ROUTES, GAMES_ROUTES, CATEGORY_ROUTES, LOGROS_ROUTES, COMODINES_ROUTES, EDICION_ROUTES, PUNTOS_ROUTES, PARTIDAS_ROUTES } from '../routes/api.routes';
+import { PROFILE_ROUTES, ADMIN_ROUTES, GAMES_ROUTES, CATEGORY_ROUTES, LOGROS_ROUTES, COMODINES_ROUTES, EDICION_ROUTES, PUNTOS_ROUTES, PARTIDAS_ROUTES, ENTRADAS_ROUTES, CONFIGURACION_ROUTES, TORNEO_ROUTES, USUARIOS_ROUTES, RULETA_ROUTES } from '../routes/api.routes';
 import '../styles/perfil.css';
 
 export const Perfil = () => {
@@ -133,12 +133,80 @@ export const Perfil = () => {
   const [juegosEdicion, setJuegosEdicion] = useState([]);
   const [isLoadingJuegosEdicion, setIsLoadingJuegosEdicion] = useState(false);
   
+  // Estados para el módulo de entradas
+  const [entradas, setEntradas] = useState([]);
+  const [isLoadingEntradas, setIsLoadingEntradas] = useState(false);
+  const [showEntradaModal, setShowEntradaModal] = useState(false);
+  const [entradaData, setEntradaData] = useState({
+    id: null,
+    titulo: '',
+    contenido: '',
+    imagen_url: '',
+    orden: 0,
+    visible: true
+  });
+  const [entradaFile, setEntradaFile] = useState(null);
+  const [entradaImagePreview, setEntradaImagePreview] = useState(null);
+  const [isSavingEntrada, setIsSavingEntrada] = useState(false);
+  const [configuracionInicio, setConfiguracionInicio] = useState({
+    mostrarTablaGeneral: true,
+    ordenSecciones: ['novedades', 'tablaGeneral', 'jugadores', 'juegos', 'comodines']
+  });
+  const [isSavingConfiguracion, setIsSavingConfiguracion] = useState(false);
+  
+  // Estados para gestionar jugadores en el inicio
+  const [jugadoresInicio, setJugadoresInicio] = useState([]);
+  const [isLoadingJugadoresInicio, setIsLoadingJugadoresInicio] = useState(false);
+  const [showJugadoresInicioModal, setShowJugadoresInicioModal] = useState(false);
+  const [jugadoresDisponiblesInicio, setJugadoresDisponiblesInicio] = useState([]);
+  const [jugadoresSeleccionadosInicio, setJugadoresSeleccionadosInicio] = useState([]);
+  const [isSavingJugadoresInicio, setIsSavingJugadoresInicio] = useState(false);
+  
+  // Estados para la ruleta
+  const [ruletaItems, setRuletaItems] = useState([]);
+  const [isLoadingRuleta, setIsLoadingRuleta] = useState(false);
+  const [showRuletaModal, setShowRuletaModal] = useState(false);
+  const [ruletaData, setRuletaData] = useState({
+    id: null,
+    nombre: '',
+    descripcion: '',
+    tipo: 'comodin',
+    comodin_id: null,
+    texto_personalizado: '',
+    imagen_url: '',
+    probabilidad: 1.00,
+    activo: true,
+    orden: 0
+  });
+  const [ruletaFile, setRuletaFile] = useState(null);
+  const [ruletaImagePreview, setRuletaImagePreview] = useState(null);
+  const [isSavingRuleta, setIsSavingRuleta] = useState(false);
+  const [configuracionRuleta, setConfiguracionRuleta] = useState({
+    ruleta_activa: false,
+    max_giros_por_dia: 3
+  });
+  const [isSavingConfiguracionRuleta, setIsSavingConfiguracionRuleta] = useState(false);
+  
+  // Estados para gestionar logros y comodines de usuarios
+  const [usuarioLogros, setUsuarioLogros] = useState([]);
+  const [usuarioComodines, setUsuarioComodines] = useState([]);
+  const [isLoadingUsuarioLogros, setIsLoadingUsuarioLogros] = useState(false);
+  const [isLoadingUsuarioComodines, setIsLoadingUsuarioComodines] = useState(false);
+  const [showAsignarLogroModal, setShowAsignarLogroModal] = useState(false);
+  const [logroAsignacionData, setLogroAsignacionData] = useState({
+    usuario_nickname: '',
+    logro_id: null
+  });
+  const [isSavingLogroAsignacion, setIsSavingLogroAsignacion] = useState(false);
+  
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const gameFileInputRef = useRef(null);
   const logroFileInputRef = useRef(null);
   const comodinFileInputRef = useRef(null);
+  const entradaFileInputRef = useRef(null);
+  const ruletaFileInputRef = useRef(null);
 
   useEffect(() => {
     if (!token) {
@@ -561,6 +629,19 @@ export const Perfil = () => {
       fetchUltimaEdicion();
       fetchPartidas();
     }
+    if (activeSection === 'entradas') {
+      fetchEntradas();
+      fetchConfiguracionInicio();
+      fetchJugadoresInicio();
+    }
+    if (activeSection === 'ruleta') {
+      fetchRuletaItems();
+      fetchConfiguracionRuleta();
+    }
+    if (activeSection === 'usuarios') {
+      fetchUsuarioLogros();
+      fetchUsuarioComodines();
+    }
   }, [activeSection]);
 
   // Cargar jugadores disponibles cuando se abre el modal de jugadores
@@ -596,6 +677,20 @@ export const Perfil = () => {
         console.error('Error al eliminar juego:', error);
         toast.error(error.response?.data?.error || 'Error al eliminar el juego');
       }
+    }
+  };
+
+  const handleToggleGameVisibility = async (id, mostrar) => {
+    try {
+      await axios.put(GAMES_ROUTES.TOGGLE_VISIBILITY(id), 
+        { mostrar_en_inicio: mostrar },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success(`Juego ${mostrar ? 'mostrado' : 'ocultado'} en el inicio`);
+      await fetchJuegos();
+    } catch (error) {
+      console.error('Error al cambiar visibilidad del juego:', error);
+      toast.error('Error al cambiar la visibilidad del juego');
     }
   };
 
@@ -1050,6 +1145,17 @@ export const Perfil = () => {
                         <FaPen />
                       </button>
                       <button
+                        onClick={() => handleToggleGameVisibility(juego.id, !juego.mostrar_en_inicio)}
+                        className={`transition-colors p-2 ${
+                          juego.mostrar_en_inicio 
+                            ? 'text-green-600 hover:text-green-800' 
+                            : 'text-gray-400 hover:text-gray-600'
+                        }`}
+                        title={juego.mostrar_en_inicio ? 'Ocultar del inicio' : 'Mostrar en inicio'}
+                      >
+                        {juego.mostrar_en_inicio ? <FaEye /> : <EyeOff size={16} />}
+                      </button>
+                      <button
                         onClick={() => handleDeleteGame(juego.id)}
                         className="text-red-600 hover:text-red-800 transition-colors p-2"
                         title="Eliminar juego"
@@ -1262,6 +1368,24 @@ export const Perfil = () => {
           Partidas
         </button>
         <button
+          onClick={() => setActiveSection('entradas')}
+          className={`admin-menu-button ${
+            activeSection === 'entradas' ? 'admin-menu-button-active' : ''
+          }`}
+        >
+          <FaBook className="w-4 h-4 mr-2" />
+          Entradas
+        </button>
+        <button
+          onClick={() => setActiveSection('ruleta')}
+          className={`admin-menu-button ${
+            activeSection === 'ruleta' ? 'admin-menu-button-active' : ''
+          }`}
+        >
+          <FaStar className="w-4 h-4 mr-2" />
+          Ruleta
+        </button>
+        <button
           onClick={() => setActiveSection('torneo')}
           className={`admin-menu-button ${
             activeSection === 'torneo' ? 'admin-menu-button-active' : ''
@@ -1324,14 +1448,144 @@ export const Perfil = () => {
       <div className="content-section">
         <div className="games-header">
           <h2 className="games-title">Gestión de Usuarios</h2>
+          <button
+            className="add-game-button"
+            onClick={() => setShowAsignarLogroModal(true)}
+          >
+            <FaPlus /> Asignar Logro
+          </button>
         </div>
 
-        {isLoadingUsuarios ? (
-          <div className="loading-spinner">
-            <FaSpinner className="loading-spinner-icon" />
-          </div>
-        ) : (
-          <div className="games-table-container">
+        {/* Sección de Logros de Usuarios */}
+        <div className="p-4 mb-4 bg-gray-100 rounded">
+          <h3 className="text-lg font-semibold mb-3">Logros Asignados a Usuarios</h3>
+          {isLoadingUsuarioLogros ? (
+            <div className="loading-spinner">
+              <FaSpinner className="spinner-icon" />
+              <span>Cargando logros de usuarios...</span>
+            </div>
+          ) : usuarioLogros.length === 0 ? (
+            <p className="text-gray-500">No hay logros asignados a usuarios</p>
+          ) : (
+            <div className="games-table-container">
+              <table className="games-table">
+                <thead>
+                  <tr>
+                    <th>Usuario</th>
+                    <th>Logro</th>
+                    <th>Imagen</th>
+                    <th>Fecha Obtención</th>
+                    <th>Asignado Por</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {usuarioLogros.map((logroUsuario) => (
+                    <tr key={logroUsuario.id}>
+                      <td>{logroUsuario.usuario_nickname}</td>
+                      <td>{logroUsuario.logro_nombre}</td>
+                      <td>
+                        {logroUsuario.logro_foto && (
+                          <img
+                            src={logroUsuario.logro_foto}
+                            alt={logroUsuario.logro_nombre}
+                            className="game-image"
+                            style={{ width: '50px', height: '50px' }}
+                          />
+                        )}
+                      </td>
+                      <td>{new Date(logroUsuario.fecha_obtencion).toLocaleDateString()}</td>
+                      <td>{logroUsuario.asignado_por || 'Sistema'}</td>
+                      <td>
+                        <button
+                          onClick={() => handleEliminarLogroUsuario(logroUsuario.id)}
+                          className="text-red-600 hover:text-red-800 transition-colors p-2"
+                          title="Eliminar logro"
+                        >
+                          <FaTimes />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Sección de Comodines de Usuarios */}
+        <div className="p-4 mb-4 bg-gray-100 rounded">
+          <h3 className="text-lg font-semibold mb-3">Comodines Obtenidos por Usuarios</h3>
+          {isLoadingUsuarioComodines ? (
+            <div className="loading-spinner">
+              <FaSpinner className="spinner-icon" />
+              <span>Cargando comodines de usuarios...</span>
+            </div>
+          ) : usuarioComodines.length === 0 ? (
+            <p className="text-gray-500">No hay comodines obtenidos por usuarios</p>
+          ) : (
+            <div className="games-table-container">
+              <table className="games-table">
+                <thead>
+                  <tr>
+                    <th>Usuario</th>
+                    <th>Comodín</th>
+                    <th>Imagen</th>
+                    <th>Fecha Obtención</th>
+                    <th>Obtenido Por</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {usuarioComodines.map((comodinUsuario) => (
+                    <tr key={comodinUsuario.id}>
+                      <td>{comodinUsuario.usuario_nickname}</td>
+                      <td>{comodinUsuario.comodin_nombre}</td>
+                      <td>
+                        {comodinUsuario.comodin_foto && (
+                          <img
+                            src={comodinUsuario.comodin_foto}
+                            alt={comodinUsuario.comodin_nombre}
+                            className="game-image"
+                            style={{ width: '50px', height: '50px' }}
+                          />
+                        )}
+                      </td>
+                      <td>{new Date(comodinUsuario.fecha_obtencion).toLocaleDateString()}</td>
+                      <td>
+                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
+                          comodinUsuario.obtenido_por_ruleta 
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {comodinUsuario.obtenido_por_ruleta ? 'Ruleta' : 'Asignación'}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          onClick={() => handleEliminarComodinUsuario(comodinUsuario.id)}
+                          className="text-red-600 hover:text-red-800 transition-colors p-2"
+                          title="Eliminar comodín"
+                        >
+                          <FaTimes />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Tabla de usuarios */}
+        <div className="games-table-container">
+          <h3 className="text-lg font-semibold mb-3">Lista de Usuarios</h3>
+          {isLoadingUsuarios ? (
+            <div className="loading-spinner">
+              <FaSpinner className="loading-spinner-icon" />
+            </div>
+          ) : (
             <table className="games-table">
               <thead>
                 <tr>
@@ -1379,6 +1633,82 @@ export const Perfil = () => {
                 ))}
               </tbody>
             </table>
+          )}
+        </div>
+
+        {/* Modal para asignar logros */}
+        {showAsignarLogroModal && (
+          <div className="game-modal">
+            <div className="game-modal-content">
+              <div className="game-modal-header">
+                <h3 className="game-modal-title">Asignar Logro a Usuario</h3>
+                <button
+                  onClick={() => setShowAsignarLogroModal(false)}
+                  className="game-modal-close"
+                >
+                  <FaTimes />
+                </button>
+              </div>
+              <div className="game-form-container">
+                <div className="game-form-group">
+                  <label className="game-form-label">Seleccionar Usuario</label>
+                  <select
+                    className="game-form-select"
+                    value={logroAsignacionData.usuario_nickname}
+                    onChange={e => setLogroAsignacionData(prev => ({ ...prev, usuario_nickname: e.target.value }))}
+                  >
+                    <option value="">Selecciona un usuario</option>
+                    {usuarios.map(usuario => (
+                      <option key={usuario.nickname} value={usuario.nickname}>
+                        {usuario.nickname} ({usuario.email})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="game-form-group">
+                  <label className="game-form-label">Seleccionar Logro</label>
+                  <select
+                    className="game-form-select"
+                    value={logroAsignacionData.logro_id || ''}
+                    onChange={e => setLogroAsignacionData(prev => ({ ...prev, logro_id: e.target.value }))}
+                  >
+                    <option value="">Selecciona un logro</option>
+                    {logros.map(logro => (
+                      <option key={logro.idlogros} value={logro.idlogros}>
+                        {logro.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="game-form-actions" style={{display:'flex',gap:'1rem'}}>
+                  <button
+                    onClick={() => setShowAsignarLogroModal(false)}
+                    className="game-form-cancel"
+                    type="button"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleAsignarLogro}
+                    disabled={isSavingLogroAsignacion}
+                    className="game-form-submit"
+                    type="button"
+                  >
+                    {isSavingLogroAsignacion ? (
+                      <>
+                        <FaSpinner className="spinner" />
+                        <span>Asignando...</span>
+                      </>
+                    ) : (
+                      <>
+                        <FaCheck />
+                        <span>Asignar Logro</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -4277,6 +4607,1147 @@ export const Perfil = () => {
     );
   };
 
+  // Funciones para el módulo de entradas
+  const fetchEntradas = async () => {
+    setIsLoadingEntradas(true);
+    try {
+      const response = await axios.get(ENTRADAS_ROUTES.GET_ALL, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        setEntradas(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error al obtener entradas:', error);
+      toast.error('Error al cargar las entradas');
+    } finally {
+      setIsLoadingEntradas(false);
+    }
+  };
+
+  const fetchConfiguracionInicio = async () => {
+    try {
+      const response = await axios.get(CONFIGURACION_ROUTES.GET_INICIO, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        setConfiguracionInicio(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error al obtener configuración:', error);
+      // Usar configuración por defecto si hay error
+    }
+  };
+
+  const handleSaveEntrada = async () => {
+    const { titulo, contenido, orden, visible } = entradaData;
+
+    if (!titulo.trim() || !contenido.trim()) {
+      toast.error('Por favor completa todos los campos obligatorios');
+      return;
+    }
+
+    setIsSavingEntrada(true);
+    try {
+      const formData = new FormData();
+      formData.append('titulo', titulo.trim());
+      formData.append('contenido', contenido.trim());
+      formData.append('orden', orden);
+      formData.append('visible', visible);
+
+      if (entradaFile) {
+        formData.append('imagen', entradaFile);
+      }
+
+      let response;
+      if (entradaData.id) {
+        // Actualizar entrada existente
+        response = await axios.put(ENTRADAS_ROUTES.UPDATE(entradaData.id), formData, {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        toast.success('Entrada actualizada correctamente');
+      } else {
+        // Crear nueva entrada
+        response = await axios.post(ENTRADAS_ROUTES.CREATE, formData, {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        toast.success('Entrada creada correctamente');
+      }
+
+      setShowEntradaModal(false);
+      setEntradaData({ id: null, titulo: '', contenido: '', imagen_url: '', orden: entradas.length + 1, visible: true });
+      setEntradaFile(null);
+      setEntradaImagePreview(null);
+      await fetchEntradas();
+    } catch (error) {
+      console.error('Error al guardar entrada:', error);
+      toast.error(error.response?.data?.message || 'Error al guardar la entrada');
+    } finally {
+      setIsSavingEntrada(false);
+    }
+  };
+
+  const handleDeleteEntrada = async (id) => {
+    if (!window.confirm('¿Estás seguro de que quieres eliminar esta entrada?')) {
+      return;
+    }
+
+    try {
+      await axios.delete(ENTRADAS_ROUTES.DELETE(id), {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Entrada eliminada correctamente');
+      await fetchEntradas();
+    } catch (error) {
+      console.error('Error al eliminar entrada:', error);
+      toast.error('Error al eliminar la entrada');
+    }
+  };
+
+  const handleEditEntrada = (entrada) => {
+    setEntradaData(entrada);
+    setEntradaImagePreview(entrada.imagen_url);
+    setShowEntradaModal(true);
+  };
+
+  const handleSaveConfiguracionInicio = async () => {
+    setIsSavingConfiguracion(true);
+    try {
+      await axios.put(CONFIGURACION_ROUTES.UPDATE_INICIO, configuracionInicio, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Configuración guardada correctamente');
+    } catch (error) {
+      console.error('Error al guardar configuración:', error);
+      toast.error('Error al guardar la configuración');
+    } finally {
+      setIsSavingConfiguracion(false);
+    }
+  };
+
+  // Funciones para gestionar jugadores en el inicio
+  const fetchJugadoresInicio = async () => {
+    setIsLoadingJugadoresInicio(true);
+    try {
+      const response = await axios.get(TORNEO_ROUTES.GET_JUGADORES_INICIO, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        setJugadoresInicio(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error al obtener jugadores del inicio:', error);
+      toast.error('Error al cargar los jugadores del inicio');
+    } finally {
+      setIsLoadingJugadoresInicio(false);
+    }
+  };
+
+  const fetchJugadoresDisponiblesInicio = async () => {
+    try {
+      const response = await axios.get(ADMIN_ROUTES.GET_ALL_USERS, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        // Filtrar solo usuarios con rol 2 (jugadores)
+        const jugadores = response.data.data.filter(usuario => usuario.rol === 2);
+        setJugadoresDisponiblesInicio(jugadores);
+      }
+    } catch (error) {
+      console.error('Error al obtener jugadores disponibles:', error);
+      toast.error('Error al cargar los jugadores disponibles');
+    }
+  };
+
+  const handleJugadorInicioToggle = (nickname) => {
+    setJugadoresSeleccionadosInicio(prev => 
+      prev.includes(nickname) 
+        ? prev.filter(nick => nick !== nickname)
+        : [...prev, nickname]
+    );
+  };
+
+  const handleSaveJugadoresInicio = async () => {
+    setIsSavingJugadoresInicio(true);
+    try {
+      const response = await axios.post(TORNEO_ROUTES.SET_JUGADORES_INICIO, {
+        jugadores: jugadoresSeleccionadosInicio
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        toast.success('Jugadores del inicio actualizados correctamente');
+        setShowJugadoresInicioModal(false);
+        await fetchJugadoresInicio(); // Recargar la lista
+      }
+    } catch (error) {
+      console.error('Error al guardar jugadores del inicio:', error);
+      toast.error('Error al guardar los jugadores del inicio');
+    } finally {
+      setIsSavingJugadoresInicio(false);
+    }
+  };
+
+  // Componente visual para Entradas
+  const EntradasContent = () => (
+    <div className="content-section">
+      <div className="games-header">
+        <h2 className="games-title">Gestión de Entradas de Inicio</h2>
+        <button
+          className="add-game-button"
+          onClick={() => {
+            setEntradaData({ id: null, titulo: '', contenido: '', orden: entradas.length + 1, visible: true });
+            setShowEntradaModal(true);
+          }}
+        >
+          <FaPlus /> Nueva Entrada
+        </button>
+      </div>
+
+      {/* Configuración de inicio */}
+      <div className="p-4 mb-4 bg-gray-100 rounded">
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <input
+            type="checkbox"
+            checked={configuracionInicio.mostrarTablaGeneral}
+            onChange={e => setConfiguracionInicio(prev => ({ ...prev, mostrarTablaGeneral: e.target.checked }))}
+          />
+          Mostrar tabla general en el inicio
+        </label>
+        <div style={{ marginTop: 12 }}>
+          <label className="font-semibold">Orden de secciones en el inicio:</label>
+          <ol style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
+            {configuracionInicio.ordenSecciones.map((sec, idx) => (
+              <li key={sec} style={{ background: '#e5e7eb', borderRadius: 8, padding: '4px 12px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span>{idx + 1}. {sec}</span>
+                {idx > 0 && (
+                  <button onClick={() => {
+                    const nuevoOrden = [...configuracionInicio.ordenSecciones];
+                    [nuevoOrden[idx - 1], nuevoOrden[idx]] = [nuevoOrden[idx], nuevoOrden[idx - 1]];
+                    setConfiguracionInicio(prev => ({ ...prev, ordenSecciones: nuevoOrden }));
+                  }} title="Subir" style={{ border: 'none', background: 'none', cursor: 'pointer' }}>
+                    ▲
+                  </button>
+                )}
+                {idx < configuracionInicio.ordenSecciones.length - 1 && (
+                  <button onClick={() => {
+                    const nuevoOrden = [...configuracionInicio.ordenSecciones];
+                    [nuevoOrden[idx + 1], nuevoOrden[idx]] = [nuevoOrden[idx], nuevoOrden[idx + 1]];
+                    setConfiguracionInicio(prev => ({ ...prev, ordenSecciones: nuevoOrden }));
+                  }} title="Bajar" style={{ border: 'none', background: 'none', cursor: 'pointer' }}>
+                    ▼
+                  </button>
+                )}
+              </li>
+            ))}
+          </ol>
+        </div>
+        <button
+          className="profile-button profile-button-primary mt-2"
+          style={{ marginTop: 16 }}
+          onClick={handleSaveConfiguracionInicio}
+          disabled={isSavingConfiguracion}
+        >
+          {isSavingConfiguracion ? 'Guardando...' : 'Guardar Configuración'}
+        </button>
+      </div>
+
+      {/* Gestión de jugadores en el inicio */}
+      <div className="p-4 mb-4 bg-gray-100 rounded">
+        <h3 className="text-lg font-semibold mb-3">Jugadores en la Página Principal</h3>
+        <p className="text-gray-600 mb-3">
+          Selecciona qué jugadores aparecerán en la sección "Jugadores del Torneo" en la página principal.
+          Los usuarios podrán hacer clic en ellos para ver su información.
+        </p>
+        
+        {isLoadingJugadoresInicio ? (
+          <div className="loading-spinner">
+            <FaSpinner className="spinner-icon" />
+            <span>Cargando jugadores...</span>
+          </div>
+        ) : (
+          <div className="jugadores-inicio-section">
+            <div className="jugadores-actuales">
+              <h4 className="font-semibold mb-2">Jugadores actualmente mostrados:</h4>
+              {jugadoresInicio.length === 0 ? (
+                <p className="text-gray-500">No hay jugadores configurados para mostrar en el inicio</p>
+              ) : (
+                <div className="jugadores-grid">
+                  {jugadoresInicio.map(jugador => (
+                    <div key={jugador.nickname} className="jugador-card-inicio">
+                      <img
+                        src={jugador.foto_perfil || '/default-profile.png'}
+                        alt={jugador.nickname}
+                        className="jugador-avatar-small"
+                      />
+                      <span className="jugador-nickname">{jugador.nickname}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <button
+              className="add-game-button"
+              onClick={() => {
+                fetchJugadoresDisponiblesInicio();
+                setJugadoresSeleccionadosInicio(jugadoresInicio.map(j => j.nickname));
+                setShowJugadoresInicioModal(true);
+              }}
+              style={{ marginTop: 16 }}
+            >
+              <FaUsers /> Gestionar Jugadores del Inicio
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Tabla de entradas */}
+      <div className="games-table-container">
+        {isLoadingEntradas ? (
+          <div className="loading-spinner">
+            <FaSpinner className="spinner-icon" />
+            <span>Cargando entradas...</span>
+          </div>
+        ) : entradas.length === 0 ? (
+          <div className="no-data">No hay entradas registradas</div>
+        ) : (
+          <table className="games-table">
+            <thead>
+              <tr>
+                <th>Orden</th>
+                <th>Título</th>
+                <th>Tipo</th>
+                <th>Visible</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {entradas.sort((a, b) => a.orden - b.orden).map((entrada, idx) => (
+                <tr key={entrada.id}>
+                  <td>{entrada.orden}</td>
+                  <td>{entrada.titulo}</td>
+                  <td>{entrada.tipo}</td>
+                  <td>
+                    <button
+                      onClick={() => handleSaveEntrada({ ...entrada, visible: !entrada.visible })}
+                      className={`transition-colors p-2 ${entrada.visible ? 'text-green-600' : 'text-gray-400'}`}
+                      title={entrada.visible ? 'Ocultar' : 'Mostrar'}
+                    >
+                      {entrada.visible ? <FaEye /> : <EyeOff size={16} />}
+                    </button>
+                  </td>
+                  <td>
+                    <div className="flex gap-2 justify-center">
+                      <button
+                        onClick={() => handleEditEntrada(entrada)}
+                        className="text-blue-600 hover:text-blue-800 transition-colors p-2"
+                        title="Editar entrada"
+                      >
+                        <FaPen />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteEntrada(entrada.id)}
+                        className="text-red-600 hover:text-red-800 transition-colors p-2"
+                        title="Eliminar entrada"
+                      >
+                        <FaTimes />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* Modal para crear/editar entrada */}
+      {showEntradaModal && (
+        <div className="game-modal">
+          <div className="game-modal-content">
+            <div className="game-modal-header">
+              <h3 className="game-modal-title">{entradaData.id ? 'Editar Entrada' : 'Nueva Entrada'}</h3>
+              <button
+                onClick={() => setShowEntradaModal(false)}
+                className="game-modal-close"
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <div className="game-form-container">
+              <div className="game-form-row">
+                <div className="game-form-image-section">
+                  <label className="game-form-label">Imagen de la entrada (opcional)</label>
+                  <div 
+                    className="game-image-preview cursor-pointer" 
+                    onClick={handleEntradaImageClick}
+                    style={{ 
+                      height: '200px', 
+                      position: 'relative', 
+                      overflow: 'hidden',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: '0.5rem',
+                      border: '2px dashed #e5e7eb'
+                    }}
+                  >
+                    <input
+                      type="file"
+                      ref={entradaFileInputRef}
+                      onChange={handleEntradaFileChange}
+                      accept="image/jpeg,image/png,image/gif"
+                      className="hidden"
+                    />
+                    {entradaImagePreview ? (
+                      <img
+                        src={entradaImagePreview}
+                        alt="Vista previa"
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'contain'
+                        }}
+                      />
+                    ) : (
+                      <div className="upload-placeholder">
+                        <FaCamera className="text-gray-400 text-3xl mb-2" />
+                        <span className="text-sm text-gray-500 text-center px-2">
+                          {entradaData.id ? 'Cambiar imagen' : 'Subir imagen'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="game-form-fields-section">
+                  <div className="game-form-group">
+                    <label className="game-form-label">Título</label>
+                    <input
+                      type="text"
+                      className="game-form-input"
+                      value={entradaData.titulo}
+                      onChange={e => setEntradaData(prev => ({ ...prev, titulo: e.target.value }))}
+                      placeholder="Título de la entrada"
+                    />
+                  </div>
+                  <div className="game-form-group">
+                    <label className="game-form-label">Contenido</label>
+                    <textarea
+                      className="game-form-input"
+                      value={entradaData.contenido}
+                      onChange={e => setEntradaData(prev => ({ ...prev, contenido: e.target.value }))}
+                      placeholder="Contenido de la entrada"
+                      rows={4}
+                    />
+                  </div>
+                  <div className="game-form-group">
+                    <label className="game-form-label">Orden</label>
+                    <input
+                      type="number"
+                      className="game-form-input"
+                      value={entradaData.orden}
+                      onChange={e => setEntradaData(prev => ({ ...prev, orden: parseInt(e.target.value) }))}
+                      min={1}
+                    />
+                  </div>
+                  <div className="game-form-group">
+                    <label className="game-form-label">
+                      <input
+                        type="checkbox"
+                        checked={entradaData.visible}
+                        onChange={e => setEntradaData(prev => ({ ...prev, visible: e.target.checked }))}
+                        className="mr-2"
+                      />
+                      Visible
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={handleSaveEntrada}
+                disabled={isSavingEntrada}
+                className="game-form-submit"
+              >
+                {isSavingEntrada ? (
+                  <>
+                    <FaSpinner className="spinner" />
+                    <span>Guardando...</span>
+                  </>
+                ) : (
+                  <>
+                    <FaCheck />
+                    <span>{entradaData.id ? 'Guardar Cambios' : 'Crear Entrada'}</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para gestionar jugadores del inicio */}
+      {showJugadoresInicioModal && (
+        <div className="game-modal">
+          <div className="game-modal-content">
+            <div className="game-modal-header">
+              <h3 className="game-modal-title">Gestionar Jugadores del Inicio</h3>
+              <button
+                onClick={() => setShowJugadoresInicioModal(false)}
+                className="game-modal-close"
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <div className="game-form-container">
+              <p className="text-gray-600 mb-4">
+                Selecciona los jugadores que aparecerán en la página principal. 
+                Los usuarios podrán hacer clic en ellos para ver su información.
+              </p>
+              
+              {jugadoresDisponiblesInicio.length === 0 ? (
+                <div className="loading-spinner">
+                  <FaSpinner className="spinner-icon" />
+                  <span>Cargando jugadores disponibles...</span>
+                </div>
+              ) : (
+                <div className="jugadores-grid">
+                  {jugadoresDisponiblesInicio.map(jugador => (
+                    <div key={jugador.nickname} className="jugador-checkbox">
+                      <input
+                        type="checkbox"
+                        id={`jugador-inicio-${jugador.nickname}`}
+                        checked={jugadoresSeleccionadosInicio.includes(jugador.nickname)}
+                        onChange={() => handleJugadorInicioToggle(jugador.nickname)}
+                        className="checkbox-input"
+                      />
+                      <label htmlFor={`jugador-inicio-${jugador.nickname}`} className="checkbox-label">
+                        <img
+                          src={jugador.foto || '/default-profile.png'}
+                          alt={jugador.nickname}
+                          className="jugador-thumbnail"
+                        />
+                        <div className="jugador-info">
+                          <span className="jugador-nickname">{jugador.nickname}</span>
+                          <span className="jugador-email">{jugador.email}</span>
+                        </div>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="game-form-actions" style={{display:'flex',gap:'1rem'}}>
+                <button
+                  onClick={() => setShowJugadoresInicioModal(false)}
+                  className="game-form-cancel"
+                  type="button"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSaveJugadoresInicio}
+                  disabled={isSavingJugadoresInicio}
+                  className="game-form-submit"
+                  type="button"
+                >
+                  {isSavingJugadoresInicio ? (
+                    <>
+                      <FaSpinner className="spinner" />
+                      <span>Guardando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <FaSave />
+                      <span>Guardar Jugadores</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const handleRuletaImageClick = () => {
+    ruletaFileInputRef.current.click();
+  };
+
+  const handleRuletaFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      if (!selectedFile.type.startsWith('image/')) {
+        toast.error('Por favor selecciona una imagen');
+        return;
+      }
+
+      if (selectedFile.size > 2 * 1024 * 1024) {
+        toast.error('La imagen no puede ser mayor a 2MB');
+        return;
+      }
+
+      setRuletaFile(selectedFile);
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setRuletaImagePreview(reader.result);
+      };
+      reader.readAsDataURL(selectedFile);
+    }
+  };
+
+  const fetchRuletaItems = async () => {
+    setIsLoadingRuleta(true);
+    try {
+      const response = await axios.get('/api/ruleta', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        setRuletaItems(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error al obtener elementos de ruleta:', error);
+      toast.error('Error al cargar los elementos de ruleta');
+    } finally {
+      setIsLoadingRuleta(false);
+    }
+  };
+
+  const fetchConfiguracionRuleta = async () => {
+    try {
+      const response = await axios.get('/api/ruleta/configuracion', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        setConfiguracionRuleta(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error al obtener configuración de ruleta:', error);
+    }
+  };
+
+  const handleSaveRuletaItem = async () => {
+    const { nombre, descripcion, tipo, comodin_id, texto_personalizado, probabilidad, activo, orden } = ruletaData;
+
+    if (!nombre.trim()) {
+      toast.error('Por favor ingresa un nombre');
+      return;
+    }
+
+    if (tipo === 'comodin' && !comodin_id) {
+      toast.error('Por favor selecciona un comodín');
+      return;
+    }
+
+    if (tipo === 'personalizado' && !texto_personalizado.trim()) {
+      toast.error('Por favor ingresa el texto personalizado');
+      return;
+    }
+
+    setIsSavingRuleta(true);
+    try {
+      const formData = new FormData();
+      formData.append('nombre', nombre.trim());
+      formData.append('descripcion', descripcion.trim());
+      formData.append('tipo', tipo);
+      formData.append('probabilidad', probabilidad);
+      formData.append('activo', activo);
+      formData.append('orden', orden);
+
+      if (tipo === 'comodin') {
+        formData.append('comodin_id', comodin_id);
+      } else {
+        formData.append('texto_personalizado', texto_personalizado.trim());
+      }
+
+      if (ruletaFile) {
+        formData.append('imagen', ruletaFile);
+      }
+
+      let response;
+      if (ruletaData.id) {
+        response = await axios.put(`/api/ruleta/${ruletaData.id}`, formData, {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        toast.success('Elemento de ruleta actualizado correctamente');
+      } else {
+        response = await axios.post('/api/ruleta', formData, {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        toast.success('Elemento de ruleta creado correctamente');
+      }
+
+      setShowRuletaModal(false);
+      setRuletaData({ id: null, nombre: '', descripcion: '', tipo: 'comodin', comodin_id: null, texto_personalizado: '', imagen_url: '', probabilidad: 1.00, activo: true, orden: 0 });
+      setRuletaFile(null);
+      setRuletaImagePreview(null);
+      await fetchRuletaItems();
+    } catch (error) {
+      console.error('Error al guardar elemento de ruleta:', error);
+      toast.error(error.response?.data?.message || 'Error al guardar el elemento de ruleta');
+    } finally {
+      setIsSavingRuleta(false);
+    }
+  };
+
+  const handleDeleteRuletaItem = async (id) => {
+    if (!window.confirm('¿Estás seguro de que quieres eliminar este elemento de la ruleta?')) {
+      return;
+    }
+
+    try {
+      await axios.delete(`/api/ruleta/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Elemento de ruleta eliminado correctamente');
+      await fetchRuletaItems();
+    } catch (error) {
+      console.error('Error al eliminar elemento de ruleta:', error);
+      toast.error('Error al eliminar el elemento de ruleta');
+    }
+  };
+
+  const handleEditRuletaItem = (item) => {
+    setRuletaData(item);
+    setRuletaImagePreview(item.imagen_url);
+    setShowRuletaModal(true);
+  };
+
+  const handleSaveConfiguracionRuleta = async () => {
+    setIsSavingConfiguracionRuleta(true);
+    try {
+      await axios.put('/api/ruleta/configuracion', configuracionRuleta, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Configuración de ruleta guardada correctamente');
+    } catch (error) {
+      console.error('Error al guardar configuración de ruleta:', error);
+      toast.error('Error al guardar la configuración de ruleta');
+    } finally {
+      setIsSavingConfiguracionRuleta(false);
+    }
+  };
+
+  // Funciones para gestionar logros y comodines de usuarios
+  const fetchUsuarioLogros = async () => {
+    setIsLoadingUsuarioLogros(true);
+    try {
+      const response = await axios.get(USUARIOS_ROUTES.GET_LOGROS);
+      
+      if (response.data.success) {
+        setUsuarioLogros(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error al obtener logros de usuarios:', error);
+      toast.error('Error al cargar los logros de usuarios');
+    } finally {
+      setIsLoadingUsuarioLogros(false);
+    }
+  };
+
+  const fetchUsuarioComodines = async () => {
+    setIsLoadingUsuarioComodines(true);
+    try {
+      const response = await axios.get(USUARIOS_ROUTES.GET_COMODINES);
+      
+      if (response.data.success) {
+        setUsuarioComodines(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error al obtener comodines de usuarios:', error);
+      toast.error('Error al cargar los comodines de usuarios');
+    } finally {
+      setIsLoadingUsuarioComodines(false);
+    }
+  };
+
+  const handleAsignarLogro = async () => {
+    const { usuario_nickname, logro_id } = logroAsignacionData;
+
+    if (!usuario_nickname || !logro_id) {
+      toast.error('Por favor selecciona un usuario y un logro');
+      return;
+    }
+
+    setIsSavingLogroAsignacion(true);
+    try {
+      await axios.post(USUARIOS_ROUTES.POST_LOGROS, logroAsignacionData);
+      toast.success('Logro asignado correctamente');
+      setShowAsignarLogroModal(false);
+      setLogroAsignacionData({ usuario_nickname: '', logro_id: null });
+      await fetchUsuarioLogros();
+    } catch (error) {
+      console.error('Error al asignar logro:', error);
+      toast.error(error.response?.data?.message || 'Error al asignar el logro');
+    } finally {
+      setIsSavingLogroAsignacion(false);
+    }
+  };
+
+  const handleEliminarLogroUsuario = async (id) => {
+    if (!window.confirm('¿Estás seguro de que quieres eliminar este logro del usuario?')) {
+      return;
+    }
+
+    try {
+      await axios.delete(USUARIOS_ROUTES.DELETE_LOGROS(id));
+      toast.success('Logro eliminado correctamente');
+      await fetchUsuarioLogros();
+    } catch (error) {
+      console.error('Error al eliminar logro:', error);
+      toast.error('Error al eliminar el logro');
+    }
+  };
+
+  const handleEliminarComodinUsuario = async (id) => {
+    if (!window.confirm('¿Estás seguro de que quieres eliminar este comodín del usuario?')) {
+      return;
+    }
+
+    try {
+      await axios.delete(USUARIOS_ROUTES.DELETE_COMODINES(id));
+      toast.success('Comodín eliminado correctamente');
+      await fetchUsuarioComodines();
+    } catch (error) {
+      console.error('Error al eliminar comodín:', error);
+      toast.error('Error al eliminar el comodín');
+    }
+  };
+
+  // Componente visual para Ruleta
+  const RuletaContent = () => (
+    <div className="content-section">
+      <div className="games-header">
+        <h2 className="games-title">Gestión de Ruleta</h2>
+        <button
+          className="add-game-button"
+          onClick={() => {
+            setRuletaData({ id: null, nombre: '', descripcion: '', tipo: 'comodin', comodin_id: null, texto_personalizado: '', imagen_url: '', probabilidad: 1.00, activo: true, orden: ruletaItems.length + 1 });
+            setRuletaFile(null);
+            setRuletaImagePreview(null);
+            setShowRuletaModal(true);
+          }}
+        >
+          <FaPlus /> Nuevo Elemento
+        </button>
+      </div>
+
+      {/* Configuración de ruleta */}
+      <div className="p-4 mb-4 bg-gray-100 rounded">
+        <h3 className="text-lg font-semibold mb-3">Configuración General</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input
+                type="checkbox"
+                checked={configuracionRuleta.ruleta_activa}
+                onChange={e => setConfiguracionRuleta(prev => ({ ...prev, ruleta_activa: e.target.checked }))}
+              />
+              Ruleta activa (visible para jugadores)
+            </label>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Máximo de giros por día:
+            </label>
+            <input
+              type="number"
+              min="1"
+              max="10"
+              value={configuracionRuleta.max_giros_por_dia}
+              onChange={e => setConfiguracionRuleta(prev => ({ ...prev, max_giros_por_dia: parseInt(e.target.value) }))}
+              className="w-20 px-2 py-1 border border-gray-300 rounded"
+            />
+          </div>
+        </div>
+        <button
+          className="profile-button profile-button-primary mt-3"
+          onClick={handleSaveConfiguracionRuleta}
+          disabled={isSavingConfiguracionRuleta}
+        >
+          {isSavingConfiguracionRuleta ? 'Guardando...' : 'Guardar Configuración'}
+        </button>
+      </div>
+
+      {/* Lista de elementos de ruleta */}
+      <div className="games-table-container">
+        {isLoadingRuleta ? (
+          <div className="loading-spinner">
+            <FaSpinner className="spinner-icon" />
+            <span>Cargando elementos de ruleta...</span>
+          </div>
+        ) : ruletaItems.length === 0 ? (
+          <div className="no-data">No hay elementos de ruleta registrados</div>
+        ) : (
+          <table className="games-table">
+            <thead>
+              <tr>
+                <th>Imagen</th>
+                <th>Nombre</th>
+                <th>Tipo</th>
+                <th>Probabilidad</th>
+                <th>Estado</th>
+                <th>Orden</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ruletaItems.sort((a, b) => a.orden - b.orden).map((item) => (
+                <tr key={item.id}>
+                  <td>
+                    <img
+                      src={item.imagen_url || (item.tipo === 'comodin' ? item.comodin_foto : '/default-ruleta.png')}
+                      alt={item.nombre}
+                      className="game-image"
+                    />
+                  </td>
+                  <td>{item.nombre}</td>
+                  <td>
+                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
+                      item.tipo === 'comodin' 
+                        ? 'bg-blue-100 text-blue-800'
+                        : 'bg-purple-100 text-purple-800'
+                    }`}>
+                      {item.tipo === 'comodin' ? 'Comodín' : 'Personalizado'}
+                    </span>
+                  </td>
+                  <td>{item.probabilidad}%</td>
+                  <td>
+                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
+                      item.activo 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {item.activo ? 'Activo' : 'Inactivo'}
+                    </span>
+                  </td>
+                  <td>{item.orden}</td>
+                  <td>
+                    <div className="flex gap-2 justify-center">
+                      <button
+                        onClick={() => handleEditRuletaItem(item)}
+                        className="text-blue-600 hover:text-blue-800 transition-colors p-2"
+                        title="Editar elemento"
+                      >
+                        <FaPen />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteRuletaItem(item.id)}
+                        className="text-red-600 hover:text-red-800 transition-colors p-2"
+                        title="Eliminar elemento"
+                      >
+                        <FaTimes />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* Modal para crear/editar elemento de ruleta */}
+      {showRuletaModal && (
+        <div className="game-modal">
+          <div className="game-modal-content">
+            <div className="game-modal-header">
+              <h3 className="game-modal-title">{ruletaData.id ? 'Editar Elemento' : 'Nuevo Elemento de Ruleta'}</h3>
+              <button
+                onClick={() => setShowRuletaModal(false)}
+                className="game-modal-close"
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <div className="game-form-container">
+              <div className="game-form-row">
+                <div className="game-form-image-section">
+                  <label className="game-form-label">Imagen (opcional)</label>
+                  <div 
+                    className="game-image-preview cursor-pointer" 
+                    onClick={handleRuletaImageClick}
+                    style={{ 
+                      height: '200px', 
+                      position: 'relative', 
+                      overflow: 'hidden',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: '0.5rem',
+                      border: '2px dashed #e5e7eb'
+                    }}
+                  >
+                    <input
+                      type="file"
+                      ref={ruletaFileInputRef}
+                      onChange={handleRuletaFileChange}
+                      accept="image/jpeg,image/png,image/gif"
+                      className="hidden"
+                    />
+                    {ruletaImagePreview ? (
+                      <img
+                        src={ruletaImagePreview}
+                        alt="Vista previa"
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'contain'
+                        }}
+                      />
+                    ) : (
+                      <div className="upload-placeholder">
+                        <FaCamera className="text-gray-400 text-3xl mb-2" />
+                        <span className="text-sm text-gray-500 text-center px-2">
+                          {ruletaData.id ? 'Cambiar imagen' : 'Subir imagen'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="game-form-fields-section">
+                  <div className="game-form-group">
+                    <label className="game-form-label">Nombre</label>
+                    <input
+                      type="text"
+                      className="game-form-input"
+                      value={ruletaData.nombre}
+                      onChange={e => setRuletaData(prev => ({ ...prev, nombre: e.target.value }))}
+                      placeholder="Nombre del elemento"
+                    />
+                  </div>
+                  <div className="game-form-group">
+                    <label className="game-form-label">Descripción</label>
+                    <textarea
+                      className="game-form-input"
+                      value={ruletaData.descripcion}
+                      onChange={e => setRuletaData(prev => ({ ...prev, descripcion: e.target.value }))}
+                      placeholder="Descripción del elemento"
+                      rows={3}
+                    />
+                  </div>
+                  <div className="game-form-group">
+                    <label className="game-form-label">Tipo</label>
+                    <select
+                      className="game-form-select"
+                      value={ruletaData.tipo}
+                      onChange={e => setRuletaData(prev => ({ ...prev, tipo: e.target.value }))}
+                    >
+                      <option value="comodin">Comodín existente</option>
+                      <option value="personalizado">Elemento personalizado</option>
+                    </select>
+                  </div>
+                  {ruletaData.tipo === 'comodin' && (
+                    <div className="game-form-group">
+                      <label className="game-form-label">Seleccionar Comodín</label>
+                      <select
+                        className="game-form-select"
+                        value={ruletaData.comodin_id || ''}
+                        onChange={e => setRuletaData(prev => ({ ...prev, comodin_id: e.target.value }))}
+                      >
+                        <option value="">Selecciona un comodín</option>
+                        {comodines.map(comodin => (
+                          <option key={comodin.idcomodines} value={comodin.idcomodines}>
+                            {comodin.nombre}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  {ruletaData.tipo === 'personalizado' && (
+                    <div className="game-form-group">
+                      <label className="game-form-label">Texto Personalizado</label>
+                      <input
+                        type="text"
+                        className="game-form-input"
+                        value={ruletaData.texto_personalizado}
+                        onChange={e => setRuletaData(prev => ({ ...prev, texto_personalizado: e.target.value }))}
+                        placeholder="Ej: ¡Mejor suerte la próxima vez!"
+                      />
+                    </div>
+                  )}
+                  <div className="game-form-group">
+                    <label className="game-form-label">Probabilidad (%)</label>
+                    <input
+                      type="number"
+                      className="game-form-input"
+                      value={ruletaData.probabilidad}
+                      onChange={e => setRuletaData(prev => ({ ...prev, probabilidad: parseFloat(e.target.value) }))}
+                      min="0.01"
+                      max="100"
+                      step="0.01"
+                    />
+                  </div>
+                  <div className="game-form-group">
+                    <label className="game-form-label">Orden</label>
+                    <input
+                      type="number"
+                      className="game-form-input"
+                      value={ruletaData.orden}
+                      onChange={e => setRuletaData(prev => ({ ...prev, orden: parseInt(e.target.value) }))}
+                      min="1"
+                    />
+                  </div>
+                  <div className="game-form-group">
+                    <label className="game-form-label">
+                      <input
+                        type="checkbox"
+                        checked={ruletaData.activo}
+                        onChange={e => setRuletaData(prev => ({ ...prev, activo: e.target.checked }))}
+                        className="mr-2"
+                      />
+                      Activo
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={handleSaveRuletaItem}
+                disabled={isSavingRuleta}
+                className="game-form-submit"
+              >
+                {isSavingRuleta ? (
+                  <>
+                    <FaSpinner className="spinner" />
+                    <span>Guardando...</span>
+                  </>
+                ) : (
+                  <>
+                    <FaCheck />
+                    <span>{ruletaData.id ? 'Guardar Cambios' : 'Crear Elemento'}</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="app-container-perfil">
       {loading ? (
@@ -4307,6 +5778,8 @@ export const Perfil = () => {
                 {activeSection === 'torneo' && <TorneoContent />}
                 {activeSection === 'puntos' && <PuntosContent />}
                 {activeSection === 'partidas' && <PartidasContent />}
+                {activeSection === 'entradas' && <EntradasContent />}
+                {activeSection === 'ruleta' && <RuletaContent />}
                 {showGameModal && <GameModal />}
                 {showLogroModal && <LogroModal />}
                 {showComodinModal && <ComodinModal />}
@@ -4317,6 +5790,87 @@ export const Perfil = () => {
                 {showPuntosModal && <PuntosModal />}
                 {showCrearPartidaModal && <CrearPartidaModal />}
                 {showResultadoModal && <ResultadoModal />}
+                {showJugadoresInicioModal && (
+                  <div className="game-modal">
+                    <div className="game-modal-content">
+                      <div className="game-modal-header">
+                        <h3 className="game-modal-title">Gestionar Jugadores del Inicio</h3>
+                        <button
+                          onClick={() => setShowJugadoresInicioModal(false)}
+                          className="game-modal-close"
+                        >
+                          <FaTimes />
+                        </button>
+                      </div>
+                      <div className="game-form-container">
+                        <p className="text-gray-600 mb-4">
+                          Selecciona los jugadores que aparecerán en la página principal. 
+                          Los usuarios podrán hacer clic en ellos para ver su información.
+                        </p>
+                        
+                        {jugadoresDisponiblesInicio.length === 0 ? (
+                          <div className="loading-spinner">
+                            <FaSpinner className="spinner-icon" />
+                            <span>Cargando jugadores disponibles...</span>
+                          </div>
+                        ) : (
+                          <div className="jugadores-grid">
+                            {jugadoresDisponiblesInicio.map(jugador => (
+                              <div key={jugador.nickname} className="jugador-checkbox">
+                                <input
+                                  type="checkbox"
+                                  id={`jugador-inicio-${jugador.nickname}`}
+                                  checked={jugadoresSeleccionadosInicio.includes(jugador.nickname)}
+                                  onChange={() => handleJugadorInicioToggle(jugador.nickname)}
+                                  className="checkbox-input"
+                                />
+                                <label htmlFor={`jugador-inicio-${jugador.nickname}`} className="checkbox-label">
+                                  <img
+                                    src={jugador.foto || '/default-profile.png'}
+                                    alt={jugador.nickname}
+                                    className="jugador-thumbnail"
+                                  />
+                                  <div className="jugador-info">
+                                    <span className="jugador-nickname">{jugador.nickname}</span>
+                                    <span className="jugador-email">{jugador.email}</span>
+                                  </div>
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="game-form-actions" style={{display:'flex',gap:'1rem'}}>
+                          <button
+                            onClick={() => setShowJugadoresInicioModal(false)}
+                            className="game-form-cancel"
+                            type="button"
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            onClick={handleSaveJugadoresInicio}
+                            disabled={isSavingJugadoresInicio}
+                            className="game-form-submit"
+                            type="button"
+                          >
+                            {isSavingJugadoresInicio ? (
+                              <>
+                                <FaSpinner className="spinner" />
+                                <span>Guardando...</span>
+                              </>
+                            ) : (
+                              <>
+                                <FaSave />
+                                <span>Guardar Jugadores</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </>
             ) : (
               <div className="profile-edit-section">

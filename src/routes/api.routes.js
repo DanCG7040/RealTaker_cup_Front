@@ -29,7 +29,9 @@ export const GAMES_ROUTES = {
     GET_ONE: (id) => `${API_URL}/juegos/${id}`,
     CREATE: `${API_URL}/juegos`,
     UPDATE: (id) => `${API_URL}/juegos/${id}`,
-    DELETE: (id) => `${API_URL}/juegos/${id}`
+    DELETE: (id) => `${API_URL}/juegos/${id}`,
+    GET_INICIO: `${API_URL}/juegos/inicio`,
+    TOGGLE_VISIBILITY: (id) => `${API_URL}/juegos/${id}/visibilidad`
 };
 
 export const CATEGORY_ROUTES = {
@@ -50,6 +52,7 @@ export const LOGROS_ROUTES = {
 
 export const COMODINES_ROUTES = {
     GET_ALL: `${API_URL}/comodines`,
+    GET_ALL_PUBLIC: `${API_URL}/comodines/todos`,
     GET_BY_ID: (idComodines) => `${API_URL}/comodines/${idComodines}`,
     CREATE: `${API_URL}/comodines`,
     UPDATE: (idComodines) => `${API_URL}/comodines/${idComodines}`,
@@ -79,6 +82,7 @@ export const PARTIDAS_ROUTES = {
     GET_EDICIONES_ACTIVAS: `${API_URL}/partidas/ediciones-activas`,
     GET_JUGADORES_BY_EDICION: (idEdicion) => `${API_URL}/partidas/jugadores/${idEdicion}`,
     GET_PERFIL_JUGADOR: (nickname) => `${API_URL}/partidas/perfil/${nickname}`,
+    GET_TABLA_GENERAL: `${API_URL}/partidas/tabla-general`,
     GET_ALL: `${API_URL}/partidas`,
     GET_BY_ID: (id) => `${API_URL}/partidas/${id}`,
     CREATE: `${API_URL}/partidas`,
@@ -87,4 +91,50 @@ export const PARTIDAS_ROUTES = {
     REGISTRAR_RESULTADO: (id) => `${API_URL}/partidas/${id}/resultado`,
     GET_RESULTADO: (id) => `${API_URL}/partidas/${id}/resultado`,
     LIMPIAR_TABLA_GENERAL: `${API_URL}/partidas/limpiar-tabla-general`
+};
+
+export const ENTRADAS_ROUTES = {
+    GET_ALL: `${API_URL}/entradas`,
+    GET_ONE: (id) => `${API_URL}/entradas/${id}`,
+    CREATE: `${API_URL}/entradas`,
+    UPDATE: (id) => `${API_URL}/entradas/${id}`,
+    DELETE: (id) => `${API_URL}/entradas/${id}`
+};
+
+export const CONFIGURACION_ROUTES = {
+    GET_INICIO: `${API_URL}/configuracion/inicio`,
+    UPDATE_INICIO: `${API_URL}/configuracion/inicio`
+};
+
+export const TORNEO_ROUTES = {
+    GET_JUGADORES: `${API_URL}/torneo/jugadores`,
+    GET_JUGADORES_INICIO: `${API_URL}/torneo/jugadores-inicio`,
+    SET_JUGADORES_INICIO: `${API_URL}/torneo/jugadores-inicio`
+};
+
+export const RULETA_ROUTES = {
+    GET_ALL: `${API_URL}/ruleta`,
+    GET_ONE: (id) => `${API_URL}/ruleta/${id}`,
+    CREATE: `${API_URL}/ruleta`,
+    UPDATE: (id) => `${API_URL}/ruleta/${id}`,
+    DELETE: (id) => `${API_URL}/ruleta/${id}`,
+    GET_CONFIGURACION: `${API_URL}/ruleta/configuracion`,
+    UPDATE_CONFIGURACION: `${API_URL}/ruleta/configuracion`,
+    GET_ESTADO: `${API_URL}/ruleta/estado`,
+    GIRAR: `${API_URL}/ruleta/girar`
+};
+
+export const USUARIOS_ROUTES = {
+    GET_LOGROS: `${API_URL}/usuarios/logros`,
+    POST_LOGROS: `${API_URL}/usuarios/logros`,
+    DELETE_LOGROS: (id) => `${API_URL}/usuarios/logros/${id}`,
+    GET_COMODINES: `${API_URL}/usuarios/comodines`,
+    DELETE_COMODINES: (id) => `${API_URL}/usuarios/comodines/${id}`,
+    GET_LOGROS_COMODINES: (nickname) => `${API_URL}/usuarios/${nickname}/logros-comodines`
+};
+
+// Rutas del histórico
+export const HISTORICO_ROUTES = {
+  GET_EDICIONES: `${API_URL}/historico/ediciones`,
+  GET_TABLA_GENERAL: (idEdicion) => `${API_URL}/historico/tabla-general/${idEdicion}`,
 }; 

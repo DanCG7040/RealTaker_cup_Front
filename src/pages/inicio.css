@@ -1,0 +1,1272 @@
+/* Estilos para la página de inicio */
+.inicio-container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f8fafc;
+  padding: 2.5rem;
+  margin: 0;
+  overflow-x: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  box-sizing: border-box;
+}
+
+.titulo-principal {
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 3rem;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  width: 100%;
+}
+
+.secciones-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  width: 100%;
+}
+
+.seccion-inicio {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.titulo-seccion {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.icono-seccion {
+  color: #3b82f6;
+  font-size: 1.25rem;
+}
+
+/* Estilos para entradas */
+.entradas-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.entrada-card {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.entrada-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border-color: #3b82f6;
+}
+
+.entrada-card h3 {
+  color: #1f2937;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.entrada-card p {
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+/* Estilos para carruseles */
+.juegos-carousel,
+.jugadores-carousel {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 20px 0;
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.carousel-btn:hover {
+  background: #2563eb;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-btn.prev {
+  left: -1rem;
+}
+
+.carousel-btn.next {
+  right: -1rem;
+}
+
+/* Estilos para tarjetas de juegos */
+.juego-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  animation: slideIn 0.6s ease-out;
+}
+
+.juego-card:hover {
+  transform: translateY(-8px) scale(1.02);
+}
+
+.juego-card:active {
+  transform: translateY(-2px);
+}
+
+.juego-hover-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  color: white;
+  padding: 20px 10px 10px;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+.juego-card:hover .juego-hover-info {
+  transform: translateY(0);
+}
+
+.juego-imagen {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 1rem;
+  border-radius: 1rem;
+  overflow: hidden;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #e5e7eb;
+}
+
+.juego-imagen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.juego-imagen svg {
+  font-size: 3rem;
+  color: #9ca3af;
+}
+
+.juego-card h3 {
+  color: #1f2937;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.juego-card p {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+/* Estilos para tarjetas de jugadores */
+.jugador-card {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 1rem;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  min-width: 200px;
+  max-width: 350px;
+  flex: 1;
+  animation: slideIn 0.6s ease-out;
+}
+
+.jugador-card:hover {
+  border-color: #3b82f6;
+  transform: translateY(-8px) scale(1.02);
+}
+
+.jugador-avatar {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #e5e7eb;
+}
+
+.jugador-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.jugador-avatar svg {
+  font-size: 2.5rem;
+  color: #9ca3af;
+}
+
+.jugador-card h3 {
+  color: #1f2937;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.jugador-card p {
+  color: #6b7280;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Estilos para placeholders */
+.tabla-general-placeholder,
+.comodines-placeholder {
+  background: #f8fafc;
+  border: 2px dashed #d1d5db;
+  border-radius: 0.75rem;
+  padding: 3rem;
+  text-align: center;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Estilos para estados de carga y sin datos */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 80px);
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: #6b7280;
+}
+
+.spinner-icon {
+  animation: spin 1s linear infinite;
+  font-size: 3rem;
+  color: #3b82f6;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.no-data {
+  text-align: center;
+  color: #6b7280;
+  font-style: italic;
+  padding: 2rem;
+}
+
+/* Estilos para el modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background: white;
+  border-radius: 15px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #1f2937;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+/* Estilos para el modal de jugador */
+.jugador-perfil {
+  text-align: center;
+}
+
+.jugador-foto {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 1rem;
+  border: 4px solid #e5e7eb;
+}
+
+.jugador-perfil h4 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #1f2937;
+}
+
+.jugador-perfil p {
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+}
+
+.jugador-logros-comodines h5 {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  color: #1f2937;
+}
+
+.logros-comodines-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+/* Estilos para el modal de resultado de ruleta */
+.resultado-ruleta .modal-content {
+  max-width: 400px;
+}
+
+.resultado-content {
+  text-align: center;
+}
+
+.resultado-imagen {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  margin-bottom: 1rem;
+  border-radius: 10px;
+}
+
+.resultado-content h4 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #1f2937;
+}
+
+.resultado-content p {
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+.texto-personalizado {
+  font-style: italic;
+  color: #059669 !important;
+  font-weight: 500;
+}
+
+.resultado-tipo {
+  margin-top: 1rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge.comodin {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.badge.personalizado {
+  background: #f3e8ff;
+  color: #7c3aed;
+}
+
+.badge.puntos {
+  background: #ffd700;
+  color: #333;
+}
+
+.puntos-ganados {
+  margin: 1rem 0;
+  text-align: center;
+}
+
+.puntos-badge {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 1.1em;
+  margin: 10px 0;
+}
+
+.puntos-badge.positivo {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+}
+
+.puntos-badge.negativo {
+  background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+  color: white;
+}
+
+.puntos-ganados p {
+  margin: 10px 0 0 0;
+  font-size: 0.9em;
+  opacity: 0.9;
+}
+
+/* Estilos para la sección de jugadores */
+.seccion-jugadores {
+  margin: 2rem 0;
+}
+
+.seccion-jugadores h2 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: #1f2937;
+  text-align: center;
+}
+
+.jugadores-carousel {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding: 1rem 0;
+  scroll-behavior: smooth;
+}
+
+.jugador-card {
+  flex: 0 0 200px;
+  background: white;
+  border-radius: 15px;
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border: 2px solid transparent;
+}
+
+.jugador-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border-color: #3b82f6;
+}
+
+.jugador-card.active {
+  border-color: #3b82f6;
+  background: #f0f9ff;
+}
+
+.jugador-card img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 1rem;
+  border: 3px solid #e5e7eb;
+}
+
+.jugador-card h3 {
+  font-size: 1.1rem;
+  margin: 0;
+  color: #1f2937;
+}
+
+.carousel-indicators {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: none;
+  background: #d1d5db;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.indicator.active {
+  background: #3b82f6;
+  transform: scale(1.2);
+}
+
+/* Estilos para la ruleta */
+.seccion-ruleta {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  color: white;
+  margin: 2rem 0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.seccion-ruleta h2 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.seccion-ruleta p {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+.ruleta-button {
+  background: linear-gradient(45deg, #ff6b6b, #feca57);
+  border: none;
+  border-radius: 50px;
+  padding: 1rem 2rem;
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.ruleta-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.ruleta-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Estilos para la ruleta */
+.ruleta-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 15px;
+  color: white;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.ruleta-info {
+  flex: 1;
+}
+
+.ruleta-descripcion {
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.ruleta-premios {
+  text-align: left;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.ruleta-premios h4 {
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+.ruleta-premios ul {
+  list-style: none;
+  padding: 0;
+}
+
+.ruleta-premios li {
+  padding: 0.5rem 0;
+  font-size: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.ruleta-premios li:last-child {
+  border-bottom: none;
+}
+
+.ruleta-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ruleta-button {
+  background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 200px;
+  justify-content: center;
+}
+
+.ruleta-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  background: linear-gradient(45deg, #ee5a24, #ff6b6b);
+}
+
+.ruleta-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.ruleta-button .spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.ruleta-nota {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  font-style: italic;
+}
+
+/* Modal de resultado de ruleta */
+.resultado-ruleta .modal-content {
+  max-width: 500px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.resultado-content {
+  text-align: center;
+  padding: 1rem;
+}
+
+.resultado-imagen {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  border: 3px solid white;
+}
+
+.resultado-content h4 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #ffd700;
+}
+
+.texto-personalizado {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #ffd700;
+  margin: 1rem 0;
+}
+
+.resultado-tipo {
+  margin-top: 1rem;
+}
+
+.badge {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.badge.comodin {
+  background: #ff6b6b;
+  color: white;
+}
+
+.badge.personalizado {
+  background: #4ecdc4;
+  color: white;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .inicio-container {
+    padding: 1rem;
+  }
+
+  .titulo-principal {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .seccion-inicio {
+    padding: 1.5rem;
+  }
+
+  .titulo-seccion {
+    font-size: 1.25rem;
+  }
+
+  .entradas-container {
+    grid-template-columns: 1fr;
+  }
+
+  .juego-card,
+  .jugador-card {
+    min-width: 250px;
+    padding: 1.5rem;
+  }
+
+  .juego-imagen {
+    width: 100px;
+    height: 100px;
+  }
+
+  .jugador-avatar {
+    width: 80px;
+    height: 80px;
+  }
+
+  .carousel-btn {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .carousel-btn.prev {
+    left: -0.5rem;
+  }
+
+  .carousel-btn.next {
+    right: -0.5rem;
+  }
+
+  .modal-content {
+    margin: 1rem;
+    max-width: calc(100vw - 2rem);
+  }
+
+  .jugador-avatar-large {
+    width: 120px;
+    height: 120px;
+  }
+
+  .ruleta-container {
+    padding: 1.5rem;
+  }
+  
+  .ruleta-button {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    min-width: 180px;
+  }
+  
+  .ruleta-premios {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .titulo-principal {
+    font-size: 1.75rem;
+  }
+
+  .seccion-inicio {
+    padding: 1rem;
+  }
+
+  .juego-card,
+  .jugador-card {
+    min-width: 200px;
+    padding: 1rem;
+  }
+
+  .juego-imagen {
+    width: 80px;
+    height: 80px;
+  }
+
+  .jugador-avatar {
+    width: 60px;
+    height: 60px;
+  }
+
+  .carousel-btn {
+    width: 2rem;
+    height: 2rem;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .inicio-container {
+    background-color: #111827;
+  }
+
+  .seccion-inicio {
+    background-color: #1f2937;
+    border-color: #374151;
+  }
+
+  .titulo-principal {
+    color: #f9fafb;
+  }
+
+  .titulo-seccion {
+    color: #f9fafb;
+    border-color: #374151;
+  }
+
+  .entrada-card {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+
+  .entrada-card:hover {
+    border-color: #3b82f6;
+  }
+
+  .entrada-card h3 {
+    color: #f9fafb;
+  }
+
+  .entrada-card p {
+    color: #d1d5db;
+  }
+
+  .juego-card,
+  .jugador-card {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+
+  .juego-card:hover,
+  .jugador-card:hover {
+    border-color: #3b82f6;
+  }
+
+  .juego-card h3,
+  .jugador-card h3 {
+    color: #f9fafb;
+  }
+
+  .juego-card p,
+  .jugador-card p {
+    color: #d1d5db;
+  }
+
+  .juego-imagen,
+  .jugador-avatar {
+    background-color: #1f2937;
+    border-color: #4b5563;
+  }
+
+  .tabla-general-placeholder,
+  .comodines-placeholder {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #d1d5db;
+  }
+
+  .modal-content {
+    background-color: #1f2937;
+  }
+
+  .modal-header {
+    border-color: #374151;
+  }
+
+  .modal-header h2 {
+    color: #f9fafb;
+  }
+
+  .jugador-perfil h3 {
+    color: #f9fafb;
+  }
+
+  .jugador-email {
+    color: #d1d5db;
+  }
+
+  .jugador-descripcion {
+    color: #e5e7eb;
+  }
+
+  .jugador-avatar-large {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+}
+
+/* Animación de entrada para las tarjetas */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Estilos para tabla general */
+.tabla-general-container {
+  overflow-x: auto;
+  margin: 20px 0;
+}
+
+.tabla-general {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.tabla-general th {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 15px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.tabla-general td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.tabla-general tr:hover {
+  background-color: #f8f9fa;
+}
+
+.tabla-general tr.top-3 {
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  font-weight: bold;
+}
+
+.tabla-general tr.top-3:nth-child(2) {
+  background: linear-gradient(135deg, #c0c0c0 0%, #e5e5e5 100%);
+}
+
+.tabla-general tr.top-3:nth-child(3) {
+  background: linear-gradient(135deg, #cd7f32 0%, #daa520 100%);
+}
+
+.posicion {
+  font-weight: bold;
+  text-align: center;
+  font-size: 1.2em;
+}
+
+.jugador-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.jugador-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ddd;
+}
+
+.puntos {
+  font-weight: bold;
+  color: #28a745;
+  font-size: 1.1em;
+}
+
+/* Estilos para comodines */
+.comodines-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.comodin-card {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.comodin-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.comodin-imagen {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 15px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.comodin-imagen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.comodin-icon {
+  font-size: 2em;
+  color: white;
+}
+
+.comodin-card h4 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 1.1em;
+}
+
+.comodin-card p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9em;
+  line-height: 1.4;
+}
+
+/* Estilos mejorados para ruleta */
+.ruleta-container {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 30px;
+  align-items: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  padding: 30px;
+  color: white;
+  margin: 20px 0;
+}
+
+.ruleta-info {
+  flex: 1;
+}
+
+.ruleta-descripcion {
+  font-size: 1.1em;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.ruleta-premios h4 {
+  margin-bottom: 10px;
+  font-size: 1.2em;
+}
+
+.ruleta-premios ul {
+  list-style: none;
+  padding: 0;
+}
+
+.ruleta-premios li {
+  margin: 8px 0;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.ruleta-action {
+  text-align: center;
+}
+
+.ruleta-button {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 50px;
+  font-size: 1.1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 auto;
+}
+
+.ruleta-button:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+}
+
+.ruleta-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.ruleta-nota {
+  margin-top: 10px;
+  font-size: 0.9em;
+  opacity: 0.8;
+}
+
+.ruleta-inactiva {
+  text-align: center;
+  padding: 20px;
+}
+
+.ruleta-inactiva p {
+  margin: 10px 0;
+  font-size: 1.1em;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .ruleta-container {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  
+  .comodines-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+  
+  .tabla-general {
+    font-size: 0.9em;
+  }
+  
+  .tabla-general th,
+  .tabla-general td {
+    padding: 8px 10px;
+  }
+} 

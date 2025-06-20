@@ -99,8 +99,22 @@ a:hover {
 /* Espacio debajo del navbar */
 .page-content {
   padding-top: 80px;
-  max-width: 1200px;
+
   margin: 0 auto;
+}
+
+/* Página de inicio sin restricciones */
+.inicio-page {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
 }
 
 body {
