@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash, FaChevronLeft, FaChevronRight, FaUser, FaGamepad, FaTrophy, FaStar } from 'react-icons/fa';
-import { ENTRADAS_ROUTES, CONFIGURACION_ROUTES, GAMES_ROUTES, TORNEO_ROUTES, RULETA_ROUTES, PARTIDAS_ROUTES, COMODINES_ROUTES } from '../routes/api.routes';
+import { ENTRADAS_ROUTES, CONFIGURACION_ROUTES, GAMES_ROUTES, TORNEO_ROUTES, RULETA_ROUTES, PARTIDAS_ROUTES, COMODINES_ROUTES, PROFILE_ROUTES } from '../routes/api.routes';
 import './inicio.css';
 import { toast } from 'react-hot-toast';
 
@@ -10,7 +10,7 @@ export const Inicio = () => {
   const [entradas, setEntradas] = useState([]);
   const [configuracion, setConfiguracion] = useState({
     mostrarTablaGeneral: true,
-    ordenSecciones: ['novedades', 'tablaGeneral', 'jugadores', 'juegos', 'comodines', 'ruleta']
+    ordenSecciones: ['novedades', 'ruleta', 'tablaGeneral', 'jugadores', 'juegos', 'comodines']
   });
   const [juegos, setJuegos] = useState([]);
   const [jugadores, setJugadores] = useState([]);
@@ -40,6 +40,12 @@ export const Inicio = () => {
   const [isGirandoRuleta, setIsGirandoRuleta] = useState(false);
   const [resultadoRuleta, setResultadoRuleta] = useState(null);
   const [showResultadoRuleta, setShowResultadoRuleta] = useState(false);
+  const [estadisticasRuleta, setEstadisticasRuleta] = useState({
+    giros_hoy: 0,
+    max_giros_por_dia: 1,
+    giros_restantes: 1,
+    total_giros: 0
+  });
 
   useEffect(() => {
     cargarDatos();
@@ -75,7 +81,18 @@ export const Inicio = () => {
       try {
         const configResponse = await axios.get(CONFIGURACION_ROUTES.GET_INICIO);
         if (configResponse.data.success) {
-          setConfiguracion(configResponse.data.data);
+          const configBackend = configResponse.data.data;
+          
+          // Asegurar que la ruleta esté en el orden de secciones
+          let ordenSecciones = configBackend.ordenSecciones || [];
+          if (!ordenSecciones.includes('ruleta')) {
+            ordenSecciones = ['novedades', 'ruleta', ...ordenSecciones.filter(s => s !== 'novedades')];
+          }
+          
+          setConfiguracion({
+            ...configBackend,
+            ordenSecciones: ordenSecciones
+          });
         }
       } catch (error) {
         console.error('Error al cargar configuración:', error);
@@ -150,6 +167,21 @@ export const Inicio = () => {
         console.error('Error al verificar ruleta:', error);
       }
 
+      // Cargar estadísticas de ruleta si el usuario está autenticado
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const statsResponse = await axios.get(RULETA_ROUTES.GET_ESTADISTICAS, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (statsResponse.data.success) {
+            setEstadisticasRuleta(statsResponse.data.data);
+          }
+        } catch (error) {
+          console.error('Error al cargar estadísticas de ruleta:', error);
+        }
+      }
+
     } catch (error) {
       console.error('Error general al cargar datos:', error);
     } finally {
@@ -214,21 +246,63 @@ export const Inicio = () => {
   };
 
   const girarRuleta = async () => {
-    if (!localStorage.getItem('token')) {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
       toast.error('Debes iniciar sesión para girar la ruleta');
+      navigate('/login');
+      return;
+    }
+
+    // Verificar el rol del usuario de forma más simple
+    try {
+      const userResponse = await axios.get(PROFILE_ROUTES.GET_PROFILE, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (userResponse.data.success) {
+        const userRole = userResponse.data.data.rol;
+        
+        // Solo admin (rol 0 y 1) y jugadores (rol 2) pueden girar la ruleta
+        if (userRole !== 0 && userRole !== 1 && userRole !== 2) {
+          toast.error('Solo administradores y jugadores pueden girar la ruleta');
+          return; // No redirigir, solo mostrar error
+        }
+      } else {
+        toast.error('Error al verificar permisos');
+        return; // No redirigir, solo mostrar error
+      }
+    } catch (error) {
+      console.error('Error al verificar rol del usuario:', error);
+      toast.error('Error al verificar permisos. Intenta de nuevo.');
+      return; // No redirigir, solo mostrar error
+    }
+
+    // Verificar si ya no quedan giros
+    if (estadisticasRuleta.giros_restantes <= 0) {
+      toast.error('Ya has usado todos tus giros de hoy. Vuelve mañana.');
       return;
     }
 
     setIsGirandoRuleta(true);
     try {
       const response = await axios.post(RULETA_ROUTES.GIRAR, {}, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
 
       if (response.data.success) {
         setResultadoRuleta(response.data.data);
         setShowResultadoRuleta(true);
         toast.success('¡Giro exitoso!');
+        
+        // Actualizar estadísticas
+        if (response.data.data.giros_restantes !== undefined) {
+          setEstadisticasRuleta(prev => ({
+            ...prev,
+            giros_hoy: prev.giros_hoy + 1,
+            giros_restantes: response.data.data.giros_restantes
+          }));
+        }
       }
     } catch (error) {
       console.error('Error al girar ruleta:', error);
@@ -432,7 +506,7 @@ export const Inicio = () => {
         );
 
       case 'ruleta':
-        return (
+        return ruletaActiva ? (
           <section key="ruleta" className="seccion-inicio">
             <h2 className="titulo-seccion">
               🎰 Ruleta de Premios
@@ -450,41 +524,63 @@ export const Inicio = () => {
                     <li>🏆 Premios personalizados</li>
                   </ul>
                 </div>
+                
+                {/* Estadísticas de giros */}
+                <div className="ruleta-estadisticas">
+                  <h4>Tu progreso de hoy:</h4>
+                  <div className="stats-grid">
+                    <div className="stat-item">
+                      <span className="stat-label">Giros usados:</span>
+                      <span className="stat-value">{estadisticasRuleta.giros_hoy}/{estadisticasRuleta.max_giros_por_dia}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-label">Giros restantes:</span>
+                      <span className={`stat-value ${estadisticasRuleta.giros_restantes > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {estadisticasRuleta.giros_restantes}
+                      </span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-label">Total de giros:</span>
+                      <span className="stat-value">{estadisticasRuleta.total_giros}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div className="ruleta-action">
-                {ruletaActiva ? (
-                  <>
-                    <button 
-                      className="ruleta-button"
-                      onClick={girarRuleta}
-                      disabled={isGirandoRuleta}
-                    >
-                      {isGirandoRuleta ? (
-                        <>
-                          <span className="spinner">🎰</span>
-                          <span>Girando...</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>🎰</span>
-                          <span>¡Girar Ruleta!</span>
-                        </>
-                      )}
-                    </button>
-                    <p className="ruleta-nota">
-                      * Solo para jugadores registrados
-                    </p>
-                  </>
-                ) : (
-                  <div className="ruleta-inactiva">
-                    <p>🎰 La ruleta está temporalmente desactivada</p>
-                    <p className="ruleta-nota">Vuelve más tarde para intentar tu suerte</p>
-                  </div>
+                <button 
+                  className={`ruleta-button ${estadisticasRuleta.giros_restantes <= 0 ? 'disabled' : ''}`}
+                  onClick={girarRuleta}
+                  disabled={isGirandoRuleta || estadisticasRuleta.giros_restantes <= 0}
+                >
+                  {isGirandoRuleta ? (
+                    <>
+                      <span className="spinner">🎰</span>
+                      <span>Girando...</span>
+                    </>
+                  ) : estadisticasRuleta.giros_restantes <= 0 ? (
+                    <>
+                      <span>⏰</span>
+                      <span>Sin giros disponibles</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>🎰</span>
+                      <span>¡Girar Ruleta!</span>
+                    </>
+                  )}
+                </button>
+                <p className="ruleta-nota">
+                  * Solo para administradores y jugadores registrados
+                </p>
+                {estadisticasRuleta.giros_restantes <= 0 && (
+                  <p className="ruleta-nota text-red-600">
+                    * Ya has usado todos tus giros de hoy. Vuelve mañana.
+                  </p>
                 )}
               </div>
             </div>
           </section>
-        );
+        ) : null;
 
       default:
         return null;

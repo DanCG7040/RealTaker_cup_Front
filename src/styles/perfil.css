@@ -1,5 +1,3 @@
-/* Contenedor principal del perfil */
-
 /* Layout principal para el perfil */
 .app-container-perfil {
   display: flex !important;
@@ -303,13 +301,14 @@
   min-height: calc(100vh - 80px);
   background-color: #f3f4f6;
   gap: 2rem;
-  padding: 80px 2rem 2rem calc(250px + 2rem);
+  padding: 80px 2rem 2rem 2rem;
+  position: relative;
 }
 
 /* Menú de administrador */
 .admin-menu {
   width: 250px;
-  background-color: #1f2937;
+  background-color: #e5e7eb;
   padding: 1.5rem;
   height: calc(100vh - 80px);
   position: fixed;
@@ -317,15 +316,17 @@
   top: 80px;
   overflow-y: auto;
   z-index: 40;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  border-right: 1px solid #d1d5db;
 }
 
 .admin-menu-title {
-  color: white;
+  color: #1f2937;
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #374151;
+  border-bottom: 2px solid #9ca3af;
 }
 
 .admin-menu-buttons {
@@ -340,36 +341,45 @@
   align-items: center;
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
-  color: white;
-  background-color: #374151;
+  color: #374151;
+  background-color: white;
   transition: all 0.2s;
   font-weight: 500;
   border: 2px solid transparent;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .admin-menu-button:hover {
-  background-color: #4b5563;
+  background-color: #f3f4f6;
   transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .admin-menu-button-active {
-  background-color: #2563eb;
+  background-color: #3b82f6;
   border-color: #60a5fa;
+  color: white;
 }
 
 .admin-menu-button-active:hover {
-  background-color: #1d4ed8;
+  background-color: #2563eb;
 }
 
 /* Contenido principal */
 .main-content {
   flex: 1 !important;
-  margin-left: 0;
   background-color: #f3f4f6;
   min-height: calc(100vh - 80px);
   display: flex;
-  padding-left: 250px;
+  padding-left: 0;
   flex-direction: column;
+  width: 100% !important;
+}
+
+/* Cuando hay menú de admin, ajustar el contenido */
+.admin-layout .main-content {
+  margin-left: 250px !important;
+  width: calc(100% - 250px) !important;
 }
 
 .content-section {
@@ -378,6 +388,8 @@
   padding: 2rem;
   flex: 1;
   width: 100% !important;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 /* Tabla de juegos */
@@ -423,12 +435,17 @@
 .game-modal {
   position: fixed;
   top: 64px;
-  left: 280px;
+  left: 0;
   right: 0;
   background-color: #f3f4f6;
   padding: 2rem;
   z-index: 50;
   border-bottom: 1px solid #e5e7eb;
+}
+
+/* Cuando hay menú de admin, ajustar el modal */
+.admin-layout .game-modal {
+  left: 0;
 }
 
 .game-modal-content {
@@ -605,7 +622,26 @@
     padding: 1.25rem;
   }
 
+  /* Ajustar layout de admin en pantallas pequeñas */
+  .admin-layout {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  .admin-menu {
+    width: 200px;
+  }
+
+  .admin-layout .main-content {
+    margin-left: 200px !important;
+    width: calc(100% - 200px) !important;
+  }
+
   .game-modal {
+    left: 0;
+  }
+
+  .admin-layout .game-modal {
     left: 0;
   }
 
@@ -615,6 +651,22 @@
 
   .game-form-image-section {
     align-self: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-layout {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .admin-menu {
+    width: 180px;
+  }
+
+  .admin-layout .main-content {
+    margin-left: 180px !important;
+    width: calc(100% - 180px) !important;
   }
 }
 
@@ -686,6 +738,27 @@
 
   .games-title {
     text-align: center;
+  }
+
+  /* En pantallas muy pequeñas, hacer el menú responsive */
+  .admin-layout {
+    flex-direction: column;
+    padding: 80px 1rem 1rem 1rem;
+  }
+
+  .admin-menu {
+    position: relative;
+    width: 100%;
+    height: auto;
+    top: 0;
+    left: 0;
+    margin-bottom: 1rem;
+    border-radius: 0.5rem;
+  }
+
+  .admin-layout .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
   }
 }
 

@@ -121,7 +121,9 @@ export const RULETA_ROUTES = {
     GET_CONFIGURACION: `${API_URL}/ruleta/configuracion`,
     UPDATE_CONFIGURACION: `${API_URL}/ruleta/configuracion`,
     GET_ESTADO: `${API_URL}/ruleta/estado`,
-    GIRAR: `${API_URL}/ruleta/girar`
+    GIRAR: `${API_URL}/ruleta/girar`,
+    GET_HISTORIAL: `${API_URL}/ruleta/historial`,
+    GET_ESTADISTICAS: `${API_URL}/ruleta/estadisticas`
 };
 
 export const USUARIOS_ROUTES = {

@@ -4724,9 +4724,16 @@ export const Perfil = () => {
   const handleSaveConfiguracionInicio = async () => {
     setIsSavingConfiguracion(true);
     try {
+      // Guardar configuración del inicio
       await axios.put(CONFIGURACION_ROUTES.UPDATE_INICIO, configuracionInicio, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
+      // Guardar configuración de la ruleta
+      await axios.put(RULETA_ROUTES.UPDATE_CONFIGURACION, configuracionRuleta, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
       toast.success('Configuración guardada correctamente');
     } catch (error) {
       console.error('Error al guardar configuración:', error);
@@ -4828,6 +4835,31 @@ export const Perfil = () => {
           />
           Mostrar tabla general en el inicio
         </label>
+        
+        {/* Configuración de la ruleta */}
+        <div style={{ marginTop: 16, padding: 12, border: '1px solid #d1d5db', borderRadius: 8 }}>
+          <h4 className="font-semibold mb-3">🎰 Configuración de la Ruleta</h4>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <input
+              type="checkbox"
+              checked={configuracionRuleta.ruleta_activa}
+              onChange={e => setConfiguracionRuleta(prev => ({ ...prev, ruleta_activa: e.target.checked }))}
+            />
+            Activar ruleta en la página de inicio
+          </label>
+          <div style={{ marginTop: 8 }}>
+            <label className="text-sm text-gray-600">Máximo de giros por día:</label>
+            <input
+              type="number"
+              min="1"
+              max="10"
+              value={configuracionRuleta.max_giros_por_dia}
+              onChange={e => setConfiguracionRuleta(prev => ({ ...prev, max_giros_por_dia: parseInt(e.target.value) }))}
+              className="w-20 px-2 py-1 border border-gray-300 rounded ml-2"
+            />
+          </div>
+        </div>
+        
         <div style={{ marginTop: 12 }}>
           <label className="font-semibold">Orden de secciones en el inicio:</label>
           <ol style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
@@ -5325,7 +5357,20 @@ export const Perfil = () => {
   };
 
   const handleEditRuletaItem = (item) => {
-    setRuletaData(item);
+    // Extraer puntos del texto_personalizado si es de tipo puntos
+    let puntos = 0;
+    if (item.tipo === 'puntos' && item.texto_personalizado) {
+      puntos = parseInt(item.texto_personalizado) || 0;
+    }
+    
+    setRuletaData({
+      id: item.id,
+      nombre: item.nombre,
+      tipo: item.tipo,
+      comodin_id: item.comodin_id,
+      puntos: puntos,
+      activo: item.activo
+    });
     setShowRuletaModal(true);
     
     // Cargar comodines si no están cargados y el elemento es de tipo comodín
@@ -5531,13 +5576,13 @@ export const Perfil = () => {
                     {item.tipo === 'comodin' && item.comodin_nombre && (
                       <span className="text-blue-600">{item.comodin_nombre}</span>
                     )}
-                    {item.tipo === 'puntos' && (
-                      <span className={`font-bold ${item.puntos > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {item.puntos > 0 ? '+' : ''}{item.puntos} puntos
+                    {item.tipo === 'puntos' && item.texto_personalizado && (
+                      <span className={`font-bold ${item.texto_personalizado.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
+                        {item.texto_personalizado} puntos
                       </span>
                     )}
                     {item.tipo === 'personalizado' && (
-                      <span className="text-gray-600">{item.texto_personalizado}</span>
+                      <span className="text-gray-600">{item.texto_personalizado || 'Sin texto'}</span>
                     )}
                   </td>
                   <td>
@@ -5726,7 +5771,7 @@ export const Perfil = () => {
   );
 
   return (
-    <div className="app-container-perfil">
+    <div className={`app-container-perfil ${user.rol === 0 ? 'admin-layout' : ''}`}>
       {loading ? (
         <div className="loading-spinner">
           <FaSpinner className="spinner-icon" />
