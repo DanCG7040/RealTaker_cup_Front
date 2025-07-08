@@ -54,26 +54,25 @@ export const Historico = () => {
   const loadInitialData = async () => {
     setIsLoading(true);
     try {
-      // Cargar ediciones
-      const edicionesResponse = await axios.get(EDICION_ROUTES.GET_ALL, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      // Cargar ediciones (público)
+      const edicionesResponse = await axios.get(EDICION_ROUTES.GET_ALL);
 
-      // Cargar partidas
-      const partidasResponse = await axios.get(PARTIDAS_ROUTES.GET_ALL, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      // Cargar partidas (público)
+      const partidasResponse = await axios.get(PARTIDAS_ROUTES.GET_ALL);
 
-      // Cargar ediciones históricas
-      const historicoResponse = await axios.get(HISTORICO_ROUTES.GET_EDICIONES, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      // Cargar ediciones históricas (público - sin token)
+      const historicoResponse = await axios.get(HISTORICO_ROUTES.GET_EDICIONES);
 
       if (edicionesResponse.data.success) {
         setEdiciones(edicionesResponse.data.data);
       }
 
       if (partidasResponse.data.success) {
+        console.log('📊 Datos de partidas recibidos:', partidasResponse.data.data);
+        // Log de la primera partida para ver la estructura
+        if (partidasResponse.data.data.length > 0) {
+          console.log('🔍 Estructura de la primera partida:', partidasResponse.data.data[0]);
+        }
         setAllPartidas(partidasResponse.data.data);
         setFilteredPartidas(partidasResponse.data.data);
       }
@@ -96,42 +95,67 @@ export const Historico = () => {
       return;
     }
 
+    console.log('🔍 Búsqueda iniciada:', { filterType, searchTerm, totalPartidas: allPartidas.length });
+
     let filtered = [...allPartidas];
 
     switch (filterType) {
       case 'year':
-        filtered = allPartidas.filter(partida => 
-          partida.idEdicion.toString().includes(searchTerm)
-        );
+        filtered = allPartidas.filter(partida => {
+          const match = partida.idEdicion && partida.idEdicion.toString().includes(searchTerm);
+          console.log(`Año ${partida.idEdicion}: ${match ? '✅' : '❌'}`);
+          return match;
+        });
         break;
       
       case 'player':
-        filtered = allPartidas.filter(partida => 
-          partida.jugadores && partida.jugadores.some(jugador => 
-            jugador.toLowerCase().includes(searchTerm.toLowerCase())
-          )
-        );
+        filtered = allPartidas.filter(partida => {
+          if (!partida.jugadores || !Array.isArray(partida.jugadores)) {
+            console.log(`Partida ${partida.id}: sin jugadores`);
+            return false;
+          }
+          const match = partida.jugadores.some(jugador => 
+            jugador && jugador.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+          console.log(`Jugadores ${partida.jugadores.join(', ')}: ${match ? '✅' : '❌'}`);
+          return match;
+        });
         break;
       
       case 'game':
-        filtered = allPartidas.filter(partida => 
-          partida.juego_nombre && 
-          partida.juego_nombre.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        filtered = allPartidas.filter(partida => {
+          if (!partida.juego_nombre) {
+            console.log(`Partida ${partida.id}: sin nombre de juego`);
+            return false;
+          }
+          const match = partida.juego_nombre.toLowerCase().includes(searchTerm.toLowerCase());
+          console.log(`Juego ${partida.juego_nombre}: ${match ? '✅' : '❌'}`);
+          return match;
+        });
         break;
       
       case 'phase':
-        filtered = allPartidas.filter(partida => 
-          partida.fase && 
-          partida.fase.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        filtered = allPartidas.filter(partida => {
+          if (!partida.fase) {
+            console.log(`Partida ${partida.id}: sin fase`);
+            return false;
+          }
+          const match = partida.fase.toLowerCase().includes(searchTerm.toLowerCase());
+          console.log(`Fase ${partida.fase}: ${match ? '✅' : '❌'}`);
+          return match;
+        });
         break;
       
       case 'type':
-        filtered = allPartidas.filter(partida => 
-          partida.tipo && 
-          partida.tipo.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        filtered = allPartidas.filter(partida => {
+          if (!partida.tipo) {
+            console.log(`Partida ${partida.id}: sin tipo`);
+            return false;
+          }
+          const match = partida.tipo.toLowerCase().includes(searchTerm.toLowerCase());
+          console.log(`Tipo ${partida.tipo}: ${match ? '✅' : '❌'}`);
+          return match;
+        });
         break;
 
       case 'tabla_historica':
@@ -155,18 +179,19 @@ export const Historico = () => {
       
       default:
         // Búsqueda general - incluir tablas históricas
-        const partidasFiltradas = allPartidas.filter(partida => 
-          partida.idEdicion.toString().includes(searchTerm) ||
-          (partida.jugadores && partida.jugadores.some(jugador => 
-            jugador.toLowerCase().includes(searchTerm.toLowerCase())
-          )) ||
-          (partida.juego_nombre && 
-           partida.juego_nombre.toLowerCase().includes(searchTerm.toLowerCase())) ||
-          (partida.fase && 
-           partida.fase.toLowerCase().includes(searchTerm.toLowerCase())) ||
-          (partida.tipo && 
-           partida.tipo.toLowerCase().includes(searchTerm.toLowerCase()))
-        );
+        const partidasFiltradas = allPartidas.filter(partida => {
+          const matchYear = partida.idEdicion && partida.idEdicion.toString().includes(searchTerm);
+          const matchPlayer = partida.jugadores && Array.isArray(partida.jugadores) && 
+            partida.jugadores.some(jugador => jugador && jugador.toLowerCase().includes(searchTerm.toLowerCase()));
+          const matchGame = partida.juego_nombre && 
+            partida.juego_nombre.toLowerCase().includes(searchTerm.toLowerCase());
+          const matchPhase = partida.fase && 
+            partida.fase.toLowerCase().includes(searchTerm.toLowerCase());
+          const matchType = partida.tipo && 
+            partida.tipo.toLowerCase().includes(searchTerm.toLowerCase());
+          
+          return matchYear || matchPlayer || matchGame || matchPhase || matchType;
+        });
 
         // También buscar en ediciones históricas
         const edicionesHistoricasFiltradas = edicionesHistoricas.filter(edicion => 
@@ -187,10 +212,13 @@ export const Historico = () => {
         return;
     }
 
+    console.log(`📊 Resultados encontrados: ${filtered.length} de ${allPartidas.length}`);
     setFilteredPartidas(filtered);
     
     if (filtered.length === 0) {
       toast.info(`No se encontraron resultados para "${searchTerm}"`);
+    } else {
+      toast.success(`Se encontraron ${filtered.length} partidas para "${searchTerm}"`);
     }
   };
 
@@ -229,13 +257,11 @@ export const Historico = () => {
     }
   };
 
-  // Ver perfil de jugador
+  // Ver perfil de jugador (público)
   const handleVerPerfil = async (nickname) => {
     setIsLoadingPerfil(true);
     try {
-      const response = await axios.get(PARTIDAS_ROUTES.GET_PERFIL_JUGADOR(nickname), {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axios.get(PARTIDAS_ROUTES.GET_PERFIL_JUGADOR(nickname));
       
       if (response.data.success) {
         setJugadorSeleccionado(response.data.data);
@@ -249,12 +275,10 @@ export const Historico = () => {
     }
   };
 
-  // Obtener resultado de partida
+  // Obtener resultado de partida (público)
   const getResultadoPartida = async (partidaId) => {
     try {
-      const response = await axios.get(PARTIDAS_ROUTES.GET_RESULTADO(partidaId), {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axios.get(PARTIDAS_ROUTES.GET_RESULTADO(partidaId));
       
       if (response.data.success) {
         return response.data.data;
@@ -289,13 +313,11 @@ export const Historico = () => {
 
   const groupedPartidas = groupPartidasByEdicion();
 
-  // Cargar tabla general histórica
+  // Cargar tabla general histórica (público - sin token)
   const cargarTablaHistorica = async (idEdicion) => {
     setIsLoadingTablaHistorica(true);
     try {
-      const response = await axios.get(HISTORICO_ROUTES.GET_TABLA_GENERAL(idEdicion), {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axios.get(HISTORICO_ROUTES.GET_TABLA_GENERAL(idEdicion));
       
       if (response.data.success) {
         setTablaHistorica(response.data.data);
