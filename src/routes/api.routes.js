@@ -44,6 +44,7 @@ export const CATEGORY_ROUTES = {
 
 export const LOGROS_ROUTES = {
     GET_ALL: `${API_URL}/logros`,
+    GET_DESTACADOS: `${API_URL}/logros/destacados`,
     GET_BY_ID: (idLogros) => `${API_URL}/logros/${idLogros}`,
     CREATE: `${API_URL}/logros`,
     UPDATE: (idLogros) => `${API_URL}/logros/${idLogros}`,
@@ -83,6 +84,7 @@ export const PARTIDAS_ROUTES = {
     GET_JUGADORES_BY_EDICION: (idEdicion) => `${API_URL}/partidas/jugadores/${idEdicion}`,
     GET_PERFIL_JUGADOR: (nickname) => `${API_URL}/partidas/perfil/${nickname}`,
     GET_TABLA_GENERAL: `${API_URL}/partidas/tabla-general`,
+    GET_ESTADISTICAS_REALES: `${API_URL}/partidas/estadisticas-reales`,
     GET_ALL: `${API_URL}/partidas`,
     GET_BY_ID: (id) => `${API_URL}/partidas/${id}`,
     CREATE: `${API_URL}/partidas`,

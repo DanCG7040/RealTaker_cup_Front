@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { FaEye, FaEyeSlash, FaChevronLeft, FaChevronRight, FaUser, FaGamepad, FaTrophy, FaStar } from 'react-icons/fa';
-import { ENTRADAS_ROUTES, CONFIGURACION_ROUTES, GAMES_ROUTES, TORNEO_ROUTES, RULETA_ROUTES, PARTIDAS_ROUTES, COMODINES_ROUTES, PROFILE_ROUTES } from '../routes/api.routes';
+import { FaEye, FaEyeSlash, FaChevronLeft, FaChevronRight, FaUser, FaGamepad, FaTrophy, FaStar, FaUsers, FaCalendar, FaClock, FaMedal, FaChartLine } from 'react-icons/fa';
+import { ENTRADAS_ROUTES, CONFIGURACION_ROUTES, GAMES_ROUTES, TORNEO_ROUTES, RULETA_ROUTES, PARTIDAS_ROUTES, COMODINES_ROUTES, PROFILE_ROUTES, LOGROS_ROUTES } from '../routes/api.routes';
 import './inicio.css';
 import { toast } from 'react-hot-toast';
 
@@ -33,6 +33,26 @@ export const Inicio = () => {
   // Estados para comodines
   const [comodines, setComodines] = useState([]);
   const [isLoadingComodines, setIsLoadingComodines] = useState(false);
+  
+  // Estados para futuras partidas
+  const [futurasPartidas, setFuturasPartidas] = useState([]);
+  const [isLoadingFuturasPartidas, setIsLoadingFuturasPartidas] = useState(false);
+  
+  // Estados para estadísticas reales
+  const [estadisticasReales, setEstadisticasReales] = useState({
+    totalPartidas: 0,
+    partidasJugadas: 0,
+    partidasPendientes: 0,
+    jugadoresActivos: 0,
+    progresoTorneo: 0,
+    progresoTemporal: 0,
+    edicionActual: null
+  });
+  const [isLoadingEstadisticas, setIsLoadingEstadisticas] = useState(false);
+  
+  // Estados para logros destacados
+  const [logrosDestacados, setLogrosDestacados] = useState([]);
+  const [isLoadingLogros, setIsLoadingLogros] = useState(false);
   
   // Estados para la ruleta
   const [ruletaActiva, setRuletaActiva] = useState(false);
@@ -165,6 +185,53 @@ export const Inicio = () => {
         }
       } catch (error) {
         console.error('Error al verificar ruleta:', error);
+      }
+
+      // Cargar futuras partidas
+      try {
+        setIsLoadingFuturasPartidas(true);
+        const partidasResponse = await axios.get(PARTIDAS_ROUTES.GET_ALL);
+        if (partidasResponse.data.success) {
+          // Filtrar solo partidas futuras (fecha mayor a hoy)
+          const hoy = new Date();
+          const partidasFuturas = partidasResponse.data.data.filter(partida => {
+            const fechaPartida = new Date(partida.fecha);
+            return fechaPartida > hoy;
+          }).sort((a, b) => new Date(a.fecha) - new Date(b.fecha)).slice(0, 5); // Solo las próximas 5
+          setFuturasPartidas(partidasFuturas);
+        }
+      } catch (error) {
+        console.error('Error al cargar futuras partidas:', error);
+        setFuturasPartidas([]);
+      } finally {
+        setIsLoadingFuturasPartidas(false);
+      }
+
+      // Cargar estadísticas reales
+      try {
+        setIsLoadingEstadisticas(true);
+        const statsResponse = await axios.get(PARTIDAS_ROUTES.GET_ESTADISTICAS_REALES);
+        if (statsResponse.data.success) {
+          setEstadisticasReales(statsResponse.data.data);
+        }
+      } catch (error) {
+        console.error('Error al cargar estadísticas reales:', error);
+      } finally {
+        setIsLoadingEstadisticas(false);
+      }
+
+      // Cargar logros destacados
+      try {
+        setIsLoadingLogros(true);
+        const logrosResponse = await axios.get(LOGROS_ROUTES.GET_DESTACADOS);
+        if (logrosResponse.data.success) {
+          setLogrosDestacados(logrosResponse.data.data);
+        }
+      } catch (error) {
+        console.error('Error al cargar logros destacados:', error);
+        setLogrosDestacados([]);
+      } finally {
+        setIsLoadingLogros(false);
       }
 
       // Cargar estadísticas de ruleta si el usuario está autenticado
@@ -605,11 +672,435 @@ export const Inicio = () => {
           <h1 className="titulo-principal">Bienvenido a la Real TakerCup</h1>
           
           <div className="secciones-container">
-            {configuracion.ordenSecciones.map((seccion, index) => (
-              <div key={`${seccion}-${index}`}>
-                {renderSeccion(seccion)}
+            {/* Columna izquierda - Widgets laterales */}
+            <div className="columna-izquierda">
+              {/* Widget de jugadores destacados */}
+              <div className="widget-lateral">
+                <h3>
+                  <FaUsers />
+                  Jugadores Destacados
+                </h3>
+                <div className="jugadores-destacados">
+                  {jugadoresInicio.slice(0, 5).map((jugador, index) => (
+                    <div 
+                      key={jugador.nickname} 
+                      className="jugador-destacado"
+                      onClick={() => handleJugadorClick(jugador)}
+                    >
+                      <img src={jugador.foto || '/default-profile.png'} alt={jugador.nickname} />
+                      <div className="info">
+                        <div className="nombre">{jugador.nickname}</div>
+                        <div className="puntos">Jugador activo</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
+
+              {/* Widget de estadísticas rápidas */}
+              <div className="widget-lateral">
+                <h3>
+                  <FaTrophy />
+                  Estadísticas
+                </h3>
+                <div className="estadisticas-rapidas">
+                  <div className="stat-card">
+                    <span className="numero">{juegos.length}</span>
+                    <span className="label">Juegos</span>
+                  </div>
+                  <div className="stat-card">
+                    <span className="numero">{jugadoresInicio.length}</span>
+                    <span className="label">Jugadores</span>
+                  </div>
+                  <div className="stat-card">
+                    <span className="numero">{comodines.length}</span>
+                    <span className="label">Comodines</span>
+                  </div>
+                  <div className="stat-card">
+                    <span className="numero">{tablaGeneral.length}</span>
+                    <span className="label">En Tabla</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Widget de comodines rápidos */}
+              <div className="widget-lateral">
+                <h3>
+                  <FaStar />
+                  Comodines Disponibles
+                </h3>
+                <div className="comodines-rapidos">
+                  {comodines.slice(0, 3).map(comodin => (
+                    <div key={comodin.idcomodines} className="comodin-rapido">
+                      <img src={comodin.foto || '/default-comodin.png'} alt={comodin.nombre} />
+                      <div className="info">
+                        <div className="nombre">{comodin.nombre}</div>
+                        <div className="descripcion">{comodin.descripcion}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Columna central - Contenido principal */}
+            <div className="columna-central">
+              {/* Sección de novedades */}
+              {configuracion.ordenSecciones.includes('novedades') && entradas.length > 0 && (
+                <div className="seccion-inicio">
+                  <h2 className="titulo-seccion">
+                    <FaStar className="icono-seccion" />
+                    Novedades y Entradas
+                  </h2>
+                  <div className="entradas-container">
+                    {entradas.map(entrada => (
+                      <div key={entrada.id} className="entrada-card">
+                        <h3>{entrada.titulo}</h3>
+                        <p>{entrada.contenido}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Sección de ruleta */}
+              {configuracion.ordenSecciones.includes('ruleta') && ruletaActiva && (
+                <div className="seccion-inicio">
+                  <div className="ruleta-container">
+                    <div className="ruleta-info">
+                      <h2 className="titulo-seccion" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.2)' }}>
+                        🎰 Ruleta de Premios
+                      </h2>
+                      <p className="ruleta-descripcion">
+                        ¡Gira la ruleta y gana comodines, puntos para la tabla general y premios especiales!
+                      </p>
+                      <div className="ruleta-premios">
+                        <h4>Premios disponibles:</h4>
+                        <ul>
+                          <li>🎁 Comodines especiales</li>
+                          <li>⭐ Puntos para la tabla general (+/- puntos)</li>
+                          <li>🏆 Premios personalizados</li>
+                        </ul>
+                      </div>
+                      
+                      {/* Estadísticas de giros */}
+                      <div className="ruleta-estadisticas">
+                        <h4>Tu progreso de hoy:</h4>
+                        <div className="stats-grid">
+                          <div className="stat-item">
+                            <span className="stat-label">Giros usados:</span>
+                            <span className="stat-value">{estadisticasRuleta.giros_hoy}/{estadisticasRuleta.max_giros_por_dia}</span>
+                          </div>
+                          <div className="stat-item">
+                            <span className="stat-label">Giros restantes:</span>
+                            <span className={`stat-value ${estadisticasRuleta.giros_restantes > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {estadisticasRuleta.giros_restantes}
+                            </span>
+                          </div>
+                          <div className="stat-item">
+                            <span className="stat-label">Total de giros:</span>
+                            <span className="stat-value">{estadisticasRuleta.total_giros}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="ruleta-action">
+                      <button 
+                        className={`ruleta-button ${estadisticasRuleta.giros_restantes <= 0 ? 'disabled' : ''}`}
+                        onClick={girarRuleta}
+                        disabled={isGirandoRuleta || estadisticasRuleta.giros_restantes <= 0}
+                      >
+                        {isGirandoRuleta ? (
+                          <>
+                            <span className="spinner">🎰</span>
+                            <span>Girando...</span>
+                          </>
+                        ) : estadisticasRuleta.giros_restantes <= 0 ? (
+                          <>
+                            <span>⏰</span>
+                            <span>Sin giros disponibles</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>🎰</span>
+                            <span>¡Girar Ruleta!</span>
+                          </>
+                        )}
+                      </button>
+                      <p className="ruleta-nota">
+                        * Solo para administradores y jugadores registrados
+                      </p>
+                      {estadisticasRuleta.giros_restantes <= 0 && (
+                        <p className="ruleta-nota text-red-600">
+                          * Ya has usado todos tus giros de hoy. Vuelve mañana.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Sección de tabla general */}
+              {configuracion.ordenSecciones.includes('tablaGeneral') && configuracion.mostrarTablaGeneral && (
+                <div className="seccion-inicio">
+                  <h2 className="titulo-seccion">
+                    <FaTrophy className="icono-seccion" />
+                    Tabla General
+                  </h2>
+                  {isLoadingTablaGeneral ? (
+                    <div className="loading-spinner">
+                      <FaGamepad className="spinner-icon" />
+                      <span>Cargando tabla general...</span>
+                    </div>
+                  ) : tablaGeneral.length > 0 ? (
+                    <div className="tabla-general-container">
+                      <table className="tabla-general">
+                        <thead>
+                          <tr>
+                            <th>Posición</th>
+                            <th>Jugador</th>
+                            <th>Puntos</th>
+                            <th>Partidas</th>
+                            <th>Victorias</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {tablaGeneral.map((jugador, index) => (
+                            <tr key={jugador.jugador_nickname} className={index < 3 ? 'top-3' : ''}>
+                              <td className="posicion">
+                                {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                              </td>
+                              <td className="jugador-info">
+                                <img 
+                                  src={jugador.foto || '/default-profile.png'} 
+                                  alt={jugador.jugador_nickname} 
+                                  className="jugador-avatar"
+                                />
+                                <span>{jugador.jugador_nickname}</span>
+                              </td>
+                              <td className="puntos">{jugador.puntos_totales}</td>
+                              <td>{jugador.partidas_jugadas}</td>
+                              <td>{jugador.partidas_ganadas}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="no-data">
+                      <p>No hay datos en la tabla general</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Sección de juegos */}
+              {configuracion.ordenSecciones.includes('juegos') && (
+                <div className="seccion-inicio">
+                  <h2 className="titulo-seccion">
+                    <FaGamepad className="icono-seccion" />
+                    Juegos Destacados
+                  </h2>
+                  {juegos.length > 0 ? (
+                    <div className="juegos-grid">
+                      {juegos.map((juego) => (
+                        <div 
+                          key={juego.id} 
+                          className="juego-card"
+                          onClick={() => handleJuegoClick(juego)}
+                        >
+                          <div className="juego-imagen">
+                            {juego.foto ? (
+                              <img src={juego.foto} alt={juego.nombre} />
+                            ) : (
+                              <FaGamepad />
+                            )}
+                          </div>
+                          <h3>{juego.nombre}</h3>
+                          <p>Categoría: {juego.categoria_nombre}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="no-data">No hay juegos destacados</p>
+                  )}
+                </div>
+              )}
+
+              {/* Sección de comodines */}
+              {configuracion.ordenSecciones.includes('comodines') && (
+                <div className="seccion-inicio">
+                  <h2 className="titulo-seccion">
+                    <FaStar className="icono-seccion" />
+                    Comodines Disponibles
+                  </h2>
+                  {isLoadingComodines ? (
+                    <div className="loading-spinner">
+                      <FaGamepad className="spinner-icon" />
+                      <span>Cargando comodines...</span>
+                    </div>
+                  ) : comodines.length > 0 ? (
+                    <div className="comodines-grid">
+                      {comodines.map(comodin => (
+                        <div key={comodin.idcomodines} className="comodin-card">
+                          <div className="comodin-imagen">
+                            {comodin.foto ? (
+                              <img src={comodin.foto} alt={comodin.nombre} />
+                            ) : (
+                              <FaStar className="comodin-icon" />
+                            )}
+                          </div>
+                          <h4>{comodin.nombre}</h4>
+                          <p>{comodin.descripcion}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="no-data">
+                      <p>No hay comodines disponibles</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Columna derecha - Widgets adicionales */}
+            <div className="columna-derecha">
+              {/* Widget de futuras partidas */}
+              <div className="widget-lateral">
+                <h3>
+                  <FaClock />
+                  Futuras Partidas
+                </h3>
+                {isLoadingFuturasPartidas ? (
+                  <div className="loading-spinner">
+                    <FaGamepad className="spinner-icon" />
+                    <span>Cargando partidas...</span>
+                  </div>
+                ) : futurasPartidas.length > 0 ? (
+                  <div className="partidas-proximas">
+                    {futurasPartidas.map(partida => {
+                      const fechaPartida = new Date(partida.fecha);
+                      const fechaFormateada = fechaPartida.toLocaleDateString('es-ES', {
+                        day: '2-digit',
+                        month: 'short'
+                      });
+                      const horaFormateada = fechaPartida.toLocaleTimeString('es-ES', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      });
+                      
+                      return (
+                        <div key={partida.id} className="partida-item">
+                          <div className="partida-fecha">
+                            <div className="fecha-dia">{fechaFormateada}</div>
+                            <div className="fecha-hora">{horaFormateada}</div>
+                          </div>
+                          <div className="partida-info">
+                            <div className="partida-juego">
+                              {partida.juego_foto ? (
+                                <img src={partida.juego_foto} alt={partida.juego_nombre} className="juego-mini" />
+                              ) : (
+                                <FaGamepad className="juego-icon-mini" />
+                              )}
+                              <span>{partida.juego_nombre}</span>
+                            </div>
+                            <div className="partida-tipo">{partida.tipo}</div>
+                            <div className="partida-fase">{partida.fase}</div>
+                            {partida.jugadores && partida.jugadores.length > 0 && (
+                              <div className="partida-jugadores">
+                                {partida.jugadores.slice(0, 3).join(' vs ')}
+                                {partida.jugadores.length > 3 && ` +${partida.jugadores.length - 3} más`}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="no-data">
+                    <p>No hay partidas programadas</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Widget de estadísticas reales */}
+              <div className="widget-lateral">
+                <h3>
+                  <FaChartLine />
+                  Estadísticas del Torneo
+                </h3>
+                {isLoadingEstadisticas ? (
+                  <div className="loading-spinner">
+                    <FaGamepad className="spinner-icon" />
+                    <span>Cargando estadísticas...</span>
+                  </div>
+                ) : (
+                  <div className="stats-avanzadas">
+                    <div className="stat-avanzada">
+                      <div className="stat-header">Progreso del Torneo</div>
+                      <div className="stat-progress">
+                        <div className="progress-bar" style={{ width: `${estadisticasReales.progresoTorneo}%` }}></div>
+                      </div>
+                      <div className="stat-value">{estadisticasReales.partidasJugadas}/{estadisticasReales.totalPartidas} partidas</div>
+                    </div>
+                    <div className="stat-avanzada">
+                      <div className="stat-header">Jugadores Activos</div>
+                      <div className="stat-progress">
+                        <div className="progress-bar" style={{ width: '100%' }}></div>
+                      </div>
+                      <div className="stat-value">{estadisticasReales.jugadoresActivos} participantes</div>
+                    </div>
+                    {estadisticasReales.edicionActual && (
+                      <div className="edicion-info">
+                        <div className="edicion-titulo">Edición {estadisticasReales.edicionActual.id}</div>
+                        <div className="edicion-fechas">
+                          {new Date(estadisticasReales.edicionActual.fechaInicio).toLocaleDateString('es-ES')} - {new Date(estadisticasReales.edicionActual.fechaFin).toLocaleDateString('es-ES')}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Widget de logros destacados */}
+              <div className="widget-lateral">
+                <h3>
+                  <FaMedal />
+                  Logros Destacados
+                </h3>
+                {isLoadingLogros ? (
+                  <div className="loading-spinner">
+                    <FaGamepad className="spinner-icon" />
+                    <span>Cargando logros...</span>
+                  </div>
+                ) : logrosDestacados.length > 0 ? (
+                  <div className="logros-destacados">
+                    {logrosDestacados.map(logro => (
+                      <div key={logro.idlogros} className="logro-destacado">
+                        <div className="logro-imagen">
+                          {logro.foto ? (
+                            <img src={logro.foto} alt={logro.nombre} />
+                          ) : (
+                            <FaMedal className="logro-icon" />
+                          )}
+                        </div>
+                        <div className="logro-info">
+                          <div className="logro-nombre">{logro.nombre}</div>
+                          <div className="logro-descripcion">{logro.descripcion}</div>
+                          <div className="logro-usuarios">{logro.usuarios_conseguidos} jugadores</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="no-data">
+                    <p>No hay logros disponibles</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

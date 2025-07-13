@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useLocation } from 'react-router-dom';
-import { FaSearch, FaTrophy, FaGamepad, FaUsers, FaCalendar, FaEye, FaSpinner, FaFilter, FaTimes, FaMedal } from 'react-icons/fa';
+import { FaSearch, FaTrophy, FaGamepad, FaUsers, FaCalendar, FaEye, FaSpinner, FaFilter, FaTimes, FaMedal, FaBookOpen, FaHistory, FaChartBar, FaStar } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { EDICION_ROUTES, PARTIDAS_ROUTES, HISTORICO_ROUTES } from '../routes/api.routes.js';
@@ -23,6 +23,7 @@ export const Historico = () => {
   const [showTablaHistorica, setShowTablaHistorica] = useState(false);
   const [tablaHistorica, setTablaHistorica] = useState(null);
   const [isLoadingTablaHistorica, setIsLoadingTablaHistorica] = useState(false);
+  const [activeTab, setActiveTab] = useState('partidas'); // partidas, tablas, estadisticas
   const location = useLocation();
 
   const token = localStorage.getItem('token');
@@ -333,18 +334,41 @@ export const Historico = () => {
 
   return (
     <div className="historico-container">
-      {/* Header */}
+      {/* Header modernizado */}
       <div className="historico-header">
         <h1 className="historico-title">
-          <FaTrophy className="historico-icon" />
-          Histórico de Torneos
+          <FaBookOpen className="historico-icon" />
+          Biblioteca de Torneos
         </h1>
         <p className="historico-subtitle">
-          Explora el historial completo de torneos, partidas y resultados
+          Explora el historial completo de torneos, partidas y resultados de manera dinámica
         </p>
       </div>
 
-     
+      {/* Navegación por pestañas */}
+      <div className="tabs-navigation">
+        <button 
+          className={`tab-button ${activeTab === 'partidas' ? 'active' : ''}`}
+          onClick={() => setActiveTab('partidas')}
+        >
+          <FaGamepad />
+          Partidas
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'tablas' ? 'active' : ''}`}
+          onClick={() => setActiveTab('tablas')}
+        >
+          <FaTrophy />
+          Tablas Históricas
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'estadisticas' ? 'active' : ''}`}
+          onClick={() => setActiveTab('estadisticas')}
+        >
+          <FaChartBar />
+          Estadísticas
+        </button>
+      </div>
 
       {/* Filtros avanzados */}
       <div className="filters-section">
@@ -354,7 +378,7 @@ export const Historico = () => {
             className="filters-toggle"
           >
             <FaFilter />
-            Filtros Avanzados
+            Búsqueda Avanzada
           </button>
           {filteredPartidas.length !== allPartidas.length && (
             <button onClick={clearFilters} className="clear-filters">
@@ -407,29 +431,30 @@ export const Historico = () => {
             </div>
 
             <div className="filter-suggestions">
-              <h4>Sugerencias de búsqueda:</h4>
+              <h4>💡 Sugerencias de búsqueda:</h4>
               <div className="suggestions-grid">
                 <div className="suggestion-item">
-                  <strong>Años:</strong> 2024, 2023, 2022...
+                  <strong>📅 Años:</strong> 2024, 2023, 2022...
                 </div>
                 <div className="suggestion-item">
-                  <strong>Fases:</strong> Grupos, Cuartos, Semifinal, Final
+                  <strong>🏆 Fases:</strong> Grupos, Cuartos, Semifinal, Final
                 </div>
                 <div className="suggestion-item">
-                  <strong>Tipos:</strong> PVP, TodosContraTodos
+                  <strong>🎮 Tipos:</strong> PVP, TodosContraTodos
                 </div>
                 <div className="suggestion-item">
-                  <strong>Jugadores:</strong> Nombre del jugador
+                  <strong>👤 Jugadores:</strong> Nombre del jugador
                 </div>
                 <div className="suggestion-item">
-                  <strong>Tablas Históricas:</strong> Año del torneo o "Nueva edición"
+                  <strong>📊 Tablas Históricas:</strong> Año del torneo o "Nueva edición"
                 </div>
               </div>
             </div>
           </div>
         )}
       </div>
-       {/* Estadísticas */}
+
+      {/* Estadísticas */}
       <div className="stats-section">
         <div className="stats-grid">
           <div className="stat-card">
@@ -466,11 +491,63 @@ export const Historico = () => {
           </div>
         </div>
       </div>
-       {/* Sección de Tablas Generales Históricas */}
-      {edicionesHistoricas.length > 0 && (
+
+      {/* Contenido según pestaña activa */}
+      {activeTab === 'partidas' && (
+        <div className="results-section">
+          {isLoading ? (
+            <div className="loading-container">
+              <FaSpinner className="spinner" />
+              <span>Cargando datos...</span>
+            </div>
+          ) : filteredPartidas.length === 0 ? (
+            <div className="no-data">
+              <p>No se encontraron partidas con los filtros aplicados</p>
+              <button onClick={clearFilters} className="clear-filters-btn">
+                Limpiar Filtros
+              </button>
+            </div>
+          ) : (
+            <div className="results-content">
+              {Object.entries(groupedPartidas).map(([edicionId, partidas]) => {
+                const edicion = ediciones.find(e => e.idEdicion.toString() === edicionId);
+                return (
+                  <div key={edicionId} className="edicion-section">
+                    <div className="edicion-header-section">
+                      <h2 className="edicion-title">
+                        <FaTrophy className="edicion-icon" />
+                        Torneo {edicionId}
+                        {edicion && (
+                          <span className="edicion-dates">
+                            ({new Date(edicion.fecha_inicio).toLocaleDateString('es-ES')} - {new Date(edicion.fecha_fin).toLocaleDateString('es-ES')})
+                          </span>
+                        )}
+                      </h2>
+                      <span className="partidas-count">{partidas.length} partidas</span>
+                    </div>
+                    
+                    <div className="partidas-grid">
+                      {partidas.map((partida) => (
+                        <PartidaCard
+                          key={partida.id}
+                          partida={partida}
+                          onVerPerfil={handleVerPerfil}
+                          getResultado={getResultadoPartida}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'tablas' && (
         <div className="historico-tablas-section">
           <h2 className="section-title">
-            <FaTrophy className="section-icon" />
+            <FaHistory className="section-icon" />
             Tablas Generales Históricas
           </h2>
           <div className="historico-tablas-grid">
@@ -513,57 +590,68 @@ export const Historico = () => {
         </div>
       )}
 
-     
+      {activeTab === 'estadisticas' && (
+        <div className="estadisticas-section">
+          <h2 className="section-title">
+            <FaChartBar className="section-icon" />
+            Análisis y Estadísticas
+          </h2>
+          <div className="estadisticas-grid">
+            <div className="estadistica-card">
+              <h3>📈 Progreso del Torneo</h3>
+              <div className="progress-bar">
+                <div 
+                  className="progress-fill" 
+                  style={{width: `${(filteredPartidas.filter(p => p.tiene_resultado).length / filteredPartidas.length) * 100}%`}}
+                ></div>
+              </div>
+              <p>{filteredPartidas.filter(p => p.tiene_resultado).length} de {filteredPartidas.length} partidas finalizadas</p>
+            </div>
+            
+            <div className="estadistica-card">
+              <h3>🎮 Juegos Más Jugados</h3>
+              <div className="game-stats">
+                {Object.entries(
+                  filteredPartidas.reduce((acc, partida) => {
+                    const game = partida.juego_nombre || 'Sin nombre';
+                    acc[game] = (acc[game] || 0) + 1;
+                    return acc;
+                  }, {})
+                )
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 5)
+                .map(([game, count]) => (
+                  <div key={game} className="game-stat-item">
+                    <span>{game}</span>
+                    <span className="game-count">{count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-      {/* Resultados */}
-      <div className="results-section">
-        {isLoading ? (
-          <div className="loading-container">
-            <FaSpinner className="spinner" />
-            <span>Cargando datos...</span>
-          </div>
-        ) : filteredPartidas.length === 0 ? (
-          <div className="no-data">
-            <p>No se encontraron partidas con los filtros aplicados</p>
-            <button onClick={clearFilters} className="clear-filters-btn">
-              Limpiar Filtros
-            </button>
-          </div>
-        ) : (
-          <div className="results-content">
-            {Object.entries(groupedPartidas).map(([edicionId, partidas]) => {
-              const edicion = ediciones.find(e => e.idEdicion.toString() === edicionId);
-              return (
-                <div key={edicionId} className="edicion-section">
-                  <div className="edicion-header-section">
-                    <h2 className="edicion-title">
-                      <FaTrophy className="edicion-icon" />
-                      Torneo {edicionId}
-                      {edicion && (
-                        <span className="edicion-dates">
-                          ({new Date(edicion.fecha_inicio).toLocaleDateString('es-ES')} - {new Date(edicion.fecha_fin).toLocaleDateString('es-ES')})
-                        </span>
-                      )}
-                    </h2>
-                    <span className="partidas-count">{partidas.length} partidas</span>
+            <div className="estadistica-card">
+              <h3>👥 Jugadores Más Activos</h3>
+              <div className="player-stats">
+                {Object.entries(
+                  filteredPartidas.flatMap(p => p.jugadores || [])
+                    .reduce((acc, player) => {
+                      acc[player] = (acc[player] || 0) + 1;
+                      return acc;
+                    }, {})
+                )
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 5)
+                .map(([player, count]) => (
+                  <div key={player} className="player-stat-item">
+                    <span>{player}</span>
+                    <span className="player-count">{count} partidas</span>
                   </div>
-                  
-                  <div className="partidas-grid">
-                    {partidas.map((partida) => (
-                      <PartidaCard
-                        key={partida.id}
-                        partida={partida}
-                        onVerPerfil={handleVerPerfil}
-                        getResultado={getResultadoPartida}
-                      />
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+                ))}
+              </div>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Modal de perfil de jugador */}
       {showPerfilModal && (
