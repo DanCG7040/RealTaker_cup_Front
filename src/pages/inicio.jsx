@@ -68,6 +68,11 @@ export const Inicio = () => {
     total_giros: 0
   });
 
+  // Agregar estados para logros y comodines del jugador seleccionado
+  const [logrosJugador, setLogrosJugador] = useState([]);
+  const [comodinesJugador, setComodinesJugador] = useState([]);
+  const [isLoadingLogrosJugador, setIsLoadingLogrosJugador] = useState(false);
+
   useEffect(() => {
     cargarDatos();
   }, []);
@@ -296,9 +301,25 @@ export const Inicio = () => {
     });
   };
 
+  // Modificar handleJugadorClick para cargar logros y comodines
   const handleJugadorClick = async (jugador) => {
     setJugadorSeleccionado(jugador);
     setShowJugadorModal(true);
+    setIsLoadingLogrosJugador(true);
+    setLogrosJugador([]);
+    setComodinesJugador([]);
+    try {
+      const response = await axios.get(`/api/usuarios/${jugador.nickname}/logros-comodines`);
+      if (response.data.success) {
+        setLogrosJugador(response.data.data.logros);
+        setComodinesJugador(response.data.data.comodines);
+      }
+    } catch (error) {
+      setLogrosJugador([]);
+      setComodinesJugador([]);
+    } finally {
+      setIsLoadingLogrosJugador(false);
+    }
   };
 
   // Funciones para la ruleta
@@ -1159,8 +1180,41 @@ export const Inicio = () => {
                 <div className="jugador-logros-comodines">
                   <h5>Logros y Comodines</h5>
                   <div className="logros-comodines-grid">
-                    {/* Aquí se mostrarían los logros y comodines del jugador */}
-                    <p>Logros y comodines se cargarán próximamente...</p>
+                    {isLoadingLogrosJugador ? (
+                      <p>Cargando logros y comodines...</p>
+                    ) : (
+                      <>
+                        {logrosJugador.length === 0 && comodinesJugador.length === 0 && (
+                          <p>No tiene logros ni comodines</p>
+                        )}
+                        {logrosJugador.length > 0 && (
+                          <div>
+                            <strong>Logros:</strong>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                              {logrosJugador.map(logro => (
+                                <div key={logro.id} style={{ textAlign: 'center' }}>
+                                  <img src={logro.logro_foto || '/default-logro.png'} alt={logro.logro_nombre} style={{ width: 40, height: 40, borderRadius: 8 }} />
+                                  <div style={{ fontSize: 12 }}>{logro.logro_nombre}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {comodinesJugador.length > 0 && (
+                          <div style={{ marginTop: 8 }}>
+                            <strong>Comodines:</strong>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                              {comodinesJugador.map(comodin => (
+                                <div key={comodin.id} style={{ textAlign: 'center' }}>
+                                  <img src={comodin.comodin_foto || '/default-comodin.png'} alt={comodin.comodin_nombre} style={{ width: 40, height: 40, borderRadius: 8 }} />
+                                  <div style={{ fontSize: 12 }}>{comodin.comodin_nombre}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

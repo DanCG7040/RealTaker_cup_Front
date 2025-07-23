@@ -391,3 +391,48 @@ button:focus-visible {
 .navbar, .navbar-menu, .navbar-profile-menu {
   background-color: var(--negro) !important;
 }
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: var(--verde-oscuro);
+  color: var(--verde-brillante);
+  border-radius: 12px;
+  max-width: 400px;
+  width: 90%;
+  padding: 2rem 1.5rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  position: relative;
+  animation: modalIn 0.2s;
+}
+
+@keyframes modalIn {
+  from { transform: translateY(-40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #888;
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 0;
+}
