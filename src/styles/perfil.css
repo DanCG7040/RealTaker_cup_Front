@@ -2501,3 +2501,37 @@
     background-color: #450a0a;
   }
 }
+
+.historico-video-form {
+  max-width: 500px;
+  margin: 0 auto;
+  background: #f8f8f8;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px #0001;
+}
+.historico-video-form .form-group {
+  margin-bottom: 1rem;
+}
+.historico-video-form label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 0.3rem;
+}
+.historico-video-form input,
+.historico-video-form select {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+.historico-video-list {
+  margin-top: 2rem;
+}
+.historico-video-item {
+  background: #fff;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 4px #0001;
+}

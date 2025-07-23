@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from '../axiosConfig.js';
 import { useNavigate } from 'react-router-dom';
-import { FaCamera, FaCheck, FaTimes, FaSpinner, FaUser, FaEnvelope, FaPen, FaLock, FaGamepad, FaMedal, FaStar, FaBook, FaUsers, FaTrophy, FaPlus, FaCheckCircle, FaEye, FaSave } from 'react-icons/fa';
+import { FaCamera, FaCheck, FaTimes, FaSpinner, FaUser, FaEnvelope, FaPen, FaLock, FaGamepad, FaMedal, FaStar, FaBook, FaUsers, FaTrophy, FaPlus, FaCheckCircle, FaEye, FaSave, FaVideo } from 'react-icons/fa';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -198,8 +198,106 @@ export const Perfil = () => {
   const [isSavingLogroAsignacion, setIsSavingLogroAsignacion] = useState(false);
   
   // Estado para el canal de Twitch
-  const [twitchChannel, setTwitchChannel] = useState('');
   const [mensajeTwitch, setMensajeTwitch] = useState('');
+  
+  // Estado para videos históricos
+  const [historicoVideos, setHistoricoVideos] = useState([]);
+  const [nuevoVideo, setNuevoVideo] = useState({
+    titulo: '',
+    url: '',
+    juego_id: '',
+    partida_id: '',
+    idEdicion: '',
+    tipo_partida: ''
+  });
+  const [mensajeVideo, setMensajeVideo] = useState('');
+  
+  // Simulación de fetch de datos (debería venir del backend)
+  const jugadoresHistorico = usuarios.map(u => u.nickname);
+  const juegosHistorico = juegos.map(j => j.nombre);
+  const partidasHistorico = partidas.map(p => p.id);
+  const aniosHistorico = Array.from(new Set(torneos.map(t => new Date(t.fecha_inicio).getFullYear())));
+  const tiposPartidaHistorico = ['PVP', 'TodosContraTodos'];
+  
+  const handleNuevoVideoChange = (e) => {
+    const { name, value } = e.target;
+    setNuevoVideo(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleAddHistoricoVideo = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post('/api/videos-historicos', nuevoVideo, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setMensajeVideo('¡Video añadido correctamente!');
+      setNuevoVideo({ titulo: '', url: '', juego_id: '', partida_id: '', idEdicion: '', tipo_partida: '' });
+      // Recargar lista
+      const res = await axios.get('/api/videos-historicos');
+      setHistoricoVideos(res.data.data);
+      setTimeout(() => setMensajeVideo(''), 2000);
+    } catch (err) {
+      setMensajeVideo('Error al añadir video');
+    }
+  };
+  
+  // Sección de gestión de videos históricos
+  const HistoricoVideosContent = () => (
+    <div className="content-section">
+      <h2 className="section-title">Añadir Video al Histórico</h2>
+      <form className="historico-video-form" onSubmit={handleAddHistoricoVideo}>
+        <div className="form-group">
+          <label>Título del video</label>
+          <input type="text" name="titulo" defaultValue={nuevoVideo.titulo} onBlur={e => setNuevoVideo(prev => ({ ...prev, titulo: e.target.value }))} required />
+        </div>
+        <div className="form-group">
+          <label>URL del video</label>
+          <input type="text" name="url" defaultValue={nuevoVideo.url} onBlur={e => setNuevoVideo(prev => ({ ...prev, url: e.target.value }))} required />
+        </div>
+        <div className="form-group">
+          <label>Juego</label>
+          <select name="juego_id" value={nuevoVideo.juego_id} onChange={handleNuevoVideoChange} required>
+            <option value="">Selecciona un juego</option>
+            {juegos.map(j => <option key={j.id} value={j.id}>{j.nombre}</option>)}
+          </select>
+        </div>
+        <div className="form-group">
+          <label>Partida</label>
+          <select name="partida_id" value={nuevoVideo.partida_id} onChange={handleNuevoVideoChange} required>
+            <option value="">Selecciona una partida</option>
+            {partidas.map(p => <option key={p.id} value={p.id}>{`#${p.id} - ${p.fecha}`}</option>)}
+          </select>
+        </div>
+        <div className="form-group">
+          <label>Año de edición</label>
+          <select name="idEdicion" value={nuevoVideo.idEdicion} onChange={handleNuevoVideoChange} required>
+            <option value="">Selecciona un año</option>
+            {torneos.map(t => <option key={t.idEdicion} value={t.idEdicion}>{t.idEdicion}</option>)}
+          </select>
+        </div>
+        <div className="form-group">
+          <label>Tipo de partida</label>
+          <select name="tipo_partida" value={nuevoVideo.tipo_partida} onChange={handleNuevoVideoChange} required>
+            <option value="">Selecciona un tipo</option>
+            <option value="PVP">PVP</option>
+            <option value="TodosContraTodos">Todos Contra Todos</option>
+          </select>
+        </div>
+        <button type="submit" className="profile-button profile-button-primary">Añadir Video</button>
+        {mensajeVideo && <p style={{color:'green'}}>{mensajeVideo}</p>}
+      </form>
+      <h3 className="section-title" style={{marginTop:'2rem'}}>Videos añadidos</h3>
+      <div className="historico-video-list">
+        {historicoVideos.map(video => (
+          <div key={video.id} className="historico-video-item">
+            <strong>{video.titulo}</strong> - <a href={video.url} target="_blank" rel="noopener noreferrer">Ver video</a><br/>
+            Jugador: {video.jugador_nickname} | Juego: {video.juego_nombre} | Partida: {video.partida_id} | Año: {video.idEdicion} | Tipo: {video.tipo_partida}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
   
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
@@ -650,6 +748,23 @@ export const Perfil = () => {
       fetchUsuarioLogros();
       fetchUsuarioComodines();
     }
+    if (activeSection === 'historico_videos') {
+      axios.get('/api/videos-historicos')
+        .then(res => setHistoricoVideos(res.data.data))
+        .catch(() => setHistoricoVideos([]));
+      axios.get('/api/usuarios')
+        .then(res => setUsuarios(res.data.data))
+        .catch(() => setUsuarios([]));
+      axios.get('/api/juegos')
+        .then(res => setJuegos(res.data.data))
+        .catch(() => setJuegos([]));
+      axios.get('/api/partidas')
+        .then(res => setPartidas(res.data.data))
+        .catch(() => setPartidas([]));
+      axios.get('/api/edicion')
+        .then(res => setTorneos(res.data.data))
+        .catch(() => setTorneos([]));
+    }
   }, [activeSection]);
 
   // Cargar jugadores disponibles cuando se abre el modal de jugadores
@@ -1084,14 +1199,19 @@ export const Perfil = () => {
 
         <div className="profile-input">
           <label>Canal de Twitch:</label>
-          <input
-            type="text"
+          <textarea
             name="twitch_channel"
-            value={twitchChannel}
-            onChange={e => setTwitchChannel(e.target.value)}
+            defaultValue={formData.twitch_channel || ''}
+            onBlur={(e) => {
+              setFormData(prev => ({
+                ...prev,
+                twitch_channel: e.target.value
+              }));
+            }}
+            rows="1"
             placeholder="Solo el nombre, ej: pepito_gamer"
-            autoComplete="off"
-          />
+            style={{resize: 'none'}}
+          ></textarea>
           <button type="button" onClick={guardarTwitch} style={{marginLeft:'8px'}}>Guardar canal</button>
           {mensajeTwitch && <p style={{color:'green'}}>{mensajeTwitch}</p>}
         </div>
@@ -1422,6 +1542,15 @@ export const Perfil = () => {
         >
           <FaTrophy className="w-4 h-4 mr-2" />
           Torneos
+        </button>
+        <button
+          onClick={() => setActiveSection('historico_videos')}
+          className={`admin-menu-button ${
+            activeSection === 'historico_videos' ? 'admin-menu-button-active' : ''
+          }`}
+        >
+          <FaVideo className="w-4 h-4 mr-2" />
+          Videos Histórico
         </button>
       </nav>
     </div>
@@ -5799,7 +5928,7 @@ export const Perfil = () => {
   // Función para guardar el canal de Twitch
   const guardarTwitch = async () => {
     try {
-      const res = await axios.put('/api/perfil/twitch', { nickname: user.nickname, twitch_channel: twitchChannel });
+      const res = await axios.put('/api/perfil/twitch', { nickname: user.nickname, twitch_channel: formData.twitch_channel });
       setMensajeTwitch(res.data.message);
     } catch (error) {
       setMensajeTwitch(error.response?.data?.message || 'Error al guardar');
@@ -5917,6 +6046,7 @@ export const Perfil = () => {
                 </div>
               </div>
             )}
+            {activeSection === 'historico_videos' && <HistoricoVideosContent />}
           </>
         ) : (
           <div className="profile-edit-section">

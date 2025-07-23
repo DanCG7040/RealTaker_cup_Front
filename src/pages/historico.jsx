@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useLocation } from 'react-router-dom';
-import { FaSearch, FaTrophy, FaGamepad, FaUsers, FaCalendar, FaEye, FaSpinner, FaFilter, FaTimes, FaMedal, FaBookOpen, FaHistory, FaChartBar, FaStar } from 'react-icons/fa';
+import { FaSearch, FaTrophy, FaGamepad, FaUsers, FaCalendar, FaEye, FaSpinner, FaFilter, FaTimes, FaMedal, FaBookOpen, FaHistory, FaChartBar, FaStar, FaVideo } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { EDICION_ROUTES, PARTIDAS_ROUTES, HISTORICO_ROUTES } from '../routes/api.routes.js';
@@ -24,6 +24,7 @@ export const Historico = () => {
   const [tablaHistorica, setTablaHistorica] = useState(null);
   const [isLoadingTablaHistorica, setIsLoadingTablaHistorica] = useState(false);
   const [activeTab, setActiveTab] = useState('partidas'); // partidas, tablas, estadisticas
+  const [historicoVideos, setHistoricoVideos] = useState([]);
   const location = useLocation();
 
   const token = localStorage.getItem('token');
@@ -51,6 +52,14 @@ export const Historico = () => {
       }
     }
   }, [location.state, allPartidas]);
+
+  useEffect(() => {
+    if (activeTab === 'grabaciones') {
+      axios.get('/api/videos-historicos')
+        .then(res => setHistoricoVideos(res.data.data))
+        .catch(() => setHistoricoVideos([]));
+    }
+  }, [activeTab]);
 
   const loadInitialData = async () => {
     setIsLoading(true);
@@ -368,6 +377,13 @@ export const Historico = () => {
           <FaChartBar />
           Estadísticas
         </button>
+        <button 
+          className={`tab-button ${activeTab === 'grabaciones' ? 'active' : ''}`}
+          onClick={() => setActiveTab('grabaciones')}
+        >
+          <FaVideo />
+          Grabaciones
+        </button>
       </div>
 
       {/* Filtros avanzados */}
@@ -653,6 +669,55 @@ export const Historico = () => {
         </div>
       )}
 
+      {activeTab === 'grabaciones' && (
+        <div className="results-section">
+          <h2 className="section-title">Grabaciones de Partidas y Torneos</h2>
+          <div className="historico-video-list">
+            {historicoVideos.length === 0 ? (
+              <div>No hay videos históricos registrados.</div>
+            ) : (
+              historicoVideos.map(video => (
+                <div key={video.id} className="historico-video-item">
+                  <strong>{video.titulo}</strong>
+                  <br />
+                  {video.url.includes('youtube.com') || video.url.includes('youtu.be') ? (
+                    <iframe
+                      width="360"
+                      height="215"
+                      src={getYoutubeEmbedUrl(video.url)}
+                      title={video.titulo}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      style={{ margin: '1rem 0' }}
+                    ></iframe>
+                  ) : video.url.includes('twitch.tv') ? (
+                    <iframe
+                      src={`https://player.twitch.tv/?video=${getTwitchVideoId(video.url)}&parent=${window.location.hostname}`}
+                      width="360"
+                      height="215"
+                      allowFullScreen
+                      frameBorder="0"
+                      style={{ margin: '1rem 0' }}
+                      title={video.titulo}
+                    ></iframe>
+                  ) : video.url.match(/\.(mp4|webm)$/) ? (
+                    <video width="360" height="215" controls style={{ margin: '1rem 0' }}>
+                      <source src={video.url} />
+                      Tu navegador no soporta la reproducción de video.
+                    </video>
+                  ) : (
+                    <a href={video.url} target="_blank" rel="noopener noreferrer">Ver video</a>
+                  )}
+                  <br />
+                  Juego: {video.juego_nombre} | Partida: {video.partida_id} | Año: {video.idEdicion} | Tipo: {video.tipo_partida}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Modal de perfil de jugador */}
       {showPerfilModal && (
         <PerfilJugadorModal
@@ -684,6 +749,24 @@ const getPlaceholderText = (filterType) => {
     default: return 'Buscar en todos los campos...';
   }
 };
+
+// Funciones auxiliares para obtener el embed de YouTube y Twitch
+function getYoutubeEmbedUrl(url) {
+  let videoId = '';
+  if (url.includes('youtube.com')) {
+    const match = url.match(/[?&]v=([^&]+)/);
+    videoId = match ? match[1] : '';
+  } else if (url.includes('youtu.be')) {
+    const match = url.match(/youtu\.be\/([^?&]+)/);
+    videoId = match ? match[1] : '';
+  }
+  return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+}
+
+function getTwitchVideoId(url) {
+  const match = url.match(/videos\/(\d+)/);
+  return match ? match[1] : '';
+}
 
 // Componente para mostrar una partida
 const PartidaCard = ({ partida, onVerPerfil, getResultado }) => {
