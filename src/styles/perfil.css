@@ -1,9 +1,19 @@
-/* Contenedor principal del perfil */
+/* Layout principal para el perfil */
+.app-container-perfil {
+  display: flex !important;
+  min-height: calc(100vh - 80px) !important;
+  background-color: #f3f4f6 !important;
+  padding-top: 0 !important;
+  width: 100% !important;
+  position: relative !important;
+}
 
 .profile-container {
   min-height: calc(100vh - 80px);
   background-color: #f3f4f6;
   padding: 2rem 1rem;
+  flex: 1;
+  padding-top: calc(2rem + 80px) !important;
 }
 
 /* Vista de usuario normal */
@@ -16,6 +26,7 @@
   padding: 2.5rem;
   position: relative;
   overflow: hidden;
+  min-height: calc(100vh - 200px);
 }
 
 .profile-user-view::before {
@@ -40,7 +51,13 @@
 /* Sección de edición de perfil */
 .profile-edit-section {
   background-color: white;
-  padding: 2.5rem;
+  padding: 0; /* Reducido el padding para evitar desplazamiento hacia abajo */
+  min-height: calc(100vh - 80px);
+  display: flex;
+  flex-direction:column;
+  margin-top:0  !important; /* Eliminar cualquier margen superior */
+  margin-left: 240px !important;
+  padding-top: 2rem !important; /* Eliminar cualquier padding superior extra */
 }
 
 .section-title {
@@ -97,6 +114,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  flex: 1;
 }
 
 .profile-form button[type="submit"] {
@@ -198,15 +216,15 @@
 }
 
 .profile-button-primary {
-  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  background: linear-gradient(90deg, #059669, #047857);
   color: white;
   border: none;
 }
 
 .profile-button-primary:hover {
-  background: linear-gradient(90deg, #2563eb, #1d4ed8);
+  background: linear-gradient(90deg, #047857, #065f46);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
 }
 
 .profile-button-danger {
@@ -280,34 +298,27 @@
   border-bottom: 1px solid #e5e7eb;
 }
 
-/* Layout de administrador */
-.admin-layout {
-  display: flex;
-  min-height: calc(100vh - 80px);
-  background-color: #f3f4f6;
-  gap: 2rem;
-  padding: 2rem;
-}
 
-/* Menú de administrador */
 .admin-menu {
-  width: 250px;
-  background-color: #1f2937;
+  max-width: 235px;
+  background-color: #2b5d15;
   padding: 1.5rem;
-  height: calc(100vh - 64px);
+  height: calc(100vh - 80px);
   position: fixed;
   left: 0;
-  top: 64px;
+  top: 80px;
   overflow-y: auto;
+
+  
 }
 
 .admin-menu-title {
-  color: white;
+  color: #dedede;
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #374151;
+  border-bottom: 2px solid #9ca3af;
 }
 
 .admin-menu-buttons {
@@ -322,39 +333,58 @@
   align-items: center;
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
-  color: white;
-  background-color: #374151;
+  color: #374151;
+  background-color: white;
   transition: all 0.2s;
   font-weight: 500;
   border: 2px solid transparent;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .admin-menu-button:hover {
-  background-color: #4b5563;
+  background-color: #f3f4f6;
   transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .admin-menu-button-active {
-  background-color: #2563eb;
+  background-color: #3b82f6;
   border-color: #60a5fa;
+  color: white;
 }
 
 .admin-menu-button-active:hover {
-  background-color: #1d4ed8;
+  background-color: #316d19;
 }
 
 /* Contenido principal */
 .main-content {
-  flex: 1;
-  margin-left: 280px;
+  flex: 1 !important;
   background-color: #f3f4f6;
-  min-height: calc(100vh - 64px);
+  min-height: calc(100vh - 80px);
+  display: flex;
+  padding-left: 0;
+  flex-direction: column;
+  width: 100% !important;
+}
+
+/* Ajustar el contenido principal para que no quede debajo del menú */
+.admin-layout .main-content {
+  margin-left: 250px !important;
+  margin-right: 0 !important;
+  width: calc(100% - 250px) !important;
+  min-height: calc(100vh - 80px);
 }
 
 .content-section {
   background-color: white;
-  min-height: calc(100vh - 64px);
+  min-height: calc(100vh - 80px);
   padding: 2rem;
+  padding-left: 248px;
+  flex: 1;
+  width: 100% !important;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 /* Tabla de juegos */
@@ -400,12 +430,17 @@
 .game-modal {
   position: fixed;
   top: 64px;
-  left: 280px;
+  left: 0;
   right: 0;
   background-color: #f3f4f6;
   padding: 2rem;
   z-index: 50;
   border-bottom: 1px solid #e5e7eb;
+}
+
+/* Cuando hay menú de admin, ajustar el modal */
+.admin-layout .game-modal {
+  left: 0;
 }
 
 .game-modal-content {
@@ -470,7 +505,7 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  background-color: #3b82f6;
+  background-color: #059669;
   color: white;
   border-radius: 0.5rem;
   font-weight: 500;
@@ -479,7 +514,7 @@
 }
 
 .game-form-submit:hover:not(:disabled) {
-  background-color: #2563eb;
+  background-color: #047857;
   transform: translateY(-1px);
 }
 
@@ -520,27 +555,45 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background-color: #3b82f6;
+  background-color: #059669;
   color: white;
   border-radius: 0.5rem;
   transition: background-color 0.2s;
 }
 
 .add-game-button:hover {
-  background-color: #2563eb;
+  background-color: #047857;
 }
 
 .loading-spinner {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
   padding: 2rem;
+  color: #6b7280;
 }
 
-.loading-spinner-icon {
-  color: #3b82f6;
-  font-size: 2rem;
+.loading-spinner .spinner-icon {
   animation: spin 1s linear infinite;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #3b82f6;
+}
+
+.loading-spinner span {
+  font-size: 1rem;
+  color: #6b7280;
+}
+
+.no-data {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+  font-style: italic;
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+  border: 1px dashed #d1d5db;
 }
 
 /* Responsive design */
@@ -553,6 +606,7 @@
   .profile-user-view,
   .profile-edit-section {
     padding: 2rem;
+    min-height: calc(100vh - 120px);
   }
 
   .admin-section {
@@ -563,7 +617,26 @@
     padding: 1.25rem;
   }
 
+  /* Ajustar layout de admin en pantallas pequeñas */
+  .admin-layout {
+    padding: 80px 0 2rem 0;
+  }
+
+  .admin-menu {
+    width: 180px;
+    min-width: 180px;
+  }
+
+  .admin-layout .main-content {
+    margin-left: 180px !important;
+    width: calc(100% - 180px) !important;
+  }
+
   .game-modal {
+    left: 0;
+  }
+
+  .admin-layout .game-modal {
     left: 0;
   }
 
@@ -576,80 +649,100 @@
   }
 }
 
+@media (max-width: 768px) {
+  .admin-layout {
+    padding: 80px 0 1rem 0;
+  }
+
+  .admin-menu {
+    width: 140px;
+    min-width: 140px;
+  }
+
+  .admin-layout .main-content {
+    margin-left: 140px !important;
+    width: calc(100% - 140px) !important;
+  }
+}
+
 @media (max-width: 640px) {
-  .profile-container {
-    padding: 1rem;
+  .app-container-perfil {
+    flex-direction: column !important;
+    padding-top: 0 !important;
   }
-
-  .profile-user-view,
+  .profile-sections {
+    display: block !important;
+    max-width: 100vw !important;
+    width: 100vw !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .admin-menu {
+    position: static !important;
+    width: 100vw !important;
+    min-width: 100vw !important;
+    max-width: 100vw !important;
+    height: auto !important;
+    top: 0 !important;
+    left: 0 !important;
+    margin: 0 0 1rem 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    z-index: 10;
+    background: #2b5d15 !important;
+    padding: 0.5rem 0.5rem 0.5rem 0.5rem !important;
+    display: block !important;
+  }
+  .admin-menu-buttons {
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    gap: 0.5rem !important;
+    width: 100%;
+    justify-content: stretch;
+    display: block !important;
+  }
+  .admin-menu-button {
+    width: 100% !important;
+    font-size: 1.1rem !important;
+    padding: 1rem !important;
+    margin: 0 !important;
+    border-radius: 0.5rem !important;
+    text-align: left !important;
+    justify-content: flex-start !important;
+    display: block !important;
+  }
+  .admin-menu-title {
+    font-size: 1.2rem !important;
+    text-align: center !important;
+    margin-bottom: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+  .main-content,
+  .admin-layout .main-content,
   .profile-edit-section,
-  .admin-section {
-    padding: 1.5rem;
-  }
-
-  .profile-image-container {
-    width: 120px;
-    height: 120px;
-    margin-bottom: 2rem;
-  }
-
-  .section-title {
-    font-size: 1.5rem;
-    margin-bottom: 2rem;
-  }
-
-  .profile-input input,
-  .profile-input textarea {
-    width: 95%;
-    padding: 0.875rem 1rem 0.875rem 2.5rem;
-  }
-
-  .profile-input-icon {
-    left: 5%;
-  }
-
-  .profile-button {
-    width: 95%;
-    padding: 0.875rem 1.25rem;
-  }
-
-  .admin-section-group {
-    padding: 1rem;
-  }
-
-  .admin-section-title {
-    font-size: 1rem;
-  }
-
-  .admin-buttons {
-    gap: 1.5rem;
-  }
-
-  .game-modal-content {
-    padding: 1.5rem;
-  }
-
-  .game-image-preview {
-    width: 120px;
-    height: 120px;
-  }
-
-  .games-header {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
-  }
-
-  .games-title {
-    text-align: center;
+  .profile-user-view,
+  .content-section {
+    margin: 0 !important;
+    margin-left: 0 !important;
+    padding: 1rem 0.5rem !important;
+    width: 100vw !important;
+    min-width: 0 !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
   }
 }
 
 @media (max-width: 480px) {
+  .profile-container {
+    padding: 1rem;
+    padding-top: calc(1rem + 80px) !important;
+  }
+
   .profile-user-view,
   .profile-edit-section,
   .admin-section {
     padding: 1.25rem;
+    min-height: calc(100vh - 160px);
   }
 
   .profile-image-container {
@@ -748,11 +841,11 @@
   }
 
   .add-game-button {
-    background-color: #3b82f6;
+    background-color: #059669;
   }
 
   .add-game-button:hover {
-    background-color: #2563eb;
+    background-color: #047857;
   }
 
   .loading-spinner-icon {
@@ -974,4 +1067,1437 @@
   to {
     transform: rotate(360deg);
   }
-} 
+}
+
+/* Estilos para el torneo */
+.torneo-info {
+  background-color: #f8fafc;
+  border-radius: 1rem;
+  padding: 2rem;
+  margin-top: 2rem;
+  border-left: 4px solid #3b82f6;
+}
+
+.torneo-info p {
+  color: #64748b;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.torneo-info ol {
+  color: #475569;
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.torneo-info li {
+  margin-bottom: 0.5rem;
+}
+
+/* Estilos para los modales de selección */
+.juegos-seleccion,
+.jugadores-seleccion {
+  margin-bottom: 2rem;
+}
+
+.juegos-grid,
+.jugadores-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 1rem;
+  background-color: #f8fafc;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+}
+
+.juego-checkbox,
+.jugador-checkbox {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background-color: white;
+  border-radius: 0.5rem;
+  border: 2px solid #e2e8f0;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.juego-checkbox:hover,
+.jugador-checkbox:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+.juego-checkbox input[type="checkbox"],
+.jugador-checkbox input[type="checkbox"] {
+  margin-right: 1rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  accent-color: #3b82f6;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  cursor: pointer;
+}
+
+.juego-thumbnail {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  margin-right: 1rem;
+  border: 2px solid #e2e8f0;
+}
+
+.jugador-thumbnail {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-right: 1rem;
+  border: 2px solid #e2e8f0;
+}
+
+.jugador-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.jugador-nickname {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 1rem;
+}
+
+.jugador-email {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* Estilos para checkboxes seleccionados */
+.juego-checkbox input[type="checkbox"]:checked + .checkbox-label,
+.jugador-checkbox input[type="checkbox"]:checked + .checkbox-label {
+  color: #3b82f6;
+}
+
+.juego-checkbox input[type="checkbox"]:checked + .checkbox-label .juego-thumbnail,
+.jugador-checkbox input[type="checkbox"]:checked + .checkbox-label .jugador-thumbnail {
+  border-color: #3b82f6;
+}
+
+/* Responsive para los grids */
+@media (max-width: 768px) {
+  .juegos-grid,
+  .jugadores-grid {
+    grid-template-columns: 1fr;
+    max-height: 300px;
+  }
+  
+  .juego-checkbox,
+  .jugador-checkbox {
+    padding: 0.75rem;
+  }
+  
+  .juego-thumbnail {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .jugador-thumbnail {
+    width: 35px;
+    height: 35px;
+  }
+}
+
+/* Estilos para el modo oscuro */
+@media (prefers-color-scheme: dark) {
+  .torneo-info {
+    background-color: #1e293b;
+    border-left-color: #60a5fa;
+  }
+  
+  .torneo-info p {
+    color: #cbd5e1;
+  }
+  
+ .torneo-info ol {
+    color: #94a3b8;
+  }
+  
+  .juegos-grid,
+  .jugadores-grid {
+    background-color: #1e293b;
+    border-color: #334155;
+  }
+  
+  .juego-checkbox,
+  .jugador-checkbox {
+    background-color: #334155;
+    border-color: #475569;
+  }
+  
+  .juego-checkbox:hover,
+  .jugador-checkbox:hover {
+    border-color: #60a5fa;
+    box-shadow: 0 2px 8px rgba(96, 165, 250, 0.2);
+  }
+  
+  .jugador-nickname {
+    color: #f1f5f9;
+  }
+  
+  .jugador-email {
+    color: #94a3b8;
+  }
+  
+  .juego-thumbnail,
+  .jugador-thumbnail {
+    border-color: #475569;
+  }
+}
+
+/* Mejoras para los checkboxes */
+.checkbox-input {
+  display: none;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: white;
+  width: 100%;
+}
+
+.checkbox-label:hover {
+  border-color: #3b82f6;
+  background-color: #f8fafc;
+}
+
+.juego-checkbox input[type="checkbox"]:checked + .checkbox-label,
+.jugador-checkbox input[type="checkbox"]:checked + .checkbox-label {
+  border-color: #3b82f6;
+  background-color: #eff6ff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.juego-checkbox input[type="checkbox"]:checked + .checkbox-label .juego-thumbnail,
+.jugador-checkbox input[type="checkbox"]:checked + .checkbox-label .jugador-thumbnail {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Estilos para los botones deshabilitados */
+.game-form-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #9ca3af;
+}
+
+.game-form-submit:disabled:hover {
+  background-color: #9ca3af;
+  transform: none;
+}
+
+/* Mejoras para el modal de torneo */
+.torneo-info {
+  background-color: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.torneo-info p {
+  color: #374151;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.torneo-info ol {
+  color: #4b5563;
+  padding-left: 1.5rem;
+}
+
+.torneo-info li {
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+/* Responsive para los elementos de carga */
+@media (max-width: 768px) {
+  .loading-spinner {
+    padding: 1rem;
+  }
+  
+  .loading-spinner .spinner-icon {
+    font-size: 1.5rem;
+  }
+  
+  .no-data {
+    padding: 1rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Modo oscuro para elementos de carga */
+@media (prefers-color-scheme: dark) {
+  .loading-spinner {
+    color: #9ca3af;
+  }
+  
+  .loading-spinner span {
+    color: #9ca3af;
+  }
+  
+  .no-data {
+    background-color: #1f2937;
+    border-color: #374151;
+    color: #9ca3af;
+  }
+  
+  .checkbox-label {
+    background-color: #1f2937;
+    border-color: #374151;
+    color: #f9fafb;
+  }
+  
+  .checkbox-label:hover {
+    background-color: #111827;
+    border-color: #3b82f6;
+  }
+  
+  .juego-checkbox input[type="checkbox"]:checked + .checkbox-label,
+  .jugador-checkbox input[type="checkbox"]:checked + .checkbox-label {
+    background-color: #1e3a8a;
+    border-color: #3b82f6;
+  }
+  
+  .torneo-info {
+    background-color: #1f2937;
+    border-color: #374151;
+  }
+  
+  .torneo-info p {
+    color: #d1d5db;
+  }
+  
+  .torneo-info ol {
+    color: #9ca3af;
+  }
+}
+
+/* Estilos para la tabla de torneos */
+.torneos-table-container {
+  background-color: white;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.torneos-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.torneos-table th {
+  background-color: #f8fafc;
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.torneos-table td {
+  padding: 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.torneo-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.torneo-action-btn {
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+}
+
+.torneo-action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.torneo-action-btn.edit {
+  color: #3b82f6;
+  background-color: #eff6ff;
+}
+
+.torneo-action-btn.edit:hover {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+
+.torneo-action-btn.games {
+  color: #10b981;
+  background-color: #ecfdf5;
+}
+
+.torneo-action-btn.games:hover {
+  background-color: #d1fae5;
+  color: #059669;
+}
+
+.torneo-action-btn.players {
+  color: #8b5cf6;
+  background-color: #f3f4f6;
+}
+
+.torneo-action-btn.players:hover {
+  background-color: #e5e7eb;
+  color: #7c3aed;
+}
+
+.torneo-action-btn.delete {
+  color: #ef4444;
+  background-color: #fef2f2;
+}
+
+.torneo-action-btn.delete:hover {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+/* Estado del torneo */
+.torneo-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.torneo-status.pending {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.torneo-status.active {
+  background-color: #d1fae5;
+  color: #059669;
+}
+
+.torneo-status.finished {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+/* Responsive para la tabla de torneos */
+@media (max-width: 768px) {
+  .torneos-table th,
+  .torneos-table td {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+  
+  .torneo-actions {
+    gap: 0.25rem;
+  }
+  
+  .torneo-action-btn {
+    min-width: 1.75rem;
+    height: 1.75rem;
+    padding: 0.375rem;
+  }
+}
+
+/* Modo oscuro para torneos */
+@media (prefers-color-scheme: dark) {
+  .torneos-table-container {
+    background-color: #1f2937;
+  }
+  
+  .torneos-table th {
+    background-color: #374151;
+    color: #e5e7eb;
+    border-bottom-color: #4b5563;
+  }
+  
+  .torneos-table td {
+    border-bottom-color: #4b5563;
+    color: #f9fafb;
+  }
+  
+  .torneo-action-btn.edit {
+    background-color: #1e3a8a;
+    color: #60a5fa;
+  }
+  
+  .torneo-action-btn.edit:hover {
+    background-color: #1e40af;
+    color: #93c5fd;
+  }
+  
+  .torneo-action-btn.games {
+    background-color: #064e3b;
+    color: #34d399;
+  }
+  
+  .torneo-action-btn.games:hover {
+    background-color: #065f46;
+    color: #6ee7b7;
+  }
+  
+  .torneo-action-btn.players {
+    background-color: #3730a3;
+    color: #a78bfa;
+  }
+  
+  .torneo-action-btn.players:hover {
+    background-color: #4338ca;
+    color: #c4b5fd;
+  }
+  
+  .torneo-action-btn.delete {
+    background-color: #7f1d1d;
+    color: #f87171;
+  }
+  
+  .torneo-action-btn.delete:hover {
+    background-color: #991b1b;
+    color: #fca5a5;
+  }
+  
+  .torneo-status.pending {
+    background-color: #451a03;
+    color: #fbbf24;
+  }
+  
+  .torneo-status.active {
+    background-color: #064e3b;
+    color: #34d399;
+  }
+  
+  .torneo-status.finished {
+    background-color: #374151;
+    color: #9ca3af;
+  }
+}
+
+/* Estilos para elementos asignados */
+.juegos-asignados-section,
+.jugadores-asignados-section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: #f8fafc;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+}
+
+.juegos-asignados-grid,
+.jugadores-asignados-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.juego-asignado-item,
+.jugador-asignado-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background-color: white;
+  border-radius: 0.5rem;
+  border: 2px solid #e5e7eb;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.juego-asignado-item:hover,
+.jugador-asignado-item:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+.juego-nombre {
+  font-weight: 600;
+  color: #1f2937;
+  flex: 1;
+}
+
+.quitar-juego-btn,
+.quitar-jugador-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.75rem;
+}
+
+.quitar-juego-btn:hover,
+.quitar-jugador-btn:hover {
+  background-color: #dc2626;
+  transform: scale(1.1);
+}
+
+/* Responsive para elementos asignados */
+@media (max-width: 768px) {
+  .juegos-asignados-grid,
+  .jugadores-asignados-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .juego-asignado-item,
+  .jugador-asignado-item {
+    padding: 0.75rem;
+  }
+  
+  .quitar-juego-btn,
+  .quitar-jugador-btn {
+    width: 1.25rem;
+    height: 1.25rem;
+    font-size: 0.625rem;
+  }
+}
+
+/* Modo oscuro para elementos asignados */
+@media (prefers-color-scheme: dark) {
+  .juegos-asignados-section,
+  .jugadores-asignados-section {
+    background-color: #1f2937;
+    border-color: #374151;
+  }
+  
+  .juego-asignado-item,
+  .jugador-asignado-item {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+  
+  .juego-asignado-item:hover,
+  .jugador-asignado-item:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+  }
+  
+  .juego-nombre {
+    color: #f9fafb;
+  }
+  
+  .quitar-juego-btn,
+  .quitar-jugador-btn {
+    background-color: #dc2626;
+  }
+  
+  .quitar-juego-btn:hover,
+  .quitar-jugador-btn:hover {
+    background-color: #b91c1c;
+  }
+}
+
+/* Estilos para el módulo de puntos */
+.puntos-container {
+  background-color: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.tipo-partida-selector {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.tipo-partida-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.tipo-partida-btn {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.75rem;
+  background-color: white;
+  color: #6b7280;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 200px;
+  justify-content: center;
+}
+
+.tipo-partida-btn:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.tipo-partida-btn.active {
+  border-color: #3b82f6;
+  background-color: #3b82f6;
+  color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.tipo-partida-btn.active:hover {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.puntos-form-section {
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background-color: #f9fafb;
+  border-radius: 1rem;
+  border: 1px solid #e5e7eb;
+}
+
+.puntos-pvp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 400px;
+}
+
+.punto-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.punto-label {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.punto-posicion {
+  flex: 1;
+  font-size: 1.1rem;
+}
+
+.punto-input {
+  width: 100px;
+  padding: 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  text-align: center;
+  font-weight: 600;
+  color: #1f2937;
+  transition: all 0.3s ease;
+}
+
+.punto-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.punto-unidad {
+  font-weight: 600;
+  color: #6b7280;
+  min-width: 60px;
+}
+
+.puntos-tct-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.punto-tct-item {
+  background-color: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.punto-tct-item:hover {
+  border-color: #3b82f6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.punto-tct-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.punto-tct-posicion {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.punto-tct-title {
+  font-weight: 600;
+  color: #374151;
+  font-size: 1rem;
+}
+
+.punto-tct-input-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.punto-tct-input {
+  width: 80px;
+  padding: 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  text-align: center;
+  font-weight: 600;
+  color: #1f2937;
+  transition: all 0.3s ease;
+}
+
+.punto-tct-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.punto-tct-unidad {
+  font-weight: 600;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.puntos-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 2px solid #e5e7eb;
+}
+
+.puntos-save-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.puntos-save-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+.puntos-save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.puntos-save-btn .spinner {
+  animation: spin 1s linear infinite;
+}
+
+.puntos-preview {
+  margin-top: 2rem;
+  padding: 2rem;
+  background-color: #f9fafb;
+  border-radius: 1rem;
+  border: 1px solid #e5e7eb;
+}
+
+.puntos-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+.puntos-preview-section {
+  background-color: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+}
+
+.puntos-preview-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.puntos-preview-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.punto-preview-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+}
+
+.punto-preview-posicion {
+  font-weight: 600;
+  color: #374151;
+}
+
+.punto-preview-valor {
+  font-weight: 700;
+  color: #3b82f6;
+  font-size: 1.1rem;
+}
+
+/* Responsive para el módulo de puntos */
+@media (max-width: 768px) {
+  .tipo-partida-buttons {
+    flex-direction: column;
+  }
+  
+  .tipo-partida-btn {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .puntos-tct-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+  
+  .punto-label {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .punto-input {
+    width: 100%;
+  }
+  
+  .puntos-preview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .puntos-container {
+    padding: 1rem;
+  }
+  
+  .puntos-form-section {
+    padding: 1rem;
+  }
+  
+  .punto-tct-item {
+    padding: 1rem;
+  }
+  
+  .puntos-save-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Dark mode para el módulo de puntos */
+@media (prefers-color-scheme: dark) {
+  .puntos-container {
+    background-color: #1f2937;
+    color: #f9fafb;
+  }
+  
+  .puntos-form-section {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+  
+  .tipo-partida-btn {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #d1d5db;
+  }
+  
+  .tipo-partida-btn:hover {
+    border-color: #3b82f6;
+    color: #3b82f6;
+  }
+  
+  .punto-label {
+    color: #d1d5db;
+  }
+  
+  .punto-input,
+  .punto-tct-input {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+  
+  .punto-input:focus,
+  .punto-tct-input:focus {
+    border-color: #3b82f6;
+  }
+  
+  .punto-unidad,
+  .punto-tct-unidad {
+    color: #9ca3af;
+  }
+  
+  .punto-tct-item {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+  
+  .punto-tct-item:hover {
+    border-color: #3b82f6;
+  }
+  
+  .punto-tct-title {
+    color: #d1d5db;
+  }
+  
+  .puntos-preview {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+  
+  .puntos-preview-section {
+    background-color: #1f2937;
+    border-color: #4b5563;
+  }
+  
+  .puntos-preview-title {
+    color: #f9fafb;
+    border-color: #4b5563;
+  }
+  
+  .punto-preview-item {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+  
+  .punto-preview-posicion {
+    color: #d1d5db;
+  }
+}
+
+/* Estilos para botones de añadir y eliminar posiciones */
+.remove-posicion-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+}
+
+.remove-posicion-btn:hover {
+  background-color: #fef2f2;
+  color: #dc2626;
+  transform: scale(1.1);
+}
+
+.puntos-tct-actions {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.add-posicion-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.add-posicion-btn:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.add-posicion-btn:active {
+  transform: translateY(0);
+}
+
+/* Ajustes para el header de posición con botón de eliminar */
+.punto-tct-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  background-color: #f8fafc;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+}
+
+.punto-tct-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Responsive para los nuevos botones */
+@media (max-width: 768px) {
+  .remove-posicion-btn {
+    padding: 6px;
+    font-size: 1rem;
+  }
+  
+  .add-posicion-btn {
+    padding: 0.875rem 1.25rem;
+    font-size: 0.875rem;
+  }
+  
+  .punto-tct-header {
+    padding: 0.375rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .add-posicion-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .punto-tct-header {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+}
+
+/* Modo oscuro para los nuevos botones */
+@media (prefers-color-scheme: dark) {
+  .remove-posicion-btn {
+    color: #f87171;
+  }
+  
+  .remove-posicion-btn:hover {
+    background-color: #450a0a;
+    color: #fca5a5;
+  }
+  
+  .add-posicion-btn {
+    background: linear-gradient(135deg, #059669, #047857);
+    box-shadow: 0 4px 15px rgba(5, 150, 105, 0.4);
+  }
+  
+  .add-posicion-btn:hover {
+    background: linear-gradient(135deg, #047857, #065f46);
+    box-shadow: 0 6px 20px rgba(5, 150, 105, 0.5);
+  }
+  
+  .punto-tct-header {
+    background-color: #1e293b;
+    border-color: #334155;
+  }
+}
+
+/* Estilos para el módulo de partidas */
+.edicion-selector-section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.edicion-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.edicion-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+  border: 2px solid #e2e8f0;
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.edicion-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border-color: #3b82f6;
+}
+
+.edicion-btn.active {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  border-color: #3b82f6;
+  color: white;
+}
+
+.partidas-section {
+  margin-top: 2rem;
+}
+
+/* Estilos para el modal de crear partida */
+.modal-content.large {
+  max-width: 800px;
+  max-height: 90vh;
+}
+
+.ganador-display.no-ganador {
+  background-color: #374151;
+  color: #9ca3af;
+  border-color: #4b5563;
+}
+
+/* Estilos para modo oscuro de puntos configurados */
+.puntos-configurados-card {
+  background-color: #0c4a6e;
+  border-color: #0284c7;
+}
+
+.punto-configurado-item {
+  background-color: #1e293b;
+  border-color: #334155;
+}
+
+.punto-valor {
+  font-weight: 600;
+  color: #059669;
+}
+
+/* Estilos para jugadores del inicio */
+.jugadores-inicio-section {
+  margin-top: 1rem;
+}
+
+.jugadores-actuales {
+  margin-bottom: 1rem;
+}
+
+.jugadores-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.jugador-card-inicio {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: white;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s;
+}
+
+.jugador-card-inicio:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.jugador-avatar-small {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e5e7eb;
+}
+
+.jugador-nickname {
+  font-weight: 500;
+  color: #1f2937;
+  font-size: 0.875rem;
+}
+
+/* Estilos para el modal de jugadores del inicio */
+.jugadores-asignados-section,
+.jugadores-seleccion {
+  margin-bottom: 2rem;
+}
+
+.jugadores-asignados-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.jugador-asignado-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: #f0fdf4;
+  border-radius: 0.5rem;
+  border: 1px solid #bbf7d0;
+  transition: all 0.2s;
+}
+
+.jugador-asignado-item:hover {
+  background-color: #dcfce7;
+  transform: translateY(-1px);
+}
+
+.jugador-thumbnail {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e5e7eb;
+}
+
+.quitar-jugador-btn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+}
+
+.quitar-jugador-btn:hover {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+/* Responsive para jugadores del inicio */
+@media (max-width: 768px) {
+  .jugadores-grid,
+  .jugadores-asignados-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.75rem;
+  }
+  
+  .jugador-card-inicio,
+  .jugador-asignado-item {
+    padding: 0.5rem;
+  }
+  
+  .jugador-avatar-small,
+  .jugador-thumbnail {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .jugador-nickname {
+    font-size: 0.75rem;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .jugador-card-inicio {
+    background-color: #1f2937;
+    border-color: #374151;
+  }
+  
+  .jugador-card-inicio:hover {
+    background-color: #111827;
+  }
+  
+  .jugador-nickname {
+    color: white;
+  }
+  
+  .jugador-asignado-item {
+    background-color: #064e3b;
+    border-color: #065f46;
+  }
+  
+  .jugador-asignado-item:hover {
+    background-color: #047857;
+  }
+  
+  .quitar-jugador-btn:hover {
+    background-color: #450a0a;
+  }
+}

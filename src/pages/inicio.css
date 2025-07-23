@@ -1,0 +1,1293 @@
+/* Estilos para la página de inicio - Diseño moderno tipo Facebook */
+.inicio-container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f0f2f5;
+  padding: 5.5rem 0 0 0;
+  margin: 0;
+  overflow-x: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  box-sizing: border-box;
+}
+
+.titulo-principal {
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 2rem;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  width: 100%;
+  padding: 0 1rem;
+}
+
+/* Layout principal con columnas */
+.secciones-container {
+  display: grid;
+  grid-template-columns: 1fr 3fr 1fr;
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  align-items: start;
+}
+
+/* Columna izquierda - Información lateral */
+.columna-izquierda {
+  position: sticky;
+  top: 6rem;
+  height: fit-content;
+}
+
+/* Columna central - Contenido principal */
+.columna-central {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Columna derecha - Widgets y estadísticas */
+.columna-derecha {
+  position: sticky;
+  top: 6rem;
+  height: fit-content;
+}
+
+/* Estilos para las secciones */
+.seccion-inicio {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  margin-bottom: 1rem;
+  transition: box-shadow 0.2s ease;
+}
+
+.seccion-inicio:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.titulo-seccion {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.icono-seccion {
+  color: #3b82f6;
+  font-size: 1.1rem;
+}
+
+/* Widgets de la columna izquierda */
+.widget-lateral {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  margin-bottom: 1rem;
+}
+
+.widget-lateral h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Widget de jugadores destacados */
+.jugadores-destacados {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.jugador-destacado {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.jugador-destacado:hover {
+  background-color: #f3f4f6;
+}
+
+.jugador-destacado img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e5e7eb;
+}
+
+.jugador-destacado .info {
+  flex: 1;
+}
+
+.jugador-destacado .nombre {
+  font-weight: 500;
+  color: #1f2937;
+  font-size: 0.9rem;
+}
+
+.jugador-destacado .puntos {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+/* Widget de estadísticas rápidas */
+.estadisticas-rapidas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.stat-card {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  border: 1px solid #e5e7eb;
+}
+
+.stat-card .numero {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #3b82f6;
+  display: block;
+}
+
+.stat-card .label {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+/* Widget de comodines rápidos */
+.comodines-rapidos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.comodin-rapido {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.comodin-rapido:hover {
+  background: #f0f9ff;
+  border-color: #3b82f6;
+}
+
+.comodin-rapido img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.comodin-rapido .info {
+  flex: 1;
+}
+
+.comodin-rapido .nombre {
+  font-weight: 500;
+  color: #1f2937;
+  font-size: 0.9rem;
+}
+
+.comodin-rapido .descripcion {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+/* Sección de tabla general mejorada */
+.tabla-general-container {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.tabla-general {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  font-size: 0.9rem;
+}
+
+.tabla-general th {
+  background: #f8fafc;
+  color: #374151;
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tabla-general td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.tabla-general tr:hover {
+  background-color: #f9fafb;
+}
+
+.tabla-general tr.top-3 {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  font-weight: 600;
+}
+
+.tabla-general tr.top-3:nth-child(2) {
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+}
+
+.tabla-general tr.top-3:nth-child(3) {
+  background: linear-gradient(135deg, #fef3c7 0%, #fbbf24 100%);
+}
+
+.jugador-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.jugador-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e5e7eb;
+}
+
+/* Sección de juegos mejorada */
+.juegos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.juego-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: 1px solid #e5e7eb;
+  position: relative;
+  overflow: hidden;
+}
+
+.juego-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: #3b82f6;
+}
+
+.juego-imagen {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1rem;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #e5e7eb;
+}
+
+.juego-imagen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.juego-imagen svg {
+  font-size: 2rem;
+  color: #9ca3af;
+}
+
+.juego-card h3 {
+  color: #1f2937;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.juego-card p {
+  color: #6b7280;
+  font-size: 0.8rem;
+}
+
+/* Sección de ruleta mejorada */
+.ruleta-container {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 2rem;
+  color: white;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.ruleta-info {
+  margin-bottom: 1.5rem;
+}
+
+.ruleta-descripcion {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
+.ruleta-premios {
+  text-align: left;
+  max-width: 300px;
+  margin: 0 auto 1.5rem;
+}
+
+.ruleta-premios h4 {
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.ruleta-premios ul {
+  list-style: none;
+  padding: 0;
+}
+
+.ruleta-premios li {
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.ruleta-premios li:last-child {
+  border-bottom: none;
+}
+
+.ruleta-estadisticas {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.ruleta-estadisticas h4 {
+  margin: 0 0 0.75rem 0;
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  color: #ccc;
+  margin-bottom: 0.25rem;
+}
+
+.stat-value {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.ruleta-button {
+  background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 auto;
+  min-width: 160px;
+  justify-content: center;
+}
+
+.ruleta-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ruleta-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.ruleta-button .spinner {
+  animation: spin 1s linear infinite;
+}
+
+.ruleta-nota {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  font-style: italic;
+  margin-top: 0.75rem;
+}
+
+/* Sección de entradas mejorada */
+.entradas-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.entrada-card {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.entrada-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #3b82f6;
+}
+
+.entrada-card h3 {
+  color: #1f2937;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.entrada-card p {
+  color: #6b7280;
+  line-height: 1.6;
+  font-size: 0.9rem;
+}
+
+/* Estados de carga y sin datos */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: #6b7280;
+}
+
+.spinner-icon {
+  animation: spin 1s linear infinite;
+  font-size: 2rem;
+  color: #3b82f6;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.no-data {
+  text-align: center;
+  color: #6b7280;
+  font-style: italic;
+  padding: 2rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px dashed #d1d5db;
+}
+
+/* Responsive design mejorado */
+@media (max-width: 1200px) {
+  .secciones-container {
+    max-width: 100%;
+    gap: 1rem;
+    padding: 0 0.75rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .secciones-container {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    padding: 0 0.5rem;
+  }
+  .columna-izquierda,
+  .columna-derecha {
+    position: static;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .inicio-container {
+    padding: 3.5rem 0 0 0;
+  }
+  .titulo-principal {
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+    padding: 0 0.5rem;
+  }
+  .secciones-container {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    padding: 0 0.25rem;
+  }
+  .columna-izquierda,
+  .columna-derecha {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    position: static;
+  }
+  .columna-central {
+    gap: 0.5rem;
+  }
+  .seccion-inicio,
+  .widget-lateral {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
+  }
+  .titulo-seccion {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.25rem;
+  }
+  .juegos-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+  .juego-card {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+  .juego-imagen {
+    width: 40px;
+    height: 40px;
+  }
+  .ruleta-container {
+    padding: 0.5rem;
+    border-radius: 8px;
+  }
+  .ruleta-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    min-width: 90px;
+  }
+  .tabla-general-container {
+    border-radius: 6px;
+    border-width: 1px;
+    overflow-x: auto;
+  }
+  .tabla-general {
+    font-size: 0.75rem;
+    min-width: 400px;
+  }
+  .tabla-general th,
+  .tabla-general td {
+    padding: 0.3rem 0.15rem;
+  }
+  .estadisticas-rapidas {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .inicio-container {
+    padding: 2.5rem 0 0 0;
+  }
+  .titulo-principal {
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+    padding: 0 0.25rem;
+  }
+  .secciones-container {
+    gap: 0.25rem;
+    padding: 0 0.1rem;
+  }
+  .seccion-inicio,
+  .widget-lateral {
+    padding: 0.5rem;
+    margin-bottom: 0.25rem;
+    border-radius: 6px;
+  }
+  .titulo-seccion {
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+    padding-bottom: 0.1rem;
+  }
+  .juegos-grid {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+  .juego-card {
+    padding: 0.25rem;
+    font-size: 0.8rem;
+  }
+  .juego-imagen {
+    width: 32px;
+    height: 32px;
+  }
+  .ruleta-container {
+    padding: 0.25rem;
+    border-radius: 6px;
+  }
+  .ruleta-button {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.7rem;
+    min-width: 70px;
+  }
+  .tabla-general {
+    font-size: 0.7rem;
+    min-width: 320px;
+  }
+  .tabla-general th,
+  .tabla-general td {
+    padding: 0.2rem 0.1rem;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .inicio-container {
+    background-color: #111827;
+  }
+
+  .seccion-inicio,
+  .widget-lateral {
+    background-color: #1f2937;
+    border-color: #374151;
+  }
+
+  .titulo-principal {
+    color: #f9fafb;
+  }
+
+  .titulo-seccion {
+    color: #f9fafb;
+    border-color: #374151;
+  }
+
+  .entrada-card {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+
+  .entrada-card:hover {
+    border-color: #3b82f6;
+  }
+
+  .entrada-card h3 {
+    color: #f9fafb;
+  }
+
+  .entrada-card p {
+    color: #d1d5db;
+  }
+
+  .juego-card {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+
+  .juego-card:hover {
+    border-color: #3b82f6;
+  }
+
+  .juego-card h3 {
+    color: #f9fafb;
+  }
+
+  .juego-card p {
+    color: #d1d5db;
+  }
+
+  .juego-imagen {
+    background-color: #1f2937;
+    border-color: #4b5563;
+  }
+
+  .jugador-destacado:hover {
+    background-color: #374151;
+  }
+
+  .comodin-rapido {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+
+  .comodin-rapido:hover {
+    background-color: #1f2937;
+    border-color: #3b82f6;
+  }
+
+  .stat-card {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+
+  .tabla-general {
+    background-color: #1f2937;
+  }
+
+  .tabla-general th {
+    background-color: #374151;
+    color: #f9fafb;
+    border-color: #4b5563;
+  }
+
+  .tabla-general td {
+    border-color: #374151;
+  }
+
+  .tabla-general tr:hover {
+    background-color: #374151;
+  }
+
+  .no-data {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #d1d5db;
+  }
+} 
+
+/* Estilos para eventos próximos */
+.eventos-proximos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.evento-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  transition: background-color 0.2s ease;
+}
+
+.evento-item:hover {
+  background-color: #f0f9ff;
+  border-color: #3b82f6;
+}
+
+.evento-fecha {
+  background: #3b82f6;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  min-width: 50px;
+  text-align: center;
+}
+
+.evento-info {
+  flex: 1;
+}
+
+.evento-titulo {
+  font-weight: 500;
+  color: #1f2937;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.evento-descripcion {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+/* Estilos para estadísticas avanzadas */
+.stats-avanzadas {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.stat-avanzada {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+}
+
+.stat-header {
+  font-weight: 500;
+  color: #1f2937;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.stat-progress {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.stat-value {
+  font-size: 0.8rem;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* Estilos para comodines rápidos */
+.comodines-rapidos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.comodin-rapido {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.comodin-rapido:hover {
+  background: #f0f9ff;
+  border-color: #3b82f6;
+}
+
+.comodin-rapido img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.comodin-rapido .info {
+  flex: 1;
+}
+
+.comodin-rapido .nombre {
+  font-weight: 500;
+  color: #1f2937;
+  font-size: 0.9rem;
+}
+
+.comodin-rapido .descripcion {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+
+
+/* Dark mode para los nuevos widgets */
+@media (prefers-color-scheme: dark) {
+  .evento-item {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+  
+  .evento-item:hover {
+    background-color: #1f2937;
+    border-color: #3b82f6;
+  }
+  
+  .evento-titulo {
+    color: #f9fafb;
+  }
+  
+  .evento-descripcion {
+    color: #d1d5db;
+  }
+  
+  .stat-avanzada {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+  
+  .stat-header {
+    color: #f9fafb;
+  }
+  
+  .stat-progress {
+    background-color: #4b5563;
+  }
+  
+  .stat-value {
+    color: #d1d5db;
+  }
+  
+  .comodin-rapido {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+  
+  .comodin-rapido:hover {
+    background-color: #1f2937;
+    border-color: #3b82f6;
+  }
+  
+  .comodin-rapido .nombre {
+    color: #f9fafb;
+  }
+  
+  .comodin-rapido .descripcion {
+    color: #d1d5db;
+  }
+  
+  .jugador-destacado:hover {
+    background-color: #374151;
+  }
+  
+  .jugador-destacado .nombre {
+    color: #f9fafb;
+  }
+  
+  .jugador-destacado .puntos {
+    color: #d1d5db;
+  }
+  
+  .jugador-destacado img {
+    border-color: #4b5563;
+  }
+  
+  .stat-card {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+
+  /* Estilos de modo oscuro para nuevos widgets */
+  .edicion-info {
+    background: #1f2937;
+    border-color: #374151;
+  }
+  
+  .edicion-titulo {
+    color: #f9fafb;
+  }
+  
+  .edicion-fechas {
+    color: #9ca3af;
+  }
+  
+  .logro-destacado {
+    background: #1f2937;
+    border-color: #374151;
+  }
+  
+  .logro-destacado:hover {
+    background: #111827;
+    border-color: #f59e0b;
+  }
+  
+  .logro-imagen {
+    background: #374151;
+    border-color: #f59e0b;
+  }
+  
+  .logro-nombre {
+    color: #f9fafb;
+  }
+  
+  .logro-descripcion {
+    color: #9ca3af;
+  }
+  
+  .logro-usuarios {
+    color: #10b981;
+  }
+
+  .partida-item {
+    background: #1f2937;
+    border-color: #374151;
+  }
+  
+  .partida-item:hover {
+    background: #111827;
+    border-color: #3b82f6;
+  }
+  
+  .partida-juego {
+    color: #f9fafb;
+  }
+  
+  .partida-tipo {
+    background: #374151;
+    color: #d1d5db;
+  }
+  
+  .partida-jugadores {
+    color: #9ca3af;
+  }
+} 
+
+/* Estilos para futuras partidas */
+.partidas-proximas {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.partida-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.partida-item:hover {
+  background: #f1f5f9;
+  border-color: #3b82f6;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.partida-fecha {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 60px;
+  padding: 0.5rem;
+  background: #3b82f6;
+  color: white;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.fecha-dia {
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.fecha-hora {
+  font-size: 0.7rem;
+  opacity: 0.9;
+}
+
+.partida-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.partida-juego {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 0.9rem;
+}
+
+.juego-mini {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.juego-icon-mini {
+  width: 20px;
+  height: 20px;
+  color: #6b7280;
+}
+
+.partida-tipo {
+  font-size: 0.75rem;
+  color: #6b7280;
+  background: #e5e7eb;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
+  width: fit-content;
+}
+
+.partida-fase {
+  font-size: 0.75rem;
+  color: #059669;
+  font-weight: 500;
+}
+
+.partida-jugadores {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+  line-height: 1.2;
+}
+
+ 
+
+/* Estilos para edición actual */
+.edicion-info {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.edicion-titulo {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.edicion-fechas {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+/* Estilos para logros destacados */
+.logros-destacados {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.logro-destacado {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.logro-destacado:hover {
+  background: #f1f5f9;
+  border-color: #f59e0b;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logro-imagen {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fef3c7;
+  border: 2px solid #f59e0b;
+}
+
+.logro-imagen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.logro-icon {
+  width: 24px;
+  height: 24px;
+  color: #f59e0b;
+}
+
+.logro-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.logro-nombre {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 0.9rem;
+}
+
+.logro-descripcion {
+  font-size: 0.75rem;
+  color: #6b7280;
+  line-height: 1.2;
+}
+
+.logro-usuarios {
+  font-size: 0.7rem;
+  color: #059669;
+  font-weight: 500;
+}
+
+ 

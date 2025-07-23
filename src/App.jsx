@@ -3,6 +3,8 @@ import { Inicio } from "./pages/Inicio";
 import { Login } from "./pages/Login";
 import { Registro } from "./pages/Registro";
 import { Perfil } from "./pages/perfil";
+import { Historico } from "./pages/historico";
+import  Transmisiones  from "./pages/transmisiones";
 import { ForgotPassword } from "./pages/forgot-password";
 import { ResetPassword } from "./pages/reset-password";
 import { ToastContainer } from 'react-toastify';
@@ -31,6 +33,18 @@ function App() {
     );
   }
 
+  // Si estamos en la página de transmisiones, renderizamos un layout diferente
+  if (location.pathname === '/transmisiones') {
+    return (
+      <>
+        <Navbar />
+        <Transmisiones />
+        <Footer />
+        <ToastContainer position="bottom-right" autoClose={3000} />
+      </>
+    );
+  }
+
   // Para el resto de las páginas, mantenemos el layout original
   return (
     <div className="app-container" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}> {/* Contenedor global */}
@@ -43,6 +57,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/inicio" />} />
           <Route path="/inicio" element={<Inicio />} />
+          <Route path="/historico" element={<Historico />} />
+          <Route path="/transmisiones" element={<Transmisiones />} />
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

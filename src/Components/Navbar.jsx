@@ -17,7 +17,6 @@ export const Navbar = () => {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((response) => {
-          // Ajuste aquí: Accedemos a response.data.data
           setUser(response.data.data);
         })
         .catch((error) => {
@@ -42,19 +41,63 @@ export const Navbar = () => {
     navigate('/inicio'); 
   };
 
+  const handleHistoricoClick = () => {
+    navigate('/historico');
+  };
+
+  const handleTransmisionesClick = () => {
+    navigate('/transmisiones');
+  };
+
+  // Detectar si es móvil/tablet
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+
   return (
     <>
       <nav className="navbar">
         <div className="navbar-container">
           {/* Izquierda */}
-          <div className="navbar-title">Histórico</div>
+          <div onClick={handleHistoricoClick} style={{ cursor: 'pointer' }} className="navbar-title">
+            Histórico
+          </div>
 
           {/* Centro */}
           <div onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
             <img src={logo} alt="Real TakerCup" className="navbar-logo" />
           </div>
 
-          {/* Derecha */}
+          {/* Izquierda */}
+          <div onClick={handleTransmisionesClick} style={{ cursor: 'pointer' }} className="navbar-title">
+            Transmisiones
+          </div>
+
+          {/* Botón hamburguesa para móvil/tablet */}
+          <button
+            className="navbar-hamburger"
+            onClick={() => setOpen(!open)}
+            aria-label="Abrir menú"
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+
+          {/* Menú hamburguesa para móvil/tablet */}
+          <div className={`navbar-menu${open ? ' open' : ''}`}>
+            {user ? (
+              <>
+                <p className="navbar-menu-item" onClick={() => { setOpen(false); handleProfileClick(); }}>Ver Perfil</p>
+                <p className="navbar-menu-item" onClick={() => { setOpen(false); handleLogout(); }}>Cerrar Sesión</p>
+              </>
+            ) : (
+              <>
+                <Link className="navbar-menu-item" to="/login" onClick={() => setOpen(false)}>Ingresar</Link>
+                <Link className="navbar-menu-item" to="/registro" onClick={() => setOpen(false)}>Registrarse</Link>
+              </>
+            )}
+          </div>
+
+          {/* Perfil solo visible en escritorio */}
           <div className="navbar-profile">
             <button onClick={() => setOpen(!open)} className="navbar-profile-button">
               {/* Mostrar foto si existe, sino mostrar ícono */}
@@ -70,8 +113,9 @@ export const Navbar = () => {
               {user && <span className="navbar-username ml-2">{user.nickname}</span>}
             </button>
 
+            {/* Menú de usuario solo para escritorio */}
             {open && (
-              <div className="navbar-menu">
+              <div className="navbar-profile-menu">
                 {user ? (
                   <>
                     <p className="navbar-menu-item" onClick={handleProfileClick}>Ver Perfil</p>
