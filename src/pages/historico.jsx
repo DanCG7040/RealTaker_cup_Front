@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Navbar } from '../Components/Navbar';
+import { Footer } from '../Components/Footer';
 import { useLocation } from 'react-router-dom';
 import { FaSearch, FaTrophy, FaGamepad, FaUsers, FaCalendar, FaEye, FaSpinner, FaFilter, FaTimes, FaMedal, FaBookOpen, FaHistory, FaChartBar, FaStar, FaVideo } from 'react-icons/fa';
 import { toast } from 'react-toastify';
@@ -342,398 +344,401 @@ export const Historico = () => {
   };
 
   return (
-    <div className="historico-container">
-      {/* Header modernizado */}
-      <div className="historico-header">
-        <h1 className="historico-title">
-          <FaBookOpen className="historico-icon" />
-          Biblioteca de Torneos
-        </h1>
-        <p className="historico-subtitle">
-          Explora el historial completo de torneos, partidas y resultados de manera dinámica
-        </p>
-      </div>
-
-      {/* Navegación por pestañas */}
-      <div className="tabs-navigation">
-        <button 
-          className={`tab-button ${activeTab === 'partidas' ? 'active' : ''}`}
-          onClick={() => setActiveTab('partidas')}
-        >
-          <FaGamepad />
-          Partidas
-        </button>
-        <button 
-          className={`tab-button ${activeTab === 'tablas' ? 'active' : ''}`}
-          onClick={() => setActiveTab('tablas')}
-        >
-          <FaTrophy />
-          Tablas Históricas
-        </button>
-        <button 
-          className={`tab-button ${activeTab === 'estadisticas' ? 'active' : ''}`}
-          onClick={() => setActiveTab('estadisticas')}
-        >
-          <FaChartBar />
-          Estadísticas
-        </button>
-        <button 
-          className={`tab-button ${activeTab === 'grabaciones' ? 'active' : ''}`}
-          onClick={() => setActiveTab('grabaciones')}
-        >
-          <FaVideo />
-          Grabaciones
-        </button>
-      </div>
-
-      {/* Filtros avanzados */}
-      <div className="filters-section">
-        <div className="filters-header">
-          <button 
-            onClick={() => setShowFilters(!showFilters)}
-            className="filters-toggle"
-          >
-            <FaFilter />
-            Búsqueda Avanzada
-          </button>
-          {filteredPartidas.length !== allPartidas.length && (
-            <button onClick={clearFilters} className="clear-filters">
-              <FaTimes />
-              Limpiar Filtros
-            </button>
-          )}
+    <>
+      <div className="historico-container">
+        {/* Header modernizado */}
+        <div className="historico-header">
+          <h1 className="historico-title">
+            <FaBookOpen className="historico-icon" />
+            Biblioteca de Torneos
+          </h1>
+          <p className="historico-subtitle">
+            Explora el historial completo de torneos, partidas y resultados de manera dinámica
+          </p>
         </div>
 
-        {showFilters && (
-          <div className="filters-content">
-            <div className="filter-row">
-              <div className="filter-group">
-                <label className="filter-label">Tipo de Búsqueda</label>
-                <select 
-                  value={filterType} 
-                  onChange={(e) => setFilterType(e.target.value)}
-                  className="filter-select"
-                >
-                  <option value="year">Por Año</option>
-                  <option value="player">Por Jugador</option>
-                  <option value="game">Por Juego</option>
-                  <option value="phase">Por Fase</option>
-                  <option value="type">Por Tipo de Partida</option>
-                  <option value="tabla_historica">Por Tabla Histórica</option>
-                  <option value="all">Búsqueda General</option>
-                </select>
+        {/* Navegación por pestañas */}
+        <div className="tabs-navigation">
+          <button 
+            className={`tab-button ${activeTab === 'partidas' ? 'active' : ''}`}
+            onClick={() => setActiveTab('partidas')}
+          >
+            <FaGamepad />
+            Partidas
+          </button>
+          <button 
+            className={`tab-button ${activeTab === 'tablas' ? 'active' : ''}`}
+            onClick={() => setActiveTab('tablas')}
+          >
+            <FaTrophy />
+            Tablas Históricas
+          </button>
+          <button 
+            className={`tab-button ${activeTab === 'estadisticas' ? 'active' : ''}`}
+            onClick={() => setActiveTab('estadisticas')}
+          >
+            <FaChartBar />
+            Estadísticas
+          </button>
+          <button 
+            className={`tab-button ${activeTab === 'grabaciones' ? 'active' : ''}`}
+            onClick={() => setActiveTab('grabaciones')}
+          >
+            <FaVideo />
+            Grabaciones
+          </button>
+        </div>
+
+        {/* Filtros avanzados */}
+        <div className="filters-section">
+          <div className="filters-header">
+            <button 
+              onClick={() => setShowFilters(!showFilters)}
+              className="filters-toggle"
+            >
+              <FaFilter />
+              Búsqueda Avanzada
+            </button>
+            {filteredPartidas.length !== allPartidas.length && (
+              <button onClick={clearFilters} className="clear-filters">
+                <FaTimes />
+                Limpiar Filtros
+              </button>
+            )}
+          </div>
+
+          {showFilters && (
+            <div className="filters-content">
+              <div className="filter-row">
+                <div className="filter-group">
+                  <label className="filter-label">Tipo de Búsqueda</label>
+                  <select 
+                    value={filterType} 
+                    onChange={(e) => setFilterType(e.target.value)}
+                    className="filter-select"
+                  >
+                    <option value="year">Por Año</option>
+                    <option value="player">Por Jugador</option>
+                    <option value="game">Por Juego</option>
+                    <option value="phase">Por Fase</option>
+                    <option value="type">Por Tipo de Partida</option>
+                    <option value="tabla_historica">Por Tabla Histórica</option>
+                    <option value="all">Búsqueda General</option>
+                  </select>
+                </div>
+
+                <div className="filter-group">
+                  <label className="filter-label">Término de Búsqueda</label>
+                  <div className="search-input-group">
+                    <input
+                      type="text"
+                      placeholder={getPlaceholderText(filterType)}
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="search-input"
+                      onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                    />
+                    <button
+                      onClick={handleSearch}
+                      disabled={isLoading}
+                      className="search-button"
+                    >
+                      {isLoading ? <FaSpinner className="spinner" /> : <FaSearch />}
+                    </button>
+                  </div>
+                </div>
               </div>
 
-              <div className="filter-group">
-                <label className="filter-label">Término de Búsqueda</label>
-                <div className="search-input-group">
-                  <input
-                    type="text"
-                    placeholder={getPlaceholderText(filterType)}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="search-input"
-                    onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                  />
-                  <button
-                    onClick={handleSearch}
-                    disabled={isLoading}
-                    className="search-button"
-                  >
-                    {isLoading ? <FaSpinner className="spinner" /> : <FaSearch />}
-                  </button>
+              <div className="filter-suggestions">
+                <h4>💡 Sugerencias de búsqueda:</h4>
+                <div className="suggestions-grid">
+                  <div className="suggestion-item">
+                    <strong>📅 Años:</strong> 2024, 2023, 2022...
+                  </div>
+                  <div className="suggestion-item">
+                    <strong>🏆 Fases:</strong> Grupos, Cuartos, Semifinal, Final
+                  </div>
+                  <div className="suggestion-item">
+                    <strong>🎮 Tipos:</strong> PVP, TodosContraTodos
+                  </div>
+                  <div className="suggestion-item">
+                    <strong>👤 Jugadores:</strong> Nombre del jugador
+                  </div>
+                  <div className="suggestion-item">
+                    <strong>📊 Tablas Históricas:</strong> Año del torneo o "Nueva edición"
+                  </div>
                 </div>
               </div>
             </div>
+          )}
+        </div>
 
-            <div className="filter-suggestions">
-              <h4>💡 Sugerencias de búsqueda:</h4>
-              <div className="suggestions-grid">
-                <div className="suggestion-item">
-                  <strong>📅 Años:</strong> 2024, 2023, 2022...
+        {/* Estadísticas */}
+        <div className="stats-section">
+          <div className="stats-grid">
+            <div className="stat-card">
+              <FaTrophy className="stat-icon" />
+              <div className="stat-content">
+                <span className="stat-number">{ediciones.length}</span>
+                <span className="stat-label">Torneos</span>
+              </div>
+            </div>
+            <div className="stat-card">
+              <FaGamepad className="stat-icon" />
+              <div className="stat-content">
+                <span className="stat-number">{filteredPartidas.length}</span>
+                <span className="stat-label">Partidas</span>
+              </div>
+            </div>
+            <div className="stat-card">
+              <FaMedal className="stat-icon" />
+              <div className="stat-content">
+                <span className="stat-number">
+                  {filteredPartidas.filter(p => p.tiene_resultado).length}
+                </span>
+                <span className="stat-label">Finalizadas</span>
+              </div>
+            </div>
+            <div className="stat-card">
+              <FaUsers className="stat-icon" />
+              <div className="stat-content">
+                <span className="stat-number">
+                  {new Set(filteredPartidas.flatMap(p => p.jugadores || [])).size}
+                </span>
+                <span className="stat-label">Jugadores Únicos</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Contenido según pestaña activa */}
+        {activeTab === 'partidas' && (
+          <div className="results-section">
+            {isLoading ? (
+              <div className="loading-container">
+                <FaSpinner className="spinner" />
+                <span>Cargando datos...</span>
+              </div>
+            ) : filteredPartidas.length === 0 ? (
+              <div className="no-data">
+                <p>No se encontraron partidas con los filtros aplicados</p>
+                <button onClick={clearFilters} className="clear-filters-btn">
+                  Limpiar Filtros
+                </button>
+              </div>
+            ) : (
+              <div className="results-content">
+                {Object.entries(groupedPartidas).map(([edicionId, partidas]) => {
+                  const edicion = ediciones.find(e => e.idEdicion.toString() === edicionId);
+                  return (
+                    <div key={edicionId} className="edicion-section">
+                      <div className="edicion-header-section">
+                        <h2 className="edicion-title">
+                          <FaTrophy className="edicion-icon" />
+                          Torneo {edicionId}
+                          {edicion && (
+                            <span className="edicion-dates">
+                              ({new Date(edicion.fecha_inicio).toLocaleDateString('es-ES')} - {new Date(edicion.fecha_fin).toLocaleDateString('es-ES')})
+                            </span>
+                          )}
+                        </h2>
+                        <span className="partidas-count">{partidas.length} partidas</span>
+                      </div>
+                      
+                      <div className="partidas-grid">
+                        {partidas.map((partida) => (
+                          <PartidaCard
+                            key={partida.id}
+                            partida={partida}
+                            onVerPerfil={handleVerPerfil}
+                            getResultado={getResultadoPartida}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'tablas' && (
+          <div className="historico-tablas-section">
+            <h2 className="section-title">
+              <FaHistory className="section-icon" />
+              Tablas Generales Históricas
+            </h2>
+            <div className="historico-tablas-grid">
+              {edicionesHistoricas.map((edicion) => (
+                <div key={edicion.idEdicion} className="historico-tabla-card">
+                  <div className="historico-tabla-header">
+                    <h3 className="historico-tabla-title">
+                      Torneo {edicion.idEdicion}
+                    </h3>
+                    <span className="historico-tabla-date">
+                      {new Date(edicion.fecha_historico).toLocaleDateString('es-ES')}
+                    </span>
+                  </div>
+                  <div className="historico-tabla-info">
+                    <p className="historico-tabla-motivo">{edicion.motivo}</p>
+                    <p className="historico-tabla-jugadores">
+                      {edicion.total_jugadores} jugadores
+                    </p>
+                    {edicion.fecha_inicio && edicion.fecha_fin && (
+                      <p className="historico-tabla-periodo">
+                        {new Date(edicion.fecha_inicio).toLocaleDateString('es-ES')} - {new Date(edicion.fecha_fin).toLocaleDateString('es-ES')}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => cargarTablaHistorica(edicion.idEdicion)}
+                    className="ver-tabla-btn"
+                    disabled={isLoadingTablaHistorica}
+                  >
+                    {isLoadingTablaHistorica ? (
+                      <FaSpinner className="spinner" />
+                    ) : (
+                      <FaEye />
+                    )}
+                    Ver Tabla General
+                  </button>
                 </div>
-                <div className="suggestion-item">
-                  <strong>🏆 Fases:</strong> Grupos, Cuartos, Semifinal, Final
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'estadisticas' && (
+          <div className="estadisticas-section">
+            <h2 className="section-title">
+              <FaChartBar className="section-icon" />
+              Análisis y Estadísticas
+            </h2>
+            <div className="estadisticas-grid">
+              <div className="estadistica-card">
+                <h3>📈 Progreso del Torneo</h3>
+                <div className="progress-bar">
+                  <div 
+                    className="progress-fill" 
+                    style={{width: `${(filteredPartidas.filter(p => p.tiene_resultado).length / filteredPartidas.length) * 100}%`}}
+                  ></div>
                 </div>
-                <div className="suggestion-item">
-                  <strong>🎮 Tipos:</strong> PVP, TodosContraTodos
+                <p>{filteredPartidas.filter(p => p.tiene_resultado).length} de {filteredPartidas.length} partidas finalizadas</p>
+              </div>
+              
+              <div className="estadistica-card">
+                <h3>🎮 Juegos Más Jugados</h3>
+                <div className="game-stats">
+                  {Object.entries(
+                    filteredPartidas.reduce((acc, partida) => {
+                      const game = partida.juego_nombre || 'Sin nombre';
+                      acc[game] = (acc[game] || 0) + 1;
+                      return acc;
+                    }, {})
+                  )
+                  .sort(([,a], [,b]) => b - a)
+                  .slice(0, 5)
+                  .map(([game, count]) => (
+                    <div key={game} className="game-stat-item">
+                      <span>{game}</span>
+                      <span className="game-count">{count}</span>
+                    </div>
+                  ))}
                 </div>
-                <div className="suggestion-item">
-                  <strong>👤 Jugadores:</strong> Nombre del jugador
-                </div>
-                <div className="suggestion-item">
-                  <strong>📊 Tablas Históricas:</strong> Año del torneo o "Nueva edición"
+              </div>
+
+              <div className="estadistica-card">
+                <h3>👥 Jugadores Más Activos</h3>
+                <div className="player-stats">
+                  {Object.entries(
+                    filteredPartidas.flatMap(p => p.jugadores || [])
+                      .reduce((acc, player) => {
+                        acc[player] = (acc[player] || 0) + 1;
+                        return acc;
+                      }, {})
+                  )
+                  .sort(([,a], [,b]) => b - a)
+                  .slice(0, 5)
+                  .map(([player, count]) => (
+                    <div key={player} className="player-stat-item">
+                      <span>{player}</span>
+                      <span className="player-count">{count} partidas</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
         )}
+
+        {activeTab === 'grabaciones' && (
+          <div className="results-section">
+            <h2 className="section-title">Grabaciones de Partidas y Torneos</h2>
+            <div className="historico-video-list">
+              {historicoVideos.length === 0 ? (
+                <div>No hay videos históricos registrados.</div>
+              ) : (
+                historicoVideos.map(video => (
+                  <div key={video.id} className="historico-video-item">
+                    <strong>{video.titulo}</strong>
+                    <br />
+                    {video.url.includes('youtube.com') || video.url.includes('youtu.be') ? (
+                      <iframe
+                        width="360"
+                        height="215"
+                        src={getYoutubeEmbedUrl(video.url)}
+                        title={video.titulo}
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        style={{ margin: '1rem 0' }}
+                      ></iframe>
+                    ) : video.url.includes('twitch.tv') ? (
+                      <iframe
+                        src={`https://player.twitch.tv/?video=${getTwitchVideoId(video.url)}&parent=${window.location.hostname}`}
+                        width="360"
+                        height="215"
+                        allowFullScreen
+                        frameBorder="0"
+                        style={{ margin: '1rem 0' }}
+                        title={video.titulo}
+                      ></iframe>
+                    ) : video.url.match(/\.(mp4|webm)$/) ? (
+                      <video width="360" height="215" controls style={{ margin: '1rem 0' }}>
+                        <source src={video.url} />
+                        Tu navegador no soporta la reproducción de video.
+                      </video>
+                    ) : (
+                      <a href={video.url} target="_blank" rel="noopener noreferrer">Ver video</a>
+                    )}
+                    <br />
+                    Juego: {video.juego_nombre} | Partida: {video.partida_id} | Año: {video.idEdicion} | Tipo: {video.tipo_partida}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Modal de perfil de jugador */}
+        {showPerfilModal && (
+          <PerfilJugadorModal
+            jugador={jugadorSeleccionado}
+            onClose={() => setShowPerfilModal(false)}
+          />
+        )}
+
+        {/* Modal de tabla general histórica */}
+        {showTablaHistorica && tablaHistorica && (
+          <TablaHistoricaModal
+            data={tablaHistorica}
+            onClose={() => setShowTablaHistorica(false)}
+          />
+        )}
       </div>
-
-      {/* Estadísticas */}
-      <div className="stats-section">
-        <div className="stats-grid">
-          <div className="stat-card">
-            <FaTrophy className="stat-icon" />
-            <div className="stat-content">
-              <span className="stat-number">{ediciones.length}</span>
-              <span className="stat-label">Torneos</span>
-            </div>
-          </div>
-          <div className="stat-card">
-            <FaGamepad className="stat-icon" />
-            <div className="stat-content">
-              <span className="stat-number">{filteredPartidas.length}</span>
-              <span className="stat-label">Partidas</span>
-            </div>
-          </div>
-          <div className="stat-card">
-            <FaMedal className="stat-icon" />
-            <div className="stat-content">
-              <span className="stat-number">
-                {filteredPartidas.filter(p => p.tiene_resultado).length}
-              </span>
-              <span className="stat-label">Finalizadas</span>
-            </div>
-          </div>
-          <div className="stat-card">
-            <FaUsers className="stat-icon" />
-            <div className="stat-content">
-              <span className="stat-number">
-                {new Set(filteredPartidas.flatMap(p => p.jugadores || [])).size}
-              </span>
-              <span className="stat-label">Jugadores Únicos</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Contenido según pestaña activa */}
-      {activeTab === 'partidas' && (
-        <div className="results-section">
-          {isLoading ? (
-            <div className="loading-container">
-              <FaSpinner className="spinner" />
-              <span>Cargando datos...</span>
-            </div>
-          ) : filteredPartidas.length === 0 ? (
-            <div className="no-data">
-              <p>No se encontraron partidas con los filtros aplicados</p>
-              <button onClick={clearFilters} className="clear-filters-btn">
-                Limpiar Filtros
-              </button>
-            </div>
-          ) : (
-            <div className="results-content">
-              {Object.entries(groupedPartidas).map(([edicionId, partidas]) => {
-                const edicion = ediciones.find(e => e.idEdicion.toString() === edicionId);
-                return (
-                  <div key={edicionId} className="edicion-section">
-                    <div className="edicion-header-section">
-                      <h2 className="edicion-title">
-                        <FaTrophy className="edicion-icon" />
-                        Torneo {edicionId}
-                        {edicion && (
-                          <span className="edicion-dates">
-                            ({new Date(edicion.fecha_inicio).toLocaleDateString('es-ES')} - {new Date(edicion.fecha_fin).toLocaleDateString('es-ES')})
-                          </span>
-                        )}
-                      </h2>
-                      <span className="partidas-count">{partidas.length} partidas</span>
-                    </div>
-                    
-                    <div className="partidas-grid">
-                      {partidas.map((partida) => (
-                        <PartidaCard
-                          key={partida.id}
-                          partida={partida}
-                          onVerPerfil={handleVerPerfil}
-                          getResultado={getResultadoPartida}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {activeTab === 'tablas' && (
-        <div className="historico-tablas-section">
-          <h2 className="section-title">
-            <FaHistory className="section-icon" />
-            Tablas Generales Históricas
-          </h2>
-          <div className="historico-tablas-grid">
-            {edicionesHistoricas.map((edicion) => (
-              <div key={edicion.idEdicion} className="historico-tabla-card">
-                <div className="historico-tabla-header">
-                  <h3 className="historico-tabla-title">
-                    Torneo {edicion.idEdicion}
-                  </h3>
-                  <span className="historico-tabla-date">
-                    {new Date(edicion.fecha_historico).toLocaleDateString('es-ES')}
-                  </span>
-                </div>
-                <div className="historico-tabla-info">
-                  <p className="historico-tabla-motivo">{edicion.motivo}</p>
-                  <p className="historico-tabla-jugadores">
-                    {edicion.total_jugadores} jugadores
-                  </p>
-                  {edicion.fecha_inicio && edicion.fecha_fin && (
-                    <p className="historico-tabla-periodo">
-                      {new Date(edicion.fecha_inicio).toLocaleDateString('es-ES')} - {new Date(edicion.fecha_fin).toLocaleDateString('es-ES')}
-                    </p>
-                  )}
-                </div>
-                <button
-                  onClick={() => cargarTablaHistorica(edicion.idEdicion)}
-                  className="ver-tabla-btn"
-                  disabled={isLoadingTablaHistorica}
-                >
-                  {isLoadingTablaHistorica ? (
-                    <FaSpinner className="spinner" />
-                  ) : (
-                    <FaEye />
-                  )}
-                  Ver Tabla General
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'estadisticas' && (
-        <div className="estadisticas-section">
-          <h2 className="section-title">
-            <FaChartBar className="section-icon" />
-            Análisis y Estadísticas
-          </h2>
-          <div className="estadisticas-grid">
-            <div className="estadistica-card">
-              <h3>📈 Progreso del Torneo</h3>
-              <div className="progress-bar">
-                <div 
-                  className="progress-fill" 
-                  style={{width: `${(filteredPartidas.filter(p => p.tiene_resultado).length / filteredPartidas.length) * 100}%`}}
-                ></div>
-              </div>
-              <p>{filteredPartidas.filter(p => p.tiene_resultado).length} de {filteredPartidas.length} partidas finalizadas</p>
-            </div>
-            
-            <div className="estadistica-card">
-              <h3>🎮 Juegos Más Jugados</h3>
-              <div className="game-stats">
-                {Object.entries(
-                  filteredPartidas.reduce((acc, partida) => {
-                    const game = partida.juego_nombre || 'Sin nombre';
-                    acc[game] = (acc[game] || 0) + 1;
-                    return acc;
-                  }, {})
-                )
-                .sort(([,a], [,b]) => b - a)
-                .slice(0, 5)
-                .map(([game, count]) => (
-                  <div key={game} className="game-stat-item">
-                    <span>{game}</span>
-                    <span className="game-count">{count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="estadistica-card">
-              <h3>👥 Jugadores Más Activos</h3>
-              <div className="player-stats">
-                {Object.entries(
-                  filteredPartidas.flatMap(p => p.jugadores || [])
-                    .reduce((acc, player) => {
-                      acc[player] = (acc[player] || 0) + 1;
-                      return acc;
-                    }, {})
-                )
-                .sort(([,a], [,b]) => b - a)
-                .slice(0, 5)
-                .map(([player, count]) => (
-                  <div key={player} className="player-stat-item">
-                    <span>{player}</span>
-                    <span className="player-count">{count} partidas</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'grabaciones' && (
-        <div className="results-section">
-          <h2 className="section-title">Grabaciones de Partidas y Torneos</h2>
-          <div className="historico-video-list">
-            {historicoVideos.length === 0 ? (
-              <div>No hay videos históricos registrados.</div>
-            ) : (
-              historicoVideos.map(video => (
-                <div key={video.id} className="historico-video-item">
-                  <strong>{video.titulo}</strong>
-                  <br />
-                  {video.url.includes('youtube.com') || video.url.includes('youtu.be') ? (
-                    <iframe
-                      width="360"
-                      height="215"
-                      src={getYoutubeEmbedUrl(video.url)}
-                      title={video.titulo}
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      style={{ margin: '1rem 0' }}
-                    ></iframe>
-                  ) : video.url.includes('twitch.tv') ? (
-                    <iframe
-                      src={`https://player.twitch.tv/?video=${getTwitchVideoId(video.url)}&parent=${window.location.hostname}`}
-                      width="360"
-                      height="215"
-                      allowFullScreen
-                      frameBorder="0"
-                      style={{ margin: '1rem 0' }}
-                      title={video.titulo}
-                    ></iframe>
-                  ) : video.url.match(/\.(mp4|webm)$/) ? (
-                    <video width="360" height="215" controls style={{ margin: '1rem 0' }}>
-                      <source src={video.url} />
-                      Tu navegador no soporta la reproducción de video.
-                    </video>
-                  ) : (
-                    <a href={video.url} target="_blank" rel="noopener noreferrer">Ver video</a>
-                  )}
-                  <br />
-                  Juego: {video.juego_nombre} | Partida: {video.partida_id} | Año: {video.idEdicion} | Tipo: {video.tipo_partida}
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Modal de perfil de jugador */}
-      {showPerfilModal && (
-        <PerfilJugadorModal
-          jugador={jugadorSeleccionado}
-          onClose={() => setShowPerfilModal(false)}
-        />
-      )}
-
-      {/* Modal de tabla general histórica */}
-      {showTablaHistorica && tablaHistorica && (
-        <TablaHistoricaModal
-          data={tablaHistorica}
-          onClose={() => setShowTablaHistorica(false)}
-        />
-      )}
-    </div>
+    
+    </>
   );
 };
 
@@ -991,7 +996,9 @@ const TablaHistoricaModal = ({ data, onClose }) => {
           </button>
         </div>
       </div>
+    
     </div>
+    
   );
 };
 

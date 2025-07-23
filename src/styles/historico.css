@@ -1,18 +1,20 @@
 /* Estilos para la página de Histórico - Diseño de Biblioteca Moderna */
 
-.historico-container {
-  width: 100%;
+.historico-page {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 2rem;
-  margin: 0;
-  overflow-x: hidden;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1;
+  background: #000 !important;
+}
+
+.historico-container {
+  flex: 1 0 auto;
+  overflow-y: visible !important;
+}
+
+.footer {
+  flex-shrink: 0;
+  margin-top: auto;
 }
 
 .historico-header {
@@ -1412,3 +1414,26 @@
     border-color: #667eea;
   }
 } 
+
+body, .historico-container {
+  background: var(--negro) !important;
+  color: var(--blanco) !important;
+}
+
+button, .historico-btn {
+  background: var(--verde-brillante) !important;
+  color: var(--blanco) !important;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+button:hover, .historico-btn:hover {
+  background: var(--verde-oscuro) !important;
+}
+
+.highlight, .resaltado, .titulo-historico {
+  color: var(--verde-brillante) !important;
+}

@@ -4,6 +4,14 @@
   box-sizing: border-box;
 }
 
+/* Paleta de colores global actualizada */
+:root {
+  --verde-oscuro: #0a2917;
+  --verde-brillante: #22c55e;
+  --negro: #000000;
+  --blanco: #ffffff;
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -34,8 +42,8 @@ a:hover {
   top: 0;
   left: 0;
   width: 100%;
-  background-color: #1a1a1a;
-  color: white;
+  background-color: #000000;
+  color: var(--verde-brillante) !important;;
   z-index: 50;
   box-shadow: 0 2px 5px rgba(0,0,0,0.5);
 }
@@ -57,7 +65,7 @@ a:hover {
 }
 
 .navbar-logo {
-  height: 40px;
+  height: 70px;
 }
 
 .navbar-profile {
@@ -69,7 +77,21 @@ a:hover {
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
+
 }
+
+.navbar-menu-item:hover {
+  background: var(--negro) !important;
+  color: var(--blanco) !important;
+  
+}
+.navbar-profile-button{
+  background: var(--negro) !important;
+}
+.navbar-menu-item{
+  color: var(--verde-oscuro) !important;  /* <-- Cambia el color del ícono aquí */
+}
+
 
 .navbar-menu {
   min-width: 130px;
@@ -94,7 +116,7 @@ a:hover {
 }
 
 .navbar-menu-item:hover {
-  background-color: #10bb38;
+  background-color: #000000 !important;
 }
 
 /* Espacio debajo del navbar */
@@ -118,13 +140,25 @@ a:hover {
   z-index: 1;
 }
 
-body {
-  margin: 0;
-  min-width: 320px;
+body, #root {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow-anchor: none;
+}
+
+.inicio-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.inicio-container {
+  flex: 1 0 auto;
+}
+
+.footer {
+  flex-shrink: 0;
+  margin-top: auto;
 }
 
 h1 {
@@ -347,4 +381,13 @@ button:focus-visible {
   .navbar-menu {
     display: none !important;
   }
+}
+
+/* --- Refuerzo de colores para la navbar --- */
+.navbar, .navbar-title, .navbar-menu-item, .navbar-profile-button, .navbar-profile-menu, .navbar-profile-img, .navbar-username {
+  color: var(--verde-brillante) !important;
+}
+
+.navbar, .navbar-menu, .navbar-profile-menu {
+  background-color: var(--negro) !important;
 }

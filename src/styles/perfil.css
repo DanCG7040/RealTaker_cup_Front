@@ -2535,3 +2535,26 @@
   margin-bottom: 1rem;
   box-shadow: 0 1px 4px #0001;
 }
+
+body, .perfil-container {
+  background: var(--negro) !important;
+  color: var(--blanco) !important;
+}
+
+button, .perfil-btn {
+  background: var(--verde-brillante) !important;
+  color: var(--blanco) !important;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+button:hover, .perfil-btn:hover {
+  background: var(--verde-oscuro) !important;
+}
+
+.highlight, .resaltado, .titulo-perfil {
+  color: var(--verde-brillante) !important;
+}

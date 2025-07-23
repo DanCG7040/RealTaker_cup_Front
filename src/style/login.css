@@ -148,3 +148,28 @@
     line-height: 1.4;
   }
   
+body, .login-container {
+  background: var(--negro);
+  color: var(--blanco);
+}
+
+button, .login-btn {
+  background: var(--verde-brillante);
+  color: var(--blanco);
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+button:hover, .login-btn:hover {
+  background: var(--verde-oscuro);
+}
+
+input {
+  background: var(--negro);
+  color: var(--blanco);
+  border: 1px solid var(--verde-brillante);
+}
+  

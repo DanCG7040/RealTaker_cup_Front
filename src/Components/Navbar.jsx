@@ -4,6 +4,7 @@ import logo from "../img/Logopode.png";
 import { FaCircleUser } from "react-icons/fa6";
 import axios from "axios";
 
+
 export const Navbar = () => {
   const [user, setUser] = useState(null);
   const [open, setOpen] = useState(false);

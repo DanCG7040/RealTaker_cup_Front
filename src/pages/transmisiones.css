@@ -156,3 +156,26 @@
     height: 200px;
   }
 } 
+
+body, .transmisiones-container {
+  background: var(--negro) !important;
+  color: var(--blanco) !important;
+}
+
+button, .transmisiones-btn {
+  background: var(--verde-brillante) !important;
+  color: var(--blanco) !important;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+button:hover, .transmisiones-btn:hover {
+  background: var(--verde-oscuro) !important;
+}
+
+.highlight, .resaltado, .titulo-transmision {
+  color: var(--verde-brillante) !important;
+} 

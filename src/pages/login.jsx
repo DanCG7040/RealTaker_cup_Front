@@ -45,9 +45,14 @@ export const Login = () => {
   };
 
   return (
-    <>
-    
-    <div className="page-content">
+    <div className="login-container">
+      <button
+        className="login-btn"
+        style={{ marginBottom: '20px', background: 'var(--verde-brillante)', color: 'var(--blanco)' }}
+        onClick={() => navigate('/')}
+      >
+        Regresar a inicio
+      </button>
       <h1>Iniciar Sesión</h1>
 
       <form className="login-form" onSubmit={handleSubmit}>
@@ -74,7 +79,7 @@ export const Login = () => {
   </button>
 </div>
 
-        <button type="submit">Ingresar</button>
+        <button type="submit" className="login-btn">Iniciar sesión</button>
 
         {error && <p className="error-message">{error}</p>}
         
@@ -83,8 +88,6 @@ export const Login = () => {
         </Link>
       </form>
     </div>
-  
-    </>
   );
 };
 

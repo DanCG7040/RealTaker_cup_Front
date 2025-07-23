@@ -4963,7 +4963,10 @@ export const Perfil = () => {
       setIsSavingJugadoresInicio(false);
     }
   };
-
+ // Función para seleccionar imagen de entrada
+ const handleEntradaImageClick = () => {
+  entradaFileInputRef.current.click();
+};
   // Componente visual para Entradas
   const EntradasContent = () => (
     <div className="content-section">
@@ -4972,7 +4975,9 @@ export const Perfil = () => {
         <button
           className="add-game-button"
           onClick={() => {
-            setEntradaData({ id: null, titulo: '', contenido: '', orden: entradas.length + 1, visible: true });
+            // Asignar el orden automáticamente
+            const maxOrden = entradas.length > 0 ? Math.max(...entradas.map(e => e.orden || 0)) : 0;
+            setEntradaData({ id: null, titulo: '', contenido: '', orden: maxOrden + 1, visible: true });
             setShowEntradaModal(true);
           }}
         >
@@ -4990,67 +4995,6 @@ export const Perfil = () => {
           />
           Mostrar tabla general en el inicio
         </label>
-        
-        {/* Configuración de la ruleta */}
-        <div style={{ marginTop: 16, padding: 12, border: '1px solid #d1d5db', borderRadius: 8 }}>
-          <h4 className="font-semibold mb-3">🎰 Configuración de la Ruleta</h4>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-            <input
-              type="checkbox"
-              checked={configuracionRuleta.ruleta_activa}
-              onChange={e => setConfiguracionRuleta(prev => ({ ...prev, ruleta_activa: e.target.checked }))}
-            />
-            Activar ruleta en la página de inicio
-          </label>
-          <div style={{ marginTop: 8 }}>
-            <label className="text-sm text-gray-600">Máximo de giros por día:</label>
-            <input
-              type="number"
-              min="1"
-              max="10"
-              value={configuracionRuleta.max_giros_por_dia}
-              onChange={e => setConfiguracionRuleta(prev => ({ ...prev, max_giros_por_dia: parseInt(e.target.value) }))}
-              className="w-20 px-2 py-1 border border-gray-300 rounded ml-2"
-            />
-          </div>
-        </div>
-        
-        <div style={{ marginTop: 12 }}>
-          <label className="font-semibold">Orden de secciones en el inicio:</label>
-          <ol style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
-            {configuracionInicio.ordenSecciones.map((sec, idx) => (
-              <li key={sec} style={{ background: '#e5e7eb', borderRadius: 8, padding: '4px 12px', display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span>{idx + 1}. {sec}</span>
-                {idx > 0 && (
-                  <button onClick={() => {
-                    const nuevoOrden = [...configuracionInicio.ordenSecciones];
-                    [nuevoOrden[idx - 1], nuevoOrden[idx]] = [nuevoOrden[idx], nuevoOrden[idx - 1]];
-                    setConfiguracionInicio(prev => ({ ...prev, ordenSecciones: nuevoOrden }));
-                  }} title="Subir" style={{ border: 'none', background: 'none', cursor: 'pointer' }}>
-                    ▲
-                  </button>
-                )}
-                {idx < configuracionInicio.ordenSecciones.length - 1 && (
-                  <button onClick={() => {
-                    const nuevoOrden = [...configuracionInicio.ordenSecciones];
-                    [nuevoOrden[idx + 1], nuevoOrden[idx]] = [nuevoOrden[idx], nuevoOrden[idx + 1]];
-                    setConfiguracionInicio(prev => ({ ...prev, ordenSecciones: nuevoOrden }));
-                  }} title="Bajar" style={{ border: 'none', background: 'none', cursor: 'pointer' }}>
-                    ▼
-                  </button>
-                )}
-              </li>
-            ))}
-          </ol>
-        </div>
-        <button
-          className="profile-button profile-button-primary mt-2"
-          style={{ marginTop: 16 }}
-          onClick={handleSaveConfiguracionInicio}
-          disabled={isSavingConfiguracion}
-        >
-          {isSavingConfiguracion ? 'Guardando...' : 'Guardar Configuración'}
-        </button>
       </div>
 
       {/* Gestión de jugadores en el inicio */}
@@ -5932,6 +5876,27 @@ export const Perfil = () => {
       setMensajeTwitch(res.data.message);
     } catch (error) {
       setMensajeTwitch(error.response?.data?.message || 'Error al guardar');
+    }
+  };
+
+  // Función para manejar el cambio de archivo de imagen de entrada
+  const handleEntradaFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      if (!selectedFile.type.startsWith('image/')) {
+        toast.error('Por favor selecciona una imagen');
+        return;
+      }
+      if (selectedFile.size > 2 * 1024 * 1024) {
+        toast.error('La imagen no puede ser mayor a 2MB');
+        return;
+      }
+      setEntradaFile(selectedFile);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEntradaImagePreview(reader.result);
+      };
+      reader.readAsDataURL(selectedFile);
     }
   };
 

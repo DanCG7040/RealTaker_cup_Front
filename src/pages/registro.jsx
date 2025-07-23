@@ -48,7 +48,14 @@ export const Registro = () => {
   };
 
   return (
-    <div className="page-content">
+    <div className="registro-container">
+      <button
+        className="login-btn"
+        style={{ marginBottom: '20px', background: 'var(--verde-brillante)', color: 'var(--blanco)' }}
+        onClick={() => navigate('/')}
+      >
+        Regresar a inicio
+      </button>
       <h1>Registro</h1>
 
       <form className="login-form" onSubmit={handleSubmit}>
@@ -102,7 +109,7 @@ export const Registro = () => {
 
         {registroExitoso && <p className="success-message">¡Registro exitoso! Redirigiendo al login...</p>}
 
-        <button type="submit">Registrarse</button>
+        <button type="submit" className="login-btn">Registrarse</button>
       </form>
     </div>
   );

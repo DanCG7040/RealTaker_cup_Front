@@ -5,6 +5,7 @@ import { FaEye, FaEyeSlash, FaChevronLeft, FaChevronRight, FaUser, FaGamepad, Fa
 import { ENTRADAS_ROUTES, CONFIGURACION_ROUTES, GAMES_ROUTES, TORNEO_ROUTES, RULETA_ROUTES, PARTIDAS_ROUTES, COMODINES_ROUTES, PROFILE_ROUTES, LOGROS_ROUTES } from '../routes/api.routes';
 import './inicio.css';
 import { toast } from 'react-hot-toast';
+import { Footer } from '../Components/Footer';
 
 export const Inicio = () => {
   const [entradas, setEntradas] = useState([]);
@@ -928,7 +929,7 @@ export const Inicio = () => {
               )}
 
               {/* Sección de comodines */}
-              {configuracion.ordenSecciones.includes('comodines') && (
+              {false && configuracion.ordenSecciones.includes('comodines') && (
                 <div className="seccion-inicio">
                   <h2 className="titulo-seccion">
                     <FaStar className="icono-seccion" />
@@ -1103,6 +1104,7 @@ export const Inicio = () => {
             </div>
           </div>
         </div>
+        <Footer />
       </div>
 
       {/* Modal para mostrar información del jugador */}
@@ -1213,6 +1215,7 @@ export const Inicio = () => {
             </div>
           </div>
         </div>
+      
       )}
     </>
   );
