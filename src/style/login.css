@@ -1,6 +1,6 @@
 /* Caja del formulario */
 .login-form {
-    background: white;
+    background: var(--negro);
     padding: 40px;
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -25,12 +25,14 @@
     border: 1px solid #ddd;
     border-radius: 8px;
     font-size: 1rem;
+    background: var(--verde-oscuro) !important;
+    color: #f8f8f8 !important;
   }
   
   /* Botón */
   .login-form button {
     padding: 10px;
-    background-color: #007bff;
+    background-color: var(--verde-oscuro) !important;
     color: white;
     border: none;
     border-radius: 8px;
@@ -129,7 +131,7 @@
   /* Enlace de olvidé mi contraseña */
   .forgot-password-link {
     text-align: center;
-    color: #007bff;
+    color: #e2e2e2;
     text-decoration: none;
     font-size: 0.9rem;
     margin-top: 10px;
@@ -149,8 +151,12 @@
   }
   
 body, .login-container {
-  background: var(--negro);
-  color: var(--blanco);
+  background: var(--verde-oscuro) !important;
+  color: var(--blanco) !important;
+  border-radius: 20px !important;
+}
+h1{
+  color: #c6c0c0 !important;
 }
 
 button, .login-btn {

@@ -5167,14 +5167,14 @@ export const Perfil = () => {
                 </div>
 
                 <div className="game-form-fields-section">
-                  <div className="game-form-group">
-                    <label className="game-form-label">Título</label>
-                    <input
-                      type="text"
+                <div className="game-form-group">
+                    <label className="game-form-label">Titulo</label>
+                    <textarea
                       className="game-form-input"
                       value={entradaData.titulo}
                       onChange={e => setEntradaData(prev => ({ ...prev, titulo: e.target.value }))}
-                      placeholder="Título de la entrada"
+                      placeholder="Titulo de la entrada"
+                      rows={1}
                     />
                   </div>
                   <div className="game-form-group">
@@ -5184,7 +5184,7 @@ export const Perfil = () => {
                       value={entradaData.contenido}
                       onChange={e => setEntradaData(prev => ({ ...prev, contenido: e.target.value }))}
                       placeholder="Contenido de la entrada"
-                      rows={4}
+                      rows={1}
                     />
                   </div>
                   <div className="game-form-group">

@@ -1,5 +1,11 @@
 /* Estilos para la página de Histórico - Diseño de Biblioteca Moderna */
-
+:root {
+  --verde-oscuro: #0a2917;
+  --verde-brillante: #22c55e;
+  --negro: #000000;
+  --blanco: #ffffff;
+  --gris: #515251;
+}
 .historico-page {
   display: flex;
   flex-direction: column;
@@ -20,8 +26,8 @@
 .historico-header {
   text-align: center;
   padding: 2rem;
-  color: white;
-  background: rgba(255, 255, 255, 0.1);
+  color: rgb(0, 0, 0);
+  background: rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(20px);
   border-radius: 25px;
   margin-bottom: 2rem;
@@ -36,12 +42,13 @@
   align-items: center;
   justify-content: center;
   gap: 1rem;
+  color: var(--verde-brillante);
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .historico-icon {
   font-size: 2.5rem;
-  color: #ffd700;
+  color: var(--gris);
   filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
 }
 
@@ -80,6 +87,7 @@
   justify-content: center;
 }
 
+
 .tab-button:hover {
   background: rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
@@ -95,7 +103,7 @@
 
 /* Sección de filtros modernizada */
 .filters-section {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--verde-oscuro)!important;
   backdrop-filter: blur(20px);
   border-radius: 20px;
   padding: 1.5rem;
@@ -114,7 +122,7 @@
 }
 
 .filters-toggle {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #119811 0%, #09070a 100%) "";
   color: white;
   border: none;
   padding: 0.8rem 1.5rem;
@@ -131,11 +139,11 @@
 
 .filters-toggle:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
 }
 
 .clear-filters {
-  background: rgba(220, 38, 38, 0.8);
+  background: rgba(220, 38, 38, 0.8) !important;
   color: white;
   border: none;
   padding: 0.6rem 1.2rem;
@@ -155,7 +163,7 @@
 }
 
 .filters-content {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--gris) !important;
   border-radius: 20px;
   padding: 1.5rem;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -177,7 +185,7 @@
 
 .filter-label {
   font-weight: 600;
-  color: #333;
+  color: #461313;
   font-size: 0.95rem;
 }
 
@@ -186,13 +194,13 @@
   border: 2px solid #e5e7eb;
   border-radius: 12px;
   font-size: 0.95rem;
-  background: white;
+  background: rgb(22, 88, 19) !important;
   transition: all 0.3s ease;
 }
 
 .filter-select:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #000000;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -207,13 +215,13 @@
   border: 2px solid #e5e7eb;
   border-radius: 12px;
   font-size: 0.95rem;
-  background: white;
+  background: rgb(54, 82, 19) !important;
   transition: all 0.3s ease;
 }
 
 .search-input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #c8cad2 !important;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -245,15 +253,15 @@
 }
 
 .filter-suggestions {
-  background: #f8f9fa;
+  background: var(--verde-brillante) !important;
   border-radius: 15px;
   padding: 1.2rem;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid #e7e7ea;
 }
 
 .filter-suggestions h4 {
   margin: 0 0 1rem 0;
-  color: #333;
+  color: var(--negro) !important;
   font-size: 1rem;
 }
 
@@ -264,12 +272,12 @@
 }
 
 .suggestion-item {
-  background: white;
+  background: var(--gris) !important;
   padding: 0.8rem;
   border-radius: 10px;
   border: 1px solid #e5e7eb;
   font-size: 0.85rem;
-  color: #666;
+  color: var(--verde-brillante) !important;
   transition: all 0.3s ease;
 }
 
@@ -285,7 +293,7 @@
 /* Sección de estadísticas modernizada */
 .stats-section {
   padding: 1.5rem;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--verde-oscuro);
   backdrop-filter: blur(20px);
   border-radius: 20px;
   margin-bottom: 2rem;
@@ -299,7 +307,7 @@
 }
 
 .stat-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--gris) !important;
   border-radius: 20px;
   padding: 1.5rem;
   display: flex;
@@ -313,12 +321,12 @@
 .stat-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-  border-color: #667eea;
+  border-color: var(--verde-brillante) !important;
 }
 
 .stat-icon {
   font-size: 2.5rem;
-  color: #667eea;
+  color: var(--verde-brillante);
 }
 
 .stat-content {
@@ -334,15 +342,15 @@
 }
 
 .stat-label {
-  font-size: 0.9rem;
-  color: #666;
+  font-size: 1.2rem;
+  color: var(--blanco) !important;
   margin-top: 0.3rem;
 }
 
 /* Sección de estadísticas avanzadas */
 .estadisticas-section {
   padding: 2rem;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--verde-oscuro) !important;
   backdrop-filter: blur(20px);
   border-radius: 20px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -357,7 +365,7 @@
 }
 
 .estadistica-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--gris) !important;
   border-radius: 20px;
   padding: 2rem;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
@@ -374,7 +382,7 @@
 .estadistica-card h3 {
   font-size: 1.3rem;
   font-weight: 600;
-  color: #333;
+  color: var(--blanco) !important;
   margin-bottom: 1.5rem;
   display: flex;
   align-items: center;
@@ -393,7 +401,7 @@
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #287419 0%, #094602 100%);
   border-radius: 10px;
   transition: width 0.5s ease;
 }
@@ -412,10 +420,11 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.8rem;
-  background: #f8f9fa;
+  background: var(--verde-oscuro) !important;
   border-radius: 10px;
   border: 1px solid #e5e7eb;
   transition: all 0.3s ease;
+  color: var(--blanco) !important;
 }
 
 .game-stat-item:hover,
@@ -427,19 +436,20 @@
 
 .game-count,
 .player-count {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, #4d7f29 0%, #21b70a 100%) !important;
+  color:var(--blanco) !important;
   padding: 0.3rem 0.8rem;
   border-radius: 15px;
   font-size: 0.8rem;
   font-weight: 600;
 }
 
+
 /* Sección de tablas históricas modernizada */
 .historico-tablas-section {
   margin: 2rem 0;
   padding: 1.5rem;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--verde-oscuro) !important;
   backdrop-filter: blur(20px);
   border-radius: 20px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -464,15 +474,16 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
+  
 }
 
 .historico-tabla-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--gris) !important;
   border-radius: 15px;
   padding: 1.5rem;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2) ;
 }
 
 .historico-tabla-card:hover {
@@ -498,7 +509,7 @@
 }
 
 .historico-tabla-date {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #506d1a 0%, #7d6363 100%);
   color: white;
   padding: 0.3rem 0.8rem;
   border-radius: 20px;
@@ -511,27 +522,27 @@
 }
 
 .historico-tabla-motivo {
-  color: #666;
+  color: #f7eaea;
   font-size: 0.9rem;
   margin-bottom: 0.5rem;
   font-style: italic;
 }
 
 .historico-tabla-jugadores {
-  color: #333;
+  color: #f4e6e6;
   font-weight: 500;
   margin-bottom: 0.5rem;
 }
 
 .historico-tabla-periodo {
-  color: #888;
+  color: #f9f9f9;
   font-size: 0.85rem;
   margin-bottom: 0;
 }
 
 .ver-tabla-btn {
   width: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #326016 0%, #62951f 100%) !important;
   color: white;
   border: none;
   padding: 0.8rem 1rem;
@@ -568,7 +579,7 @@
 
 .edicion-section {
   margin-bottom: 2.5rem;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--verde-oscuro) !important;
   border-radius: 20px;
   padding: 2rem;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
@@ -587,7 +598,7 @@
   align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #f3f4f6;
+  border-bottom: 2px solid #f3f4f6 ;
 }
 
 .edicion-title {
@@ -602,18 +613,18 @@
 
 .edicion-icon {
   font-size: 1.8rem;
-  color: #ffd700;
+  color: #2ca20c;
 }
 
 .edicion-dates {
   font-size: 0.95rem;
-  color: #666;
+  color: var(--verde-brillante);
   font-weight: normal;
   margin-left: 1rem;
 }
 
 .partidas-count {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #62791b 0%, #31581c 100%);
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 20px;
@@ -628,7 +639,7 @@
 }
 
 .partida-card {
-  background: #f8f9fa;
+  background: var(--gris) !important;
   border-radius: 15px;
   padding: 1.5rem;
   border: 2px solid transparent;
@@ -644,13 +655,13 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #62791b 0%, #31581c 100%);
 }
 
 .partida-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
-  border-color: #667eea;
+  border-color: #000000 !important;
 }
 
 .partida-header {
@@ -675,7 +686,7 @@
 }
 
 .partida-date {
-  color: #666;
+  color: var(--verde-brillante);
   font-size: 0.9rem;
 }
 
@@ -689,8 +700,8 @@
 }
 
 .partida-type.pvp {
-  background: #dbeafe;
-  color: #1e40af;
+  background: var(--verde-brillante);
+  color: #000000;
 }
 
 .partida-type.todoscontra todos {
@@ -705,12 +716,12 @@
 
 .partida-phase.cuartos {
   background: #e0e7ff;
-  color: #5b21b6;
+  color: #1dcf1a;
 }
 
 .partida-phase.semifinal {
   background: #fce7f3;
-  color: #be185d;
+  color: #2e7211;
 }
 
 .partida-phase.final {
@@ -747,7 +758,7 @@
   gap: 1rem;
   margin-bottom: 1.5rem;
   padding: 1rem;
-  background: white;
+  background: var(--verde-brillante) !important;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
 }
@@ -761,7 +772,7 @@
 
 .game-name {
   font-weight: 600;
-  color: #333;
+  color: #000000 !important;
 }
 
 .partida-players {
@@ -771,7 +782,7 @@
 .players-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #333;
+  color: #eaeaea;
   margin-bottom: 1rem;
 }
 
@@ -786,20 +797,20 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem;
-  background: white;
+  background: var(--verde-brillante) !important;
   border-radius: 10px;
   border: 1px solid #e5e7eb;
   transition: all 0.3s ease;
 }
 
 .player-item:hover {
-  background: #f8f9fa;
-  border-color: #667eea;
+  background: var(--verde-brillante) !important;
+  border-color: #59595a;
 }
 
 .player-name {
   font-weight: 500;
-  color: #333;
+  color: #000000 !important;
 }
 
 .view-profile-btn {
@@ -868,9 +879,9 @@
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  background: linear-gradient(135deg, #f8f9ff 0%, #e8ecff 100%);
+  background: linear-gradient(135deg, #53a844 0%, #56a308 100%) !important;
   border-radius: 12px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid #d3c8c8 !important;
   transition: all 0.3s ease;
 }
 
@@ -894,14 +905,14 @@
 }
 
 .winner-badge {
-  color: #10b981;
+  color: #000000;
   font-weight: 600;
   font-size: 0.9rem;
 }
 
 .result-points {
   font-weight: bold;
-  color: #667eea;
+  color: #000000;
   font-size: 1rem;
 }
 
@@ -921,14 +932,14 @@
   flex-direction: column;
   align-items: center;
   gap: 1rem;
-  color: white;
+  color: rgb(17, 106, 10) !important;
   padding: 4rem;
   text-align: center;
 }
 
 .no-data {
   text-align: center;
-  color: white;
+  color: rgb(20, 118, 16);
   padding: 3rem;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 20px;
@@ -967,7 +978,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.7)!;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -976,7 +987,7 @@
 }
 
 .modal-content {
-  background: white;
+  background: var(--verde-oscuro) !important;
   border-radius: 20px;
   max-width: 500px;
   width: 90%;
@@ -1023,6 +1034,7 @@
 
 .modal-body {
   padding: 2rem;
+  
 }
 
 .perfil-jugador-content {
@@ -1106,13 +1118,13 @@
 
 /* Modal de tabla histórica */
 .historico-modal {
-  max-width: 800px;
+  max-width: 800px !important;
   max-height: 90vh;
   overflow-y: auto;
 }
 
 .historico-info {
-  background: #f8f9fa;
+  background: var(--verde-brillante);
   padding: 1rem;
   border-radius: 12px;
   margin-bottom: 1.5rem;
@@ -1122,7 +1134,7 @@
 .historico-motivo,
 .historico-periodo {
   margin: 0.5rem 0;
-  color: #555;
+  color: #000000;
 }
 
 .tabla-historica-container {
@@ -1132,15 +1144,15 @@
 .tabla-historica {
   width: 100%;
   border-collapse: collapse;
-  background: white;
+  background: #3a3d35 !important;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .tabla-historica th {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, #346319 0%, #251a1a 100%);
+  color: rgb(173, 229, 184);
   padding: 1rem;
   text-align: left;
   font-weight: 600;
@@ -1156,7 +1168,7 @@
 }
 
 .tabla-historica tr.top-3 {
-  background: linear-gradient(90deg, rgba(255, 215, 0, 0.1) 0%, rgba(192, 192, 192, 0.1) 50%, rgba(205, 127, 50, 0.1) 100%);
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.1) 0%, rgba(192, 192, 192, 0.1) 50%, rgba(205, 127, 50, 0.1) 100%); 
 }
 
 .tabla-historica .posicion {
@@ -1181,8 +1193,12 @@
 
 .tabla-historica .puntos {
   font-weight: 600;
-  color: #667eea;
+  color: var(--verde-brillante);
   text-align: center;
+}
+
+.historico-video-list{
+  background-color: #000000 !important;
 }
 
 /* Responsive mejorado */

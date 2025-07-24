@@ -64,7 +64,7 @@ button:hover, .inicio-btn:hover {
   position: sticky;
   top: 6rem;
   height: fit-content;
-  background: var(--negro) !important;
+  background: #2f332f !important;
   color: var(--blanco) !important;
   border-radius: 12px !important;
   box-shadow: 0 2px 12px rgba(0,0,0,0.7) !important;
@@ -74,7 +74,7 @@ button:hover, .inicio-btn:hover {
 /* Columna central - Contenido principal */
 .columna-central {
   display: flex;
-  flex-direction: column;
+  flex-direction: column; 
   gap: 1.5rem;
 }
 
@@ -83,7 +83,7 @@ button:hover, .inicio-btn:hover {
   position: sticky;
   top: 6rem;
   height: fit-content;
-  background: var(--negro) !important;
+  background: #2f332f !important;
   color: var(--blanco) !important;
   border-radius: 12px !important;
   box-shadow: 0 2px 12px rgba(0,0,0,0.7) !important;
@@ -212,7 +212,7 @@ button:hover, .inicio-btn:hover {
   gap: 0.75rem;
   padding: 0.75rem;
   border-radius: 8px;
-  background: #000000 !important;
+  background: #4f4a4a !important;
   border: 1px solid #e5e7eb;
   transition: all 0.2s ease;
 }
@@ -306,7 +306,7 @@ button:hover, .inicio-btn:hover {
 /* Sección de juegos mejorada */
 /* Juegos destacados */
 .juegos-grid {
-  background: var(--negro) !important;
+  background: #453c3c!important;
   border-radius: 12px !important;
   padding: 1rem !important;
 }
@@ -318,6 +318,7 @@ button:hover, .inicio-btn:hover {
   border: 2px solid var(--verde-brillante) !important;
   box-shadow: 0 2px 8px rgba(0,0,0,0.5) !important;
   transition: all 0.3s ease;
+  padding: 1rem !important;
 }
 
 .juego-card h3, .juego-card p {
@@ -326,7 +327,7 @@ button:hover, .inicio-btn:hover {
 }
 
 .juego-imagen {
-  background: var(--negro) !important;
+  
   border: 2px solid var(--verde-brillante) !important;
 }
 
@@ -390,13 +391,13 @@ button:hover, .inicio-btn:hover {
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--verde-brillante) !important;
-  background: var(--negro) !important;
+ 
 }
 
 /* Imagen de juegos destacados más grande */
 .juego-imagen {
-  width: 64px !important;
-  height: 64px !important;
+  width: 150px !important;
+  height: 150px !important;
   margin: 0 auto 1rem !important;
   border-radius: 12px !important;
   overflow: hidden !important;
@@ -814,7 +815,7 @@ button:hover, .inicio-btn:hover {
 
   .seccion-inicio,
   .widget-lateral {
-    background-color: #000000;
+
     border-color: #000000;
   }
 

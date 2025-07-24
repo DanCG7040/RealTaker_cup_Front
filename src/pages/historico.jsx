@@ -350,11 +350,9 @@ export const Historico = () => {
         <div className="historico-header">
           <h1 className="historico-title">
             <FaBookOpen className="historico-icon" />
-            Biblioteca de Torneos
+            Historial de takercup
           </h1>
-          <p className="historico-subtitle">
-            Explora el historial completo de torneos, partidas y resultados de manera dinámica
-          </p>
+         
         </div>
 
         {/* Navegación por pestañas */}

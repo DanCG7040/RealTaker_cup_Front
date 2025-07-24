@@ -164,7 +164,7 @@ body, #root {
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
-  background-color: white;
+  
 }
 
 button {
@@ -287,6 +287,8 @@ button:focus-visible {
   display: flex;
   min-height: 100vh;
   padding-top: 64px;
+  background: linear-gradient(135deg, var(--verde-oscuro) 60%, var(--negro) 100%) !important;
+  color: var(--blanco) !important;
 }
 
 /* --- HAMBURGUESA NAVBAR --- */
