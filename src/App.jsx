@@ -3,6 +3,7 @@ import { Inicio } from "./pages/Inicio";
 import { Login } from "./pages/Login";
 import { Registro } from "./pages/Registro";
 import { Perfil } from "./pages/perfil";
+import Participa from "./pages/Participa";
 import { Historico } from "./pages/historico";
 import  Transmisiones  from "./pages/transmisiones";
 import { ForgotPassword } from "./pages/forgot-password";
@@ -32,18 +33,8 @@ function App() {
       </>
     );
   }
-    if (location.pathname === '/perfil') {
-    return (
-      <>
-        <Navbar />
-        <Perfil />
-        <Footer />
-        <ToastContainer position="bottom-right" autoClose={3000} />
-      </>
-    );
-  }
   
-  // Si estamos en la página de transmisiones, renderizamos un layout diferente
+  // Si estamos en la página de historico, renderizamos un layout diferente
   if (location.pathname === '/historico') {
     return (
       <>
@@ -54,6 +45,7 @@ function App() {
       </>
     );
   }
+  
   // Si estamos en la página de transmisiones, renderizamos un layout diferente
   if (location.pathname === '/transmisiones') {
     return (
@@ -80,6 +72,7 @@ function App() {
           <Route path="/inicio" element={<Inicio />} />
           <Route path="/historico" element={<Historico />} />
           <Route path="/transmisiones" element={<Transmisiones />} />
+          <Route path="/participa" element={<Participa />} />
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

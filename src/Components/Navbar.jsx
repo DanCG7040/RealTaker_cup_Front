@@ -49,6 +49,10 @@ export const Navbar = () => {
   const handleTransmisionesClick = () => {
     navigate('/transmisiones');
   };
+  
+  const handleParticipaClick = () => {
+    navigate('/participa');
+  };
 
   // Detectar si es móvil/tablet
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
@@ -70,6 +74,10 @@ export const Navbar = () => {
           {/* Izquierda */}
           <div onClick={handleTransmisionesClick} style={{ cursor: 'pointer' }} className="navbar-title">
             Transmisiones
+          </div>
+           {/* Izquierda */}
+           <div onClick={handleParticipaClick} style={{ cursor: 'pointer' }} className="navbar-title">
+            Participa
           </div>
 
           {/* Botón hamburguesa para móvil/tablet */}
