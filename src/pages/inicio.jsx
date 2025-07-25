@@ -465,11 +465,16 @@ export const Inicio = () => {
             </h2>
             <div className="entradas-container">
               {entradas.map(entrada => (
-                <div key={entrada.id} className="entrada-card">
-                  <h3>{entrada.titulo}</h3>
-                  <p>{entrada.contenido}</p>
+            <div key={entrada.id} className="entrada-card">
+              {entrada.imagen_url && (
+                <div className="entrada-imagen">
+                  <img src={entrada.imagen_url} alt={entrada.titulo} />
                 </div>
-              ))}
+              )}
+              <h3>{entrada.titulo}</h3>
+              <p>{entrada.contenido}</p>
+            </div>
+          ))}
             </div>
           </section>
         );
@@ -848,6 +853,11 @@ export const Inicio = () => {
                   <div className="entradas-container">
                     {entradas.map(entrada => (
                       <div key={entrada.id} className="entrada-card">
+                        {entrada.imagen_url && (
+                          <div className="entrada-imagen">
+                            <img src={entrada.imagen_url} alt={entrada.titulo} />
+                          </div>
+                        )}
                         <h3>{entrada.titulo}</h3>
                         <p>{entrada.contenido}</p>
                       </div>

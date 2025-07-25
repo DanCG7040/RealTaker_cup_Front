@@ -611,6 +611,23 @@ button:hover, .inicio-btn:hover {
   font-size: 0.9rem;
 }
 
+.entrada-imagen {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.entrada-imagen img {
+  width: 100%;
+  max-width: 350px;
+  height: auto;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  background: #fff;
+}
+
 /* Estados de carga y sin datos */
 .loading-container {
   display: flex;

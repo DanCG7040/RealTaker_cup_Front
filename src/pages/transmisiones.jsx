@@ -52,7 +52,7 @@ const Transmisiones = () => {
           </div>
         )}
       </div>
-      <Footer />
+     
     </>
   );
 };

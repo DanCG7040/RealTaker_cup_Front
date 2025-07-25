@@ -436,7 +436,7 @@ export const Perfil = () => {
         return;
       }
 
-      if (selectedFile.size > 2 * 1024 * 1024) {
+      if (selectedFile.size > 10 * 1024 * 1024) {
         toast.error('La imagen no puede ser mayor a 2MB');
         return;
       }
@@ -463,7 +463,7 @@ export const Perfil = () => {
         return;
       }
 
-      if (selectedFile.size > 2 * 1024 * 1024) {
+      if (selectedFile.size > 10 * 1024 * 1024) {
         toast.error('La imagen no puede ser mayor a 2MB');
         return;
       }
@@ -1903,7 +1903,7 @@ export const Perfil = () => {
           return;
         }
 
-        if (selectedFile.size > 2 * 1024 * 1024) {
+        if (selectedFile.size > 10 * 1024 * 1024) {
           toast.error('La imagen no puede ser mayor a 2MB');
           return;
         }
@@ -2104,7 +2104,7 @@ export const Perfil = () => {
           return;
         }
 
-        if (selectedFile.size > 2 * 1024 * 1024) {
+        if (selectedFile.size > 10 * 1024 * 1024) {
           toast.error('La imagen no puede ser mayor a 2MB');
           return;
         }
@@ -5185,34 +5185,34 @@ export const Perfil = () => {
 
                 <div className="game-form-fields-section">
                 <div className="game-form-group">
-                    <label className="game-form-label">Titulo</label>
-                    <textarea
-                      className="game-form-input"
-                      value={entradaData.titulo}
-                      onChange={e => setEntradaData(prev => ({ ...prev, titulo: e.target.value }))}
-                      placeholder="Titulo de la entrada"
-                      rows={1}
-                    />
-                  </div>
-                  <div className="game-form-group">
-                    <label className="game-form-label">Contenido</label>
-                    <textarea
-                      className="game-form-input"
-                      value={entradaData.contenido}
-                      onChange={e => setEntradaData(prev => ({ ...prev, contenido: e.target.value }))}
-                      placeholder="Contenido de la entrada"
-                      rows={1}
-                    />
-                  </div>
-                  <div className="game-form-group">
-                    <label className="game-form-label">Orden</label>
-                    <input
-                      type="number"
-                      className="game-form-input"
-                      value={entradaData.orden}
-                      onChange={e => setEntradaData(prev => ({ ...prev, orden: parseInt(e.target.value) }))}
-                      min={1}
-                    />
+    <label className="game-form-label">Título</label>
+    <input
+      type="text"
+      className="game-form-input"
+      defaultValue={entradaData.titulo || ''}
+      onBlur={e => setEntradaData(prev => ({ ...prev, titulo: e.target.value }))}
+      placeholder="Título de la entrada"
+    />
+  </div>
+  <div className="game-form-group">
+    <label className="game-form-label">Contenido</label>
+    <textarea
+      className="game-form-input"
+      defaultValue={entradaData.contenido || ''}
+      onBlur={e => setEntradaData(prev => ({ ...prev, contenido: e.target.value }))}
+      placeholder="Contenido de la entrada"
+      rows={4}
+    />
+  </div>
+  <div className="game-form-group">
+    <label className="game-form-label">Orden</label>
+    <input
+      type="number"
+      className="game-form-input"
+      value={entradaData.orden}
+      onChange={e => setEntradaData(prev => ({ ...prev, orden: parseInt(e.target.value) }))}
+      min={1}
+    />
                   </div>
                   <div className="game-form-group">
                     <label className="game-form-label">
@@ -5346,7 +5346,7 @@ export const Perfil = () => {
         return;
       }
 
-      if (selectedFile.size > 2 * 1024 * 1024) {
+      if (selectedFile.size > 10 * 1024 * 1024) {
         toast.error('La imagen no puede ser mayor a 2MB');
         return;
       }
@@ -5904,7 +5904,7 @@ export const Perfil = () => {
         toast.error('Por favor selecciona una imagen');
         return;
       }
-      if (selectedFile.size > 2 * 1024 * 1024) {
+      if (selectedFile.size > 10 * 1024 * 1024) {
         toast.error('La imagen no puede ser mayor a 2MB');
         return;
       }
