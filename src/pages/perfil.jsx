@@ -1199,21 +1199,29 @@ export const Perfil = () => {
 
         <div className="profile-input">
           <label>Canal de Twitch:</label>
-          <textarea
-            name="twitch_channel"
-            defaultValue={formData.twitch_channel || ''}
-            onBlur={(e) => {
-              setFormData(prev => ({
-                ...prev,
-                twitch_channel: e.target.value
-              }));
-            }}
-            rows="1"
-            placeholder="Solo el nombre, ej: pepito_gamer"
-            style={{resize: 'none'}}
-          ></textarea>
-          <button type="button" onClick={guardarTwitch} style={{marginLeft:'8px'}}>Guardar canal</button>
-          {mensajeTwitch && <p style={{color:'green'}}>{mensajeTwitch}</p>}
+          {(user.rol === 0 || (jugadoresEdicion && jugadoresEdicion.some(j => j.nickname === user.nickname))) ? (
+            <>
+              <textarea
+                name="twitch_channel"
+                defaultValue={formData.twitch_channel || ''}
+                onBlur={(e) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    twitch_channel: e.target.value
+                  }));
+                }}
+                rows="1"
+                placeholder="Solo el nombre, ej: pepito_gamer"
+                style={{resize: 'none'}}
+              ></textarea>
+              <button type="button" onClick={guardarTwitch} style={{marginLeft:'8px'}}>Guardar canal</button>
+              {mensajeTwitch && <p style={{color:'green'}}>{mensajeTwitch}</p>}
+            </>
+          ) : (
+            <div style={{padding:'0.5rem 0'}}>
+              <span style={{color:'#888'}}>{formData.twitch_channel ? formData.twitch_channel : 'No disponible'}</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1551,6 +1559,15 @@ export const Perfil = () => {
         >
           <FaVideo className="w-4 h-4 mr-2" />
           Videos Histórico
+        </button>
+        <button
+          onClick={() => setActiveSection('twitch')}
+          className={`admin-menu-button ${
+            activeSection === 'twitch' ? 'admin-menu-button-active' : ''
+          }`}
+        >
+          <FaVideo className="w-4 h-4 mr-2" />
+          Canales Twitch
         </button>
       </nav>
     </div>
@@ -5900,6 +5917,115 @@ export const Perfil = () => {
     }
   };
 
+ const TwitchAdminContent = () => {
+  const [canales, setCanales] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [mensaje, setMensaje] = useState('');
+
+  useEffect(() => {
+    fetchCanales();
+  }, []);
+
+  const fetchCanales = async () => {
+    setIsLoading(true);
+    try {
+      const res = await axios.get('/api/usuarios/twitch-todos');
+      // Normaliza twitch_activo a booleano SIEMPRE, incluso si viene como null, undefined, string o número
+      const canalesNormalizados = res.data.data.map(canal => ({
+        ...canal,
+        twitch_activo: canal.twitch_activo === 1 || canal.twitch_activo === "1" || canal.twitch_activo === true
+      }));
+      setCanales(canalesNormalizados);
+      // Log para depuración
+      console.log('Canales recibidos:', canalesNormalizados);
+    } catch (error) {
+      setMensaje('Error al cargar los canales');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleToggleActivo = async (nickname) => {
+    try {
+      const res = await axios.put(`/api/usuarios/twitch-activar/${nickname}`);
+      // Normaliza SIEMPRE el valor recibido del backend
+      let nuevoValor = res.data && typeof res.data.twitch_activo !== "undefined"
+        ? (res.data.twitch_activo === 1 || res.data.twitch_activo === "1" || res.data.twitch_activo === true)
+        : undefined;
+      if (typeof nuevoValor !== "undefined") {
+        setCanales(prev =>
+          prev.map(canal =>
+            canal.nickname === nickname
+              ? { ...canal, twitch_activo: nuevoValor }
+              : canal
+          )
+        );
+      } else {
+        fetchCanales();
+      }
+    } catch (error) {
+      setMensaje('Error al actualizar canal');
+    }
+  };
+
+  const handleDelete = async (nickname) => {
+    if (!window.confirm('¿Eliminar canal de este usuario?')) return;
+    try {
+      await axios.delete(`/api/usuarios/twitch/${nickname}`);
+      fetchCanales();
+    } catch (error) {
+      setMensaje('Error al eliminar canal');
+    }
+  };
+
+  return (
+    <div className="content-section">
+      <h2 className="section-title">Gestión de Canales de Twitch</h2>
+      {mensaje && <div style={{color:'red', marginBottom:8}}>{mensaje}</div>}
+      {isLoading ? (
+        <div className="loading-spinner"><FaSpinner className="spinner-icon" /> Cargando canales...</div>
+      ) : canales.length === 0 ? (
+        <div className="no-data">No hay canales registrados</div>
+      ) : (
+        <table className="games-table">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Canal</th>
+              <th>Activo</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {canales.map(canal => (
+              <tr key={canal.nickname}>
+                <td>{canal.nickname}</td>
+                <td>{canal.twitch_channel}</td>
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={canal.twitch_activo === true}
+                    onChange={() => handleToggleActivo(canal.nickname)}
+                  />
+                 
+                </td>
+                <td>
+                  <button
+                    className="text-red-600 hover:text-red-800 transition-colors p-2"
+                    onClick={() => handleDelete(canal.nickname)}
+                  >
+                    <FaTimes />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+};
+
   return (
     <div className="perfil-container">
       {user && user.rol === 0 && <AdminMenu className="admin-menu" />}
@@ -5921,6 +6047,7 @@ export const Perfil = () => {
             {activeSection === 'partidas' && <PartidasContent />}
             {activeSection === 'entradas' && <EntradasContent />}
             {activeSection === 'ruleta' && <RuletaContent />}
+            {activeSection === 'twitch' && <TwitchAdminContent />}
             {showGameModal && <GameModal />}
             {showLogroModal && <LogroModal />}
             {showComodinModal && <ComodinModal />}

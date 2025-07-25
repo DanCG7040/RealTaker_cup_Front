@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash, FaChevronLeft, FaChevronRight, FaUser, FaGamepad, FaTrophy, FaStar, FaUsers, FaCalendar, FaClock, FaMedal, FaChartLine } from 'react-icons/fa';
-import { ENTRADAS_ROUTES, CONFIGURACION_ROUTES, GAMES_ROUTES, TORNEO_ROUTES, RULETA_ROUTES, PARTIDAS_ROUTES, COMODINES_ROUTES, PROFILE_ROUTES, LOGROS_ROUTES } from '../routes/api.routes';
+import { ENTRADAS_ROUTES, CONFIGURACION_ROUTES, GAMES_ROUTES, TORNEO_ROUTES, RULETA_ROUTES, PARTIDAS_ROUTES, COMODINES_ROUTES, PROFILE_ROUTES, LOGROS_ROUTES, USUARIOS_ROUTES } from '../routes/api.routes';
 import './inicio.css';
 import { toast } from 'react-hot-toast';
 import { Footer } from '../Components/Footer';
@@ -72,6 +72,11 @@ export const Inicio = () => {
   const [logrosJugador, setLogrosJugador] = useState([]);
   const [comodinesJugador, setComodinesJugador] = useState([]);
   const [isLoadingLogrosJugador, setIsLoadingLogrosJugador] = useState(false);
+
+  const [misComodines, setMisComodines] = useState([]);
+  const [misLogros, setMisLogros] = useState([]);
+  const [isLoadingMisComodines, setIsLoadingMisComodines] = useState(false);
+  const [isLoadingMisLogros, setIsLoadingMisLogros] = useState(false);
 
   useEffect(() => {
     cargarDatos();
@@ -255,6 +260,31 @@ export const Inicio = () => {
         }
       }
 
+      // Cargar comodines y logros del usuario si está logueado
+      if (token) {
+        setIsLoadingMisComodines(true);
+        setIsLoadingMisLogros(true);
+        axios.get(PROFILE_ROUTES.GET_PROFILE, { headers: { Authorization: `Bearer ${token}` } })
+          .then(res => {
+            const nickname = res.data.data.nickname;
+            axios.get(`/api/usuarios/${nickname}/logros-comodines`)
+              .then(resp => {
+                if (resp.data.success) {
+                  setMisComodines((resp.data.data.comodines || []).filter(c => !c.usado));
+                  setMisLogros(resp.data.data.logros || []);
+                }
+              })
+              .finally(() => {
+                setIsLoadingMisComodines(false);
+                setIsLoadingMisLogros(false);
+              });
+          })
+          .catch(() => {
+            setIsLoadingMisComodines(false);
+            setIsLoadingMisLogros(false);
+          });
+      }
+
     } catch (error) {
       console.error('Error general al cargar datos:', error);
     } finally {
@@ -398,6 +428,29 @@ export const Inicio = () => {
       toast.error(error.response?.data?.message || 'Error al girar la ruleta');
     } finally {
       setIsGirandoRuleta(false);
+    }
+  };
+
+  const handleUsarComodin = async (comodin) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      toast.error('Debes iniciar sesión para usar un comodín');
+      navigate('/login');
+      return;
+    }
+    try {
+      const res = await axios.post('/api/usuarios/usar-comodin', {
+        usuario_nickname: comodin.usuario_nickname,
+        comodin_id: comodin.comodin_id
+      });
+      if (res.data.success) {
+        toast.success('¡Comodín usado correctamente!');
+        setMisComodines(prev => prev.filter(c => c.id !== comodin.id));
+      } else {
+        toast.error(res.data.message || 'No se pudo usar el comodín');
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Error al usar el comodín');
     }
   };
 
@@ -749,18 +802,36 @@ export const Inicio = () => {
               <div className="widget-lateral">
                 <h3>
                   <FaStar />
-                  Comodines Disponibles
+                  {misComodines.length > 0 ? 'Comodines disponibles' : 'Comodines destacados'}
                 </h3>
                 <div className="comodines-rapidos">
-                  {comodines.slice(0, 3).map(comodin => (
-                    <div key={comodin.idcomodines} className="comodin-rapido">
-                      <img src={comodin.foto || '/default-comodin.png'} alt={comodin.nombre} />
-                      <div className="info">
-                        <div className="nombre">{comodin.nombre}</div>
-                        <div className="descripcion">{comodin.descripcion}</div>
-                      </div>
+                  {isLoadingMisComodines ? (
+                    <div className="loading-spinner">
+                      <FaGamepad className="spinner-icon" />
+                      <span>Cargando comodines...</span>
                     </div>
-                  ))}
+                  ) : misComodines.length > 0 ? (
+                    misComodines.map(comodin => (
+                      <div key={comodin.id} className="comodin-rapido">
+                        <img src={comodin.comodin_foto || '/default-comodin.png'} alt={comodin.comodin_nombre} />
+                        <div className="info">
+                          <div className="nombre">{comodin.comodin_nombre}</div>
+                          <div className="descripcion">{comodin.comodin_descripcion}</div>
+                        </div>
+                        <button onClick={() => handleUsarComodin(comodin)} className="usar-comodin-btn">Usar</button>
+                      </div>
+                    ))
+                  ) : (
+                    comodines.slice(0, 3).map(comodin => (
+                      <div key={comodin.idcomodines} className="comodin-rapido">
+                        <img src={comodin.foto || '/default-comodin.png'} alt={comodin.nombre} />
+                        <div className="info">
+                          <div className="nombre">{comodin.nombre}</div>
+                          <div className="descripcion">{comodin.descripcion}</div>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
@@ -1090,14 +1161,28 @@ export const Inicio = () => {
               <div className="widget-lateral">
                 <h3>
                   <FaMedal />
-                  Logros Destacados
+                  {misLogros.length > 0 ? 'Mis logros' : 'Logros destacados'}
                 </h3>
-                {isLoadingLogros ? (
+                {isLoadingMisLogros ? (
                   <div className="loading-spinner">
                     <FaGamepad className="spinner-icon" />
                     <span>Cargando logros...</span>
                   </div>
-                ) : logrosDestacados.length > 0 ? (
+                ) : misLogros.length > 0 ? (
+                  <div className="logros-destacados">
+                    {misLogros.map(logro => (
+                      <div key={logro.id} className="logro-destacado">
+                        <div className="logro-imagen">
+                          <img src={logro.logro_foto || '/default-logro.png'} alt={logro.logro_nombre} />
+                        </div>
+                        <div className="logro-info">
+                          <div className="logro-nombre">{logro.logro_nombre}</div>
+                          <div className="logro-descripcion">{logro.logro_descripcion}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
                   <div className="logros-destacados">
                     {logrosDestacados.map(logro => (
                       <div key={logro.idlogros} className="logro-destacado">
@@ -1115,10 +1200,6 @@ export const Inicio = () => {
                         </div>
                       </div>
                     ))}
-                  </div>
-                ) : (
-                  <div className="no-data">
-                    <p>No hay logros disponibles</p>
                   </div>
                 )}
               </div>
