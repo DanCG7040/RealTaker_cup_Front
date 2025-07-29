@@ -33,8 +33,18 @@ function App() {
       </>
     );
   }
+    if (location.pathname === '/perfil') {
+    return (
+      <>
+        <Navbar />
+        <Perfil />
+        <Footer />
+        <ToastContainer position="bottom-right" autoClose={3000} />
+      </>
+    );
+  }
   
-  // Si estamos en la página de historico, renderizamos un layout diferente
+  // Si estamos en la página de transmisiones, renderizamos un layout diferente
   if (location.pathname === '/historico') {
     return (
       <>
@@ -45,7 +55,6 @@ function App() {
       </>
     );
   }
-  
   // Si estamos en la página de transmisiones, renderizamos un layout diferente
   if (location.pathname === '/transmisiones') {
     return (
