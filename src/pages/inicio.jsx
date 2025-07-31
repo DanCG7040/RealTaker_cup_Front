@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { FaEye, FaEyeSlash, FaChevronLeft, FaChevronRight, FaUser, FaGamepad, FaTrophy, FaStar, FaUsers, FaCalendar, FaClock, FaMedal, FaChartLine } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaChevronLeft, FaChevronRight, FaUser, FaGamepad, FaTrophy, FaStar, FaUsers, FaCalendar, FaClock, FaMedal, FaChartLine, FaSkull, FaFutbol, FaFlag } from 'react-icons/fa';
 import { ENTRADAS_ROUTES, CONFIGURACION_ROUTES, GAMES_ROUTES, TORNEO_ROUTES, RULETA_ROUTES, PARTIDAS_ROUTES, COMODINES_ROUTES, PROFILE_ROUTES, LOGROS_ROUTES, USUARIOS_ROUTES } from '../routes/api.routes';
 import './inicio.css';
 import { toast } from 'react-hot-toast';
@@ -78,6 +78,18 @@ export const Inicio = () => {
   const [isLoadingMisComodines, setIsLoadingMisComodines] = useState(false);
   const [isLoadingMisLogros, setIsLoadingMisLogros] = useState(false);
 
+  // Estados para el carrusel de estadísticas de jugadores
+  const [estadisticasJugadores, setEstadisticasJugadores] = useState([]);
+  const [isLoadingEstadisticasJugadores, setIsLoadingEstadisticasJugadores] = useState(false);
+  const [currentStatsIndex, setCurrentStatsIndex] = useState(0);
+  const [isStatsCarouselPaused, setIsStatsCarouselPaused] = useState(false);
+
+
+
+  // Debug temporal
+  console.log('DEBUG - Componente Inicio renderizado');
+  console.log('DEBUG - Usuario logueado:', !!localStorage.getItem('token'));
+
   useEffect(() => {
     cargarDatos();
   }, []);
@@ -104,6 +116,19 @@ export const Inicio = () => {
     }
   }, [jugadores.length, isPlayerCarouselPaused]);
 
+  // Animación automática para el carrusel de estadísticas
+  useEffect(() => {
+    if (estadisticasJugadores.length > 1 && !isStatsCarouselPaused) {
+      const interval = setInterval(() => {
+        setCurrentStatsIndex((prev) => (prev + 1) % estadisticasJugadores.length);
+      }, 4000); // Cambia cada 4 segundos
+
+      return () => clearInterval(interval);
+    }
+  }, [estadisticasJugadores.length, isStatsCarouselPaused]);
+
+
+
   const cargarDatos = async () => {
     try {
       setLoading(true);
@@ -119,6 +144,7 @@ export const Inicio = () => {
           if (!ordenSecciones.includes('ruleta')) {
             ordenSecciones = ['novedades', 'ruleta', ...ordenSecciones.filter(s => s !== 'novedades')];
           }
+
           
           setConfiguracion({
             ...configBackend,
@@ -231,6 +257,49 @@ export const Inicio = () => {
         setIsLoadingEstadisticas(false);
       }
 
+      // Cargar estadísticas detalladas de jugadores destacados
+      try {
+        setIsLoadingEstadisticasJugadores(true);
+        
+        // Obtener jugadores destacados con mejor rendimiento histórico
+        const jugadoresDestacadosResponse = await axios.get(PARTIDAS_ROUTES.GET_JUGADORES_DESTACADOS);
+        
+        if (jugadoresDestacadosResponse.data.success && jugadoresDestacadosResponse.data.data.length > 0) {
+          const jugadoresDestacados = jugadoresDestacadosResponse.data.data;
+          
+          const estadisticasPromises = jugadoresDestacados.map(async (jugador) => {
+            try {
+              // Verificar que el jugador tenga nickname válido
+              if (!jugador.nickname) {
+                console.error('Jugador sin nickname válido:', jugador);
+                return null;
+              }
+              
+              // Obtener estadísticas detalladas del jugador
+              const statsResponse = await axios.get(PARTIDAS_ROUTES.GET_ESTADISTICAS_DETALLADAS(jugador.nickname));
+              if (statsResponse.data.success) {
+                return {
+                  jugador: jugador,
+                  estadisticas: statsResponse.data.data.estadisticas || []
+                };
+              }
+            } catch (error) {
+              console.error(`Error al cargar estadísticas de ${jugador.nickname}:`, error);
+            }
+            return null;
+          });
+
+          const resultados = await Promise.all(estadisticasPromises);
+          const estadisticasFiltradas = resultados.filter(result => result !== null);
+          setEstadisticasJugadores(estadisticasFiltradas);
+        }
+      } catch (error) {
+        console.error('Error al cargar estadísticas de jugadores:', error);
+        setEstadisticasJugadores([]);
+      } finally {
+        setIsLoadingEstadisticasJugadores(false);
+      }
+
       // Cargar logros destacados
       try {
         setIsLoadingLogros(true);
@@ -284,6 +353,8 @@ export const Inicio = () => {
             setIsLoadingMisLogros(false);
           });
       }
+
+
 
     } catch (error) {
       console.error('Error general al cargar datos:', error);
@@ -453,6 +524,57 @@ export const Inicio = () => {
       toast.error(error.response?.data?.message || 'Error al usar el comodín');
     }
   };
+
+  // Funciones para el carrusel de estadísticas
+  const nextStats = () => {
+    setIsStatsCarouselPaused(true);
+    setCurrentStatsIndex((prev) => (prev + 1) % estadisticasJugadores.length);
+    // Reanudar la animación después de 5 segundos
+    setTimeout(() => setIsStatsCarouselPaused(false), 5000);
+  };
+
+  const prevStats = () => {
+    setIsStatsCarouselPaused(true);
+    setCurrentStatsIndex((prev) => (prev - 1 + estadisticasJugadores.length) % estadisticasJugadores.length);
+    // Reanudar la animación después de 5 segundos
+    setTimeout(() => setIsStatsCarouselPaused(false), 5000);
+  };
+
+  const getStatsIcon = (categoriaNombre) => {
+    switch (categoriaNombre.toLowerCase()) {
+      case 'shooters':
+        return <FaSkull className="stats-icon" />;
+      case 'deportes':
+        return <FaFutbol className="stats-icon" />;
+      case 'carreras':
+        return <FaFlag className="stats-icon" />;
+      case 'luchas':
+        return <FaTrophy className="stats-icon" />;
+      case 'plataformas':
+        return <FaGamepad className="stats-icon" />;
+      default:
+        return <FaChartLine className="stats-icon" />;
+    }
+  };
+
+  const getStatsColor = (categoriaNombre) => {
+    switch (categoriaNombre.toLowerCase()) {
+      case 'shooters':
+        return 'stats-red';
+      case 'deportes':
+        return 'stats-green';
+      case 'carreras':
+        return 'stats-blue';
+      case 'luchas':
+        return 'stats-purple';
+      case 'plataformas':
+        return 'stats-orange';
+      default:
+        return 'stats-gray';
+    }
+  };
+
+
 
   const renderSeccion = (seccion) => {
     switch (seccion) {
@@ -729,6 +851,8 @@ export const Inicio = () => {
           </section>
         ) : null;
 
+
+
       default:
         return null;
     }
@@ -997,6 +1121,8 @@ export const Inicio = () => {
                 </div>
               )}
 
+
+
               {/* Sección de juegos */}
               {configuracion.ordenSecciones.includes('juegos') && (
                 <div className="seccion-inicio">
@@ -1128,41 +1254,157 @@ export const Inicio = () => {
                 )}
               </div>
 
-              {/* Widget de estadísticas reales */}
+              {/* Widget de estadísticas de jugadores */}
               <div className="widget-lateral">
                 <h3>
                   <FaChartLine />
-                  Estadísticas del Torneo
+                  Estadísticas de Jugadores
                 </h3>
-                {isLoadingEstadisticas ? (
+                {isLoadingEstadisticasJugadores ? (
                   <div className="loading-spinner">
                     <FaGamepad className="spinner-icon" />
                     <span>Cargando estadísticas...</span>
                   </div>
-                ) : (
-                  <div className="stats-avanzadas">
-                    <div className="stat-avanzada">
-                      <div className="stat-header">Progreso del Torneo</div>
-                      <div className="stat-progress">
-                        <div className="progress-bar" style={{ width: `${estadisticasReales.progresoTorneo}%` }}></div>
+                ) : estadisticasJugadores.length > 0 ? (
+                  <div className="estadisticas-carousel">
+                    <div className="carousel-header">
+                      <h3>🏆 Jugadores Destacados</h3>
+                      <div className="carousel-controls">
+                        <button onClick={prevStats} className="carousel-btn">
+                          <FaChevronLeft />
+                        </button>
+                        <span className="carousel-indicator">
+                          {currentStatsIndex + 1} / {estadisticasJugadores.length}
+                        </span>
+                        <button onClick={nextStats} className="carousel-btn">
+                          <FaChevronRight />
+                        </button>
                       </div>
-                      <div className="stat-value">{estadisticasReales.partidasJugadas}/{estadisticasReales.totalPartidas} partidas</div>
                     </div>
-                    <div className="stat-avanzada">
-                      <div className="stat-header">Jugadores Activos</div>
-                      <div className="stat-progress">
-                        <div className="progress-bar" style={{ width: '100%' }}></div>
-                      </div>
-                      <div className="stat-value">{estadisticasReales.jugadoresActivos} participantes</div>
-                    </div>
-                    {estadisticasReales.edicionActual && (
-                      <div className="edicion-info">
-                        <div className="edicion-titulo">Edición {estadisticasReales.edicionActual.id}</div>
-                        <div className="edicion-fechas">
-                          {new Date(estadisticasReales.edicionActual.fechaInicio).toLocaleDateString('es-ES')} - {new Date(estadisticasReales.edicionActual.fechaFin).toLocaleDateString('es-ES')}
+                    
+                    <div className="player-stats">
+                      <div className="player-info">
+                        <div className="player-photo">
+                          <img 
+                            src={estadisticasJugadores[currentStatsIndex]?.jugador.foto || '/default-avatar.png'} 
+                            alt={estadisticasJugadores[currentStatsIndex]?.jugador.nickname}
+                            onError={(e) => {
+                              e.target.src = '/default-avatar.png';
+                            }}
+                          />
+                          <div className="player-rank">#{currentStatsIndex + 1}</div>
+                        </div>
+                        <div className="player-details">
+                          <h4>{estadisticasJugadores[currentStatsIndex]?.jugador.nickname}</h4>
+                          <div className="player-stats-summary">
+                            <div className="stat-summary">
+                              <span className="stat-number">{estadisticasJugadores[currentStatsIndex]?.jugador.total_victorias || 0}</span>
+                              <span className="stat-label">Victorias</span>
+                            </div>
+                            <div className="stat-summary">
+                              <span className="stat-number">{estadisticasJugadores[currentStatsIndex]?.jugador.ediciones_participadas || 0}</span>
+                              <span className="stat-label">Ediciones</span>
+                            </div>
+                            <div className="stat-summary">
+                              <span className="stat-number">{estadisticasJugadores[currentStatsIndex]?.jugador.porcentaje_victorias || 0}%</span>
+                              <span className="stat-label">% Victorias</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
+                      
+                      <div className="stats-content">
+                        {estadisticasJugadores[currentStatsIndex]?.estadisticas && estadisticasJugadores[currentStatsIndex].estadisticas.length > 0 ? (
+                          <div className="stats-grid">
+                            {estadisticasJugadores[currentStatsIndex].estadisticas.map((categoria, index) => (
+                              <div key={index} className={`stats-categoria ${getStatsColor(categoria.categoria_nombre)}`}>
+                                <div className="categoria-header">
+                                  {getStatsIcon(categoria.categoria_nombre)}
+                                  <h4>{categoria.categoria_nombre}</h4>
+                                </div>
+                                
+                                <div className="stats-main">
+                                  <div className="stat-item-main">
+                                    <span className="stat-number">{categoria.partidas_ganadas || 0}</span>
+                                    <span className="stat-label">Victorias</span>
+                                  </div>
+                                  
+                                  {categoria.categoria_nombre?.toLowerCase() === 'shooters' && (
+                                    <div className="stat-item-main">
+                                      <span className="stat-number">{categoria.total_kills || 0}</span>
+                                      <span className="stat-label">Eliminaciones</span>
+                                    </div>
+                                  )}
+                                  
+                                  {categoria.categoria_nombre?.toLowerCase() === 'deportes' && (
+                                    <div className="stat-item-main">
+                                      <span className="stat-number">{categoria.total_goles || 0}</span>
+                                      <span className="stat-label">Goles</span>
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                <div className="stats-details">
+                                  <div className="stat-detail">
+                                    <span className="detail-label">Partidas:</span>
+                                    <span className="detail-value">{categoria.partidas_jugadas || 0}</span>
+                                  </div>
+                                  
+                                  <div className="stat-detail">
+                                    <span className="detail-label">% Victorias:</span>
+                                    <span className="detail-value">{categoria.porcentaje_victorias || 0}%</span>
+                                  </div>
+                                  
+                                  {categoria.categoria_nombre?.toLowerCase() === 'shooters' && (
+                                    <>
+                                      <div className="stat-detail">
+                                        <span className="detail-label">K/D Ratio:</span>
+                                        <span className="detail-value">{categoria.kd_ratio || 0}</span>
+                                      </div>
+                                    </>
+                                  )}
+                                  
+                                  {categoria.categoria_nombre?.toLowerCase() === 'deportes' && (
+                                    <>
+                                      <div className="stat-detail">
+                                        <span className="detail-label">Diferencia:</span>
+                                        <span className="detail-value">{categoria.diferencia_goles || 0}</span>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="no-stats-message">
+                            <p>Este jugador aún no tiene estadísticas registradas</p>
+                            <p className="stats-note">Las estadísticas aparecerán cuando participe en partidas</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Indicadores de progreso */}
+                    {estadisticasJugadores.length > 1 && (
+                      <div className="carousel-indicators">
+                        {estadisticasJugadores.map((_, index) => (
+                          <div
+                            key={index}
+                            className={`indicator ${index === currentStatsIndex ? 'active' : ''}`}
+                            onClick={() => {
+                              setIsStatsCarouselPaused(true);
+                              setCurrentStatsIndex(index);
+                              setTimeout(() => setIsStatsCarouselPaused(false), 5000);
+                            }}
+                          />
+                        ))}
+                      </div>
                     )}
+                  </div>
+                ) : (
+                  <div className="no-data">
+                    <p>No hay estadísticas disponibles</p>
                   </div>
                 )}
               </div>

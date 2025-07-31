@@ -163,6 +163,7 @@ export const Perfil = () => {
   const [jugadoresDisponiblesInicio, setJugadoresDisponiblesInicio] = useState([]);
   const [jugadoresSeleccionadosInicio, setJugadoresSeleccionadosInicio] = useState([]);
   const [isSavingJugadoresInicio, setIsSavingJugadoresInicio] = useState(false);
+  const [isLoadingJugadoresDisponiblesInicio, setIsLoadingJugadoresDisponiblesInicio] = useState(false);
   
   // Estados para la ruleta
   const [ruletaItems, setRuletaItems] = useState([]);
@@ -1842,18 +1843,25 @@ export const Perfil = () => {
                 </div>
                 <div className="game-form-group">
                   <label className="game-form-label">Seleccionar Logro</label>
-                  <select
-                    className="game-form-select"
-                    value={logroAsignacionData.logro_id || ''}
-                    onChange={e => setLogroAsignacionData(prev => ({ ...prev, logro_id: e.target.value }))}
-                  >
-                    <option value="">Selecciona un logro</option>
+                  <div className="logros-selection-grid">
                     {logros.map(logro => (
-                      <option key={logro.idlogros} value={logro.idlogros}>
-                        {logro.nombre}
-                      </option>
+                      <div 
+                        key={logro.idlogros} 
+                        className={`modal-item-container ${logroAsignacionData.logro_id === logro.idlogros ? 'selected' : ''}`}
+                        onClick={() => setLogroAsignacionData(prev => ({ ...prev, logro_id: logro.idlogros }))}
+                      >
+                        <img
+                          src={logro.foto || '/default-achievement.png'}
+                          alt={logro.nombre}
+                          className="modal-item-avatar"
+                        />
+                        <div className="modal-item-info">
+                          <span className="modal-item-name">{logro.nombre}</span>
+                          <span className="modal-item-desc">{logro.descripcion}</span>
+                        </div>
+                      </div>
                     ))}
-                  </select>
+                  </div>
                 </div>
                 <div className="game-form-actions" style={{display:'flex',gap:'1rem'}}>
                   <button
@@ -2406,8 +2414,8 @@ export const Perfil = () => {
       return;
     }
 
-    if (isNaN(idEdicion) || idEdicion < 2020 || idEdicion > 2030) {
-      toast.error('El año debe ser un número válido entre 2020 y 2030');
+    if (isNaN(idEdicion) || idEdicion < 2000 || idEdicion > 2100) {
+      toast.error('El año debe ser un número válido entre 2000 y 2100');
       return;
     }
 
@@ -2514,19 +2522,61 @@ export const Perfil = () => {
   };
 
   const handleJuegoToggle = (juegoId) => {
+    // Preservar el elemento activo y su posición
+    const activeElement = document.activeElement;
+    const modalContent = document.querySelector('.game-modal-content');
+    const scrollPosition = modalContent ? modalContent.scrollTop : 0;
+    
     setJuegosSeleccionados(prev => 
       prev.includes(juegoId) 
         ? prev.filter(id => id !== juegoId)
         : [...prev, juegoId]
     );
+    
+    // Restaurar el foco y la posición después de la actualización
+    setTimeout(() => {
+      if (modalContent) {
+        modalContent.scrollTop = scrollPosition;
+      }
+      if (activeElement && activeElement.tagName === 'INPUT') {
+        activeElement.focus();
+        // Restaurar la posición del cursor si es un input de texto
+        if (activeElement.type === 'text' || activeElement.type === 'number') {
+          const cursorPosition = activeElement.value.length;
+          activeElement.setSelectionRange(cursorPosition, cursorPosition);
+        }
+      }
+    }, 0);
   };
 
   const handleJugadorToggle = (nickname) => {
-    setJugadoresSeleccionados(prev => 
-      prev.includes(nickname) 
+    // Preservar el elemento activo y su posición
+    const activeElement = document.activeElement;
+    const modalContent = document.querySelector('.game-modal-content');
+    const scrollPosition = modalContent ? modalContent.scrollTop : 0;
+    
+    setJugadoresSeleccionados(prev => {
+      const newSelection = prev.includes(nickname) 
         ? prev.filter(nick => nick !== nickname)
-        : [...prev, nickname]
-    );
+        : [...prev, nickname];
+      console.log('Jugadores seleccionados:', newSelection);
+      return newSelection;
+    });
+    
+    // Restaurar el foco y la posición después de la actualización
+    setTimeout(() => {
+      if (modalContent) {
+        modalContent.scrollTop = scrollPosition;
+      }
+      if (activeElement && activeElement.tagName === 'INPUT') {
+        activeElement.focus();
+        // Restaurar la posición del cursor si es un input de texto
+        if (activeElement.type === 'text' || activeElement.type === 'number') {
+          const cursorPosition = activeElement.value.length;
+          activeElement.setSelectionRange(cursorPosition, cursorPosition);
+        }
+      }
+    }, 0);
   };
 
   const TorneoContent = () => (
@@ -3068,14 +3118,24 @@ export const Perfil = () => {
         </div>
 
         <div className="game-form-container">
+          <div className="torneo-header">
+            <div className="torneo-icon">
+              <FaTrophy className="torneo-icon-svg" />
+            </div>
+            <div className="torneo-info">
+              <h4 className="torneo-title">Nueva Edición del Torneo</h4>
+              <p className="torneo-subtitle">Configura los detalles de la nueva edición</p>
+            </div>
+          </div>
+          
           <div className="game-form-group">
             <label className="game-form-label">Año del Torneo</label>
             <input
               type="number"
               className="game-form-input"
               placeholder="Ej: 2025"
-              min="2020"
-              max="2030"
+              min="2000"
+              max="2100"
               defaultValue={torneoData.idEdicion}
               onBlur={(e) => setTorneoData(prev => ({ ...prev, idEdicion: e.target.value }))}
             />
@@ -3302,7 +3362,10 @@ export const Perfil = () => {
               ) : (
                 <div className="juegos-grid">
                   {juegos.map(juego => (
-                    <div key={juego.id} className="juego-checkbox">
+                    <div 
+                      key={juego.id} 
+                      className={`juego-checkbox ${juegosSeleccionados.includes(juego.id) ? 'selected' : ''}`}
+                    >
                       <input
                         type="checkbox"
                         id={`juego-${juego.id}`}
@@ -3434,9 +3497,12 @@ export const Perfil = () => {
                     {jugadoresAsignados.map(jugador => (
                       <div key={jugador.nickname} className="jugador-asignado-item">
                         <img
-                          src={jugador.foto || '/default-profile.png'}
+                          src={jugador.foto_perfil || jugador.foto || '/default-profile.png'}
                           alt={jugador.nickname}
                           className="jugador-thumbnail"
+                          onError={(e) => {
+                            e.target.src = '/default-profile.png';
+                          }}
                         />
                         <div className="jugador-info">
                           <span className="jugador-nickname">{jugador.nickname}</span>
@@ -3472,7 +3538,10 @@ export const Perfil = () => {
               ) : (
                 <div className="jugadores-grid">
                   {jugadoresDisponibles.map(jugador => (
-                    <div key={jugador.nickname} className="jugador-checkbox">
+                    <div 
+                      key={jugador.nickname} 
+                      className={`modal-item-container ${jugadoresSeleccionados.includes(jugador.nickname) ? 'selected' : ''}`}
+                    >
                       <input
                         type="checkbox"
                         id={`jugador-${jugador.nickname}`}
@@ -3481,14 +3550,9 @@ export const Perfil = () => {
                         className="checkbox-input"
                       />
                       <label htmlFor={`jugador-${jugador.nickname}`} className="checkbox-label">
-                        <img
-                          src={jugador.foto || '/default-profile.png'}
-                          alt={jugador.nickname}
-                          className="jugador-thumbnail"
-                        />
-                        <div className="jugador-info">
-                          <span className="jugador-nickname">{jugador.nickname}</span>
-                          <span className="jugador-email">{jugador.email}</span>
+                        <div className="modal-item-info">
+                          <span className="modal-item-name">{jugador.nickname}</span>
+                          <span className="modal-item-desc">{jugador.email}</span>
                         </div>
                       </label>
                     </div>
@@ -4118,18 +4182,25 @@ export const Perfil = () => {
                 <p className="text-sm text-gray-500 mt-2">Primero debes asignar juegos al torneo desde la sección "Torneos"</p>
               </div>
             ) : (
-              <select
-                value={partidaData.juego_id || ''}
-                onChange={(e) => setPartidaData(prev => ({ ...prev, juego_id: e.target.value }))}
-                className="game-form-select"
-              >
-                <option value="">Selecciona un juego</option>
+              <div className="juegos-selection-grid">
                 {juegosEdicion.map((juego) => (
-                  <option key={juego.id} value={juego.id}>
-                    {juego.nombre}
-                  </option>
+                  <div 
+                    key={juego.id} 
+                    className={`modal-item-container ${partidaData.juego_id == juego.id ? 'selected' : ''}`}
+                    onClick={() => setPartidaData(prev => ({ ...prev, juego_id: juego.id }))}
+                  >
+                    <img
+                      src={juego.foto || '/default-game.png'}
+                      alt={juego.nombre}
+                      className="modal-item-avatar"
+                    />
+                    <div className="modal-item-info">
+                      <span className="modal-item-name">{juego.nombre}</span>
+                      <span className="modal-item-desc">Categoría: {juego.categoria_nombre}</span>
+                    </div>
+                  </div>
                 ))}
-              </select>
+              </div>
             )}
             <small className="text-gray-500">Selecciona el juego para la partida</small>
           </div>
@@ -4174,9 +4245,12 @@ export const Perfil = () => {
                     >
                       <div className="jugador-avatar-container">
                         <img
-                          src={jugador.foto || '/default-avatar.png'}
+                          src={jugador.foto_perfil || jugador.foto || '/default-profile.png'}
                           alt={jugador.nickname}
                           className="jugador-avatar"
+                          onError={(e) => {
+                            e.target.src = '/default-profile.png';
+                          }}
                         />
                         <div className="jugador-selection-indicator">
                           {partidaData.jugadores.includes(jugador.nickname) && (
@@ -4199,11 +4273,14 @@ export const Perfil = () => {
                       const jugador = jugadoresEdicion.find(j => j.nickname === nickname);
                       return (
                         <div key={nickname} className="jugador-seleccionado-item">
-                          <img
-                            src={jugador?.foto || '/default-avatar.png'}
-                            alt={nickname}
-                            className="jugador-seleccionado-avatar"
-                          />
+                                                  <img
+                          src={jugador?.foto_perfil || jugador?.foto || '/default-profile.png'}
+                          alt={nickname}
+                          className="jugador-seleccionado-avatar"
+                          onError={(e) => {
+                            e.target.src = '/default-profile.png';
+                          }}
+                        />
                           <span className="jugador-seleccionado-nickname">{nickname}</span>
                           <button
                             onClick={() => handleJugadorPartidaToggle(nickname)}
@@ -4442,6 +4519,16 @@ export const Perfil = () => {
         puntosConfigurados = response.data.data;
       }
       
+      // Obtener información del juego y categoría
+      const juegoResponse = await axios.get(GAMES_ROUTES.GET_ONE(partida.juego_id), {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      let categoriaNombre = '';
+      if (juegoResponse.data.success) {
+        categoriaNombre = juegoResponse.data.data.categoria_nombre;
+      }
+      
       // Inicializar los datos de resultados con los jugadores de la partida
       const resultadosIniciales = partida.jugadores.map((jugador, index) => {
         // Buscar los puntos correspondientes a la posición
@@ -4452,8 +4539,25 @@ export const Perfil = () => {
           jugador_nickname: jugador,
           posicion: index + 1,
           gano: false,
-          puntos: puntos
+          puntos: puntos,
+          // Inicializar campos específicos por categoría
+          kills: 0,
+          muertes: 0,
+          goles: 0,
+          goles_recibidos: 0,
+          tiempo_carrera: '',
+          posicion_carrera: 0,
+          rondas_ganadas: 0,
+          rondas_perdidas: 0,
+          nivel_alcanzado: 0,
+          vidas_restantes: 0
         };
+      });
+      
+      // Agregar la información de categoría al partidaResultado
+      setPartidaResultado({
+        ...partida,
+        categoria_nombre: categoriaNombre
       });
       
       setResultadosData(resultadosIniciales);
@@ -4498,6 +4602,16 @@ export const Perfil = () => {
   const ResultadoModal = () => {
     const isViewingExisting = partidaResultado?.tiene_resultado;
     const [puntosConfigurados, setPuntosConfigurados] = useState([]);
+    const focusedInputRef = useRef(null);
+    const cursorPositionRef = useRef(0);
+    
+    // Función para manejar el foco en inputs
+    const handleInputFocus = useCallback((event) => {
+      focusedInputRef.current = event.target;
+      cursorPositionRef.current = event.target.selectionStart || 0;
+    }, []);
+    
+
     
     // Cargar puntos configurados cuando se abre el modal
     useEffect(() => {
@@ -4506,7 +4620,7 @@ export const Perfil = () => {
       }
     }, [partidaResultado]);
     
-    const cargarPuntosConfigurados = async () => {
+    const cargarPuntosConfigurados = useCallback(async () => {
       try {
         const response = await axios.get(PUNTOS_ROUTES.GET_BY_TIPO(partidaResultado.tipo), {
           headers: { Authorization: `Bearer ${token}` }
@@ -4519,17 +4633,18 @@ export const Perfil = () => {
         console.error('Error al cargar puntos configurados:', error);
         setPuntosConfigurados([]);
       }
-    };
+    }, [partidaResultado?.tipo, token]);
     
-    const handleGanadorChange = (jugadorNickname) => {
+    const handleGanadorChange = useCallback((jugadorNickname) => {
       if (isViewingExisting) return; // No permitir cambios en modo vista
+      
       setResultadosData(prev => prev.map(resultado => ({
         ...resultado,
         gano: resultado.jugador_nickname === jugadorNickname
       })));
-    };
+    }, [isViewingExisting]);
 
-    const handlePosicionChange = (jugadorNickname, nuevaPosicion) => {
+    const handlePosicionChange = useCallback((jugadorNickname, nuevaPosicion) => {
       if (isViewingExisting) return; // No permitir cambios en modo vista
       
       // Buscar los puntos para la nueva posición
@@ -4541,15 +4656,55 @@ export const Perfil = () => {
         posicion: resultado.jugador_nickname === jugadorNickname ? nuevaPosicion : resultado.posicion,
         puntos: resultado.jugador_nickname === jugadorNickname ? nuevosPuntos : resultado.puntos
       })));
-    };
+    }, [isViewingExisting, puntosConfigurados]);
 
-    const handlePuntosChange = (jugadorNickname, puntos) => {
-      if (isViewingExisting) return; // No permitir cambios en modo vista
+    const handlePuntosChange = useCallback((jugadorNickname, puntos) => {
+      const currentInput = focusedInputRef.current;
+      const currentCursorPos = cursorPositionRef.current;
+      
       setResultadosData(prev => prev.map(resultado => ({
         ...resultado,
         puntos: resultado.jugador_nickname === jugadorNickname ? parseInt(puntos) || 0 : resultado.puntos
       })));
-    };
+      
+      // Restaurar el foco inmediatamente
+      if (currentInput && currentInput.tagName === 'INPUT') {
+        currentInput.focus();
+        if (currentInput.type === 'text' || currentInput.type === 'number') {
+          const newCursorPos = Math.min(currentCursorPos, currentInput.value.length);
+          currentInput.setSelectionRange(newCursorPos, newCursorPos);
+        }
+      }
+    }, []);
+
+    const handleStatsChange = useCallback((jugadorNickname, campo, valor) => {
+      const currentInput = focusedInputRef.current;
+      const currentCursorPos = cursorPositionRef.current;
+      
+      setResultadosData(prev => prev.map(resultado => {
+        if (resultado.jugador_nickname === jugadorNickname) {
+          let processedValue;
+          if (campo === 'tiempo_carrera') {
+            processedValue = valor;
+          } else if (valor === '' || valor === null || valor === undefined) {
+            processedValue = 0;
+          } else {
+            processedValue = parseInt(valor) || 0;
+          }
+          return { ...resultado, [campo]: processedValue };
+        }
+        return resultado;
+      }));
+      
+      // Restaurar el foco inmediatamente
+      if (currentInput && currentInput.tagName === 'INPUT') {
+        currentInput.focus();
+        if (currentInput.type === 'text' || currentInput.type === 'number') {
+          const newCursorPos = Math.min(currentCursorPos, currentInput.value.length);
+          currentInput.setSelectionRange(newCursorPos, newCursorPos);
+        }
+      }
+    }, []);
 
     const handleGuardarResultado = async () => {
       if (!partidaResultado) return;
@@ -4669,6 +4824,37 @@ export const Perfil = () => {
                       <th>Posición</th>
                       <th>Ganador</th>
                       <th>Puntos</th>
+                      {/* Campos específicos por categoría */}
+                      {partidaResultado?.categoria_nombre?.toLowerCase() === 'shooters' && (
+                        <>
+                          <th>Eliminaciones</th>
+                          <th>Muertes</th>
+                        </>
+                      )}
+                      {partidaResultado?.categoria_nombre?.toLowerCase() === 'deportes' && (
+                        <>
+                          <th>Goles Marcados</th>
+                          <th>Goles Recibidos</th>
+                        </>
+                      )}
+                      {partidaResultado?.categoria_nombre?.toLowerCase() === 'carreras' && (
+                        <>
+                          <th>Tiempo</th>
+                          <th>Posición</th>
+                        </>
+                      )}
+                      {partidaResultado?.categoria_nombre?.toLowerCase() === 'luchas' && (
+                        <>
+                          <th>Rondas Ganadas</th>
+                          <th>Rondas Perdidas</th>
+                        </>
+                      )}
+                      {partidaResultado?.categoria_nombre?.toLowerCase() === 'plataformas' && (
+                        <>
+                          <th>Nivel Alcanzado</th>
+                          <th>Vidas Restantes</th>
+                        </>
+                      )}
                     </tr>
                   </thead>
                   <tbody>
@@ -4676,11 +4862,6 @@ export const Perfil = () => {
                       <tr key={resultado.jugador_nickname}>
                         <td>
                           <div className="flex items-center gap-2">
-                            <img
-                              src="/default-avatar.png"
-                              alt={resultado.jugador_nickname}
-                              className="jugador-avatar-small"
-                            />
                             <span>{resultado.jugador_nickname}</span>
                           </div>
                         </td>
@@ -4724,12 +4905,192 @@ export const Perfil = () => {
                               type="number"
                               value={resultado.puntos}
                               onChange={(e) => handlePuntosChange(resultado.jugador_nickname, e.target.value)}
+                              onFocus={handleInputFocus}
                               className="puntos-input"
                               min="0"
                               placeholder="0"
                             />
                           )}
                         </td>
+                        
+                        {/* Campos específicos para Shooters */}
+                        {partidaResultado?.categoria_nombre?.toLowerCase() === 'shooters' && (
+                          <>
+                            <td>
+                              {isViewingExisting ? (
+                                <span className="stats-display">{resultado.kills || 0}</span>
+                              ) : (
+                                <input
+                                  type="number"
+                                  value={resultado.kills || ''}
+                                  onChange={(e) => handleStatsChange(resultado.jugador_nickname, 'kills', e.target.value)}
+                                  onFocus={handleInputFocus}
+                                  className="stats-input"
+                                  min="0"
+                                  placeholder="0"
+                                />
+                              )}
+                            </td>
+                            <td>
+                              {isViewingExisting ? (
+                                <span className="stats-display">{resultado.muertes || 0}</span>
+                              ) : (
+                                <input
+                                  type="number"
+                                  value={resultado.muertes || ''}
+                                  onChange={(e) => handleStatsChange(resultado.jugador_nickname, 'muertes', e.target.value)}
+                                  onFocus={handleInputFocus}
+                                  className="stats-input"
+                                  min="0"
+                                  placeholder="0"
+                                />
+                              )}
+                            </td>
+                          </>
+                        )}
+                        
+                        {/* Campos específicos para Deportes */}
+                        {partidaResultado?.categoria_nombre?.toLowerCase() === 'deportes' && (
+                          <>
+                            <td>
+                              {isViewingExisting ? (
+                                <span className="stats-display">{resultado.goles || 0}</span>
+                              ) : (
+                                <input
+                                  type="number"
+                                  value={resultado.goles || ''}
+                                  onChange={(e) => handleStatsChange(resultado.jugador_nickname, 'goles', e.target.value)}
+                                  onFocus={handleInputFocus}
+                                  className="stats-input"
+                                  min="0"
+                                  placeholder="0"
+                                />
+                              )}
+                            </td>
+                            <td>
+                              {isViewingExisting ? (
+                                <span className="stats-display">{resultado.goles_recibidos || 0}</span>
+                              ) : (
+                                <input
+                                  type="number"
+                                  value={resultado.goles_recibidos || ''}
+                                  onChange={(e) => handleStatsChange(resultado.jugador_nickname, 'goles_recibidos', e.target.value)}
+                                  onFocus={handleInputFocus}
+                                  className="stats-input"
+                                  min="0"
+                                  placeholder="0"
+                                />
+                              )}
+                            </td>
+                          </>
+                        )}
+                        
+                        {/* Campos específicos para Carreras */}
+                        {partidaResultado?.categoria_nombre?.toLowerCase() === 'carreras' && (
+                          <>
+                            <td>
+                              {isViewingExisting ? (
+                                <span className="stats-display">{resultado.tiempo_carrera || 'N/A'}</span>
+                              ) : (
+                                <input
+                                  type="time"
+                                  value={resultado.tiempo_carrera || ''}
+                                  onChange={(e) => handleStatsChange(resultado.jugador_nickname, 'tiempo_carrera', e.target.value)}
+                                  onFocus={handleInputFocus}
+                                  className="stats-input"
+                                  step="0.01"
+                                />
+                              )}
+                            </td>
+                            <td>
+                              {isViewingExisting ? (
+                                <span className="stats-display">{resultado.posicion_carrera || 0}</span>
+                              ) : (
+                                <input
+                                  type="number"
+                                  value={resultado.posicion_carrera || ''}
+                                  onChange={(e) => handleStatsChange(resultado.jugador_nickname, 'posicion_carrera', e.target.value)}
+                                  onFocus={handleInputFocus}
+                                  className="stats-input"
+                                  min="1"
+                                  placeholder="0"
+                                />
+                              )}
+                            </td>
+                          </>
+                        )}
+                        
+                        {/* Campos específicos para Luchas */}
+                        {partidaResultado?.categoria_nombre?.toLowerCase() === 'luchas' && (
+                          <>
+                            <td>
+                              {isViewingExisting ? (
+                                <span className="stats-display">{resultado.rondas_ganadas || 0}</span>
+                              ) : (
+                                <input
+                                  type="number"
+                                  value={resultado.rondas_ganadas || ''}
+                                  onChange={(e) => handleStatsChange(resultado.jugador_nickname, 'rondas_ganadas', e.target.value)}
+                                  onFocus={handleInputFocus}
+                                  className="stats-input"
+                                  min="0"
+                                  placeholder="0"
+                                />
+                              )}
+                            </td>
+                            <td>
+                              {isViewingExisting ? (
+                                <span className="stats-display">{resultado.rondas_perdidas || 0}</span>
+                              ) : (
+                                <input
+                                  type="number"
+                                  value={resultado.rondas_perdidas || ''}
+                                  onChange={(e) => handleStatsChange(resultado.jugador_nickname, 'rondas_perdidas', e.target.value)}
+                                  onFocus={handleInputFocus}
+                                  className="stats-input"
+                                  min="0"
+                                  placeholder="0"
+                                />
+                              )}
+                            </td>
+                          </>
+                        )}
+                        
+                        {/* Campos específicos para Plataformas */}
+                        {partidaResultado?.categoria_nombre?.toLowerCase() === 'plataformas' && (
+                          <>
+                            <td>
+                              {isViewingExisting ? (
+                                <span className="stats-display">{resultado.nivel_alcanzado || 0}</span>
+                              ) : (
+                                <input
+                                  type="number"
+                                  value={resultado.nivel_alcanzado || ''}
+                                  onChange={(e) => handleStatsChange(resultado.jugador_nickname, 'nivel_alcanzado', e.target.value)}
+                                  onFocus={handleInputFocus}
+                                  className="stats-input"
+                                  min="1"
+                                  placeholder="0"
+                                />
+                              )}
+                            </td>
+                            <td>
+                              {isViewingExisting ? (
+                                <span className="stats-display">{resultado.vidas_restantes || 0}</span>
+                              ) : (
+                                <input
+                                  type="number"
+                                  value={resultado.vidas_restantes || ''}
+                                  onChange={(e) => handleStatsChange(resultado.jugador_nickname, 'vidas_restantes', e.target.value)}
+                                  onFocus={handleInputFocus}
+                                  className="stats-input"
+                                  min="0"
+                                  placeholder="0"
+                                />
+                              )}
+                            </td>
+                          </>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -4935,6 +5296,9 @@ export const Perfil = () => {
   };
 
   const fetchJugadoresDisponiblesInicio = async () => {
+    if (isLoadingJugadoresDisponiblesInicio) return; // Evitar múltiples llamadas
+    
+    setIsLoadingJugadoresDisponiblesInicio(true);
     try {
       const response = await axios.get(ADMIN_ROUTES.GET_ALL_USERS, {
         headers: { Authorization: `Bearer ${token}` }
@@ -4948,6 +5312,8 @@ export const Perfil = () => {
     } catch (error) {
       console.error('Error al obtener jugadores disponibles:', error);
       toast.error('Error al cargar los jugadores disponibles');
+    } finally {
+      setIsLoadingJugadoresDisponiblesInicio(false);
     }
   };
 
@@ -4980,6 +5346,26 @@ export const Perfil = () => {
       setIsSavingJugadoresInicio(false);
     }
   };
+
+  const handleRemoveJugadorDestacado = async (nickname) => {
+    try {
+      const jugadoresActualizados = jugadoresInicio.filter(j => j.nickname !== nickname);
+      const response = await axios.post(TORNEO_ROUTES.SET_JUGADORES_INICIO, {
+        jugadores: jugadoresActualizados.map(j => j.nickname)
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        setJugadoresInicio(jugadoresActualizados);
+        toast.success(`${nickname} eliminado de destacados`);
+      }
+    } catch (error) {
+      console.error('Error al eliminar jugador de destacados:', error);
+      toast.error('Error al eliminar jugador de destacados');
+    }
+  };
+
  // Función para seleccionar imagen de entrada
  const handleEntradaImageClick = () => {
   entradaFileInputRef.current.click();
@@ -5038,11 +5424,21 @@ export const Perfil = () => {
                   {jugadoresInicio.map(jugador => (
                     <div key={jugador.nickname} className="jugador-card-inicio">
                       <img
-                        src={jugador.foto_perfil || '/default-profile.png'}
+                        src={jugador.foto_perfil || jugador.foto || '/default-profile.png'}
                         alt={jugador.nickname}
                         className="jugador-avatar-small"
+                        onError={(e) => {
+                          e.target.src = '/default-profile.png';
+                        }}
                       />
                       <span className="jugador-nickname">{jugador.nickname}</span>
+                      <button
+                        className="remove-destacado-btn"
+                        onClick={() => handleRemoveJugadorDestacado(jugador.nickname)}
+                        title="Eliminar de destacados"
+                      >
+                        <FaTimes />
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -5142,18 +5538,8 @@ export const Perfil = () => {
                 <div className="game-form-image-section">
                   <label className="game-form-label">Imagen de la entrada (opcional)</label>
                   <div 
-                    className="game-image-preview cursor-pointer" 
+                    className="entrada-image-preview cursor-pointer" 
                     onClick={handleEntradaImageClick}
-                    style={{ 
-                      height: '200px', 
-                      position: 'relative', 
-                      overflow: 'hidden',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderRadius: '0.5rem',
-                      border: '2px dashed #e5e7eb'
-                    }}
                   >
                     <input
                       type="file"
@@ -5163,17 +5549,19 @@ export const Perfil = () => {
                       className="hidden"
                     />
                     {entradaImagePreview ? (
-                      <img
-                        src={entradaImagePreview}
-                        alt="Vista previa"
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'contain'
-                        }}
-                      />
+                      <div className="entrada-image-container">
+                        <img
+                          src={entradaImagePreview}
+                          alt="Vista previa"
+                          className="entrada-image"
+                        />
+                        <div className="entrada-image-overlay">
+                          <FaCamera className="text-white text-xl" />
+                          <span className="text-white text-sm">Cambiar imagen</span>
+                        </div>
+                      </div>
                     ) : (
-                      <div className="upload-placeholder">
+                      <div className="entrada-upload-placeholder">
                         <FaCamera className="text-gray-400 text-3xl mb-2" />
                         <span className="text-sm text-gray-500 text-center px-2">
                           {entradaData.id ? 'Cambiar imagen' : 'Subir imagen'}
@@ -5268,15 +5656,17 @@ export const Perfil = () => {
                 Los usuarios podrán hacer clic en ellos para ver su información.
               </p>
               
-              {jugadoresDisponiblesInicio.length === 0 ? (
+              {isLoadingJugadoresDisponiblesInicio ? (
                 <div className="loading-spinner">
                   <FaSpinner className="spinner-icon" />
                   <span>Cargando jugadores disponibles...</span>
                 </div>
+              ) : jugadoresDisponiblesInicio.length === 0 ? (
+                <div className="no-data">No hay jugadores disponibles</div>
               ) : (
                 <div className="jugadores-grid">
                   {jugadoresDisponiblesInicio.map(jugador => (
-                    <div key={jugador.nickname} className="jugador-checkbox">
+                    <div key={jugador.nickname} className="modal-item-container">
                       <input
                         type="checkbox"
                         id={`jugador-inicio-${jugador.nickname}`}
@@ -5286,13 +5676,16 @@ export const Perfil = () => {
                       />
                       <label htmlFor={`jugador-inicio-${jugador.nickname}`} className="checkbox-label">
                         <img
-                          src={jugador.foto || '/default-profile.png'}
+                          src={jugador.foto_perfil || jugador.foto || '/default-profile.png'}
                           alt={jugador.nickname}
-                          className="jugador-thumbnail"
+                          className="modal-item-avatar"
+                          onError={(e) => {
+                            e.target.src = '/default-profile.png';
+                          }}
                         />
-                        <div className="jugador-info">
-                          <span className="jugador-nickname">{jugador.nickname}</span>
-                          <span className="jugador-email">{jugador.email}</span>
+                        <div className="modal-item-info">
+                          <span className="modal-item-name">{jugador.nickname}</span>
+                          <span className="modal-item-desc">{jugador.email}</span>
                         </div>
                       </label>
                     </div>
@@ -5782,29 +6175,31 @@ export const Perfil = () => {
               {ruletaData.tipo === 'comodin' && (
                 <div className="game-form-group">
                   <label className="game-form-label">Seleccionar Comodín</label>
-                  <select
-                    className="game-form-select"
-                    value={ruletaData.comodin_id || ''}
-                    onChange={e => {
-                      const comodinId = e.target.value;
-                      const comodinSeleccionado = comodines.find(c => c.idcomodines == comodinId);
-                      setRuletaData(prev => ({ 
-                        ...prev, 
-                        comodin_id: comodinId,
-                        nombre: comodinSeleccionado ? comodinSeleccionado.nombre : ''
-                      }));
-                    }}
-                    disabled={isLoadingComodines}
-                  >
-                    <option value="">
-                      {isLoadingComodines ? 'Cargando comodines...' : 'Selecciona un comodín'}
-                    </option>
+                  <div className="comodines-selection-grid">
                     {comodines.map(comodin => (
-                      <option key={comodin.idcomodines} value={comodin.idcomodines}>
-                        {comodin.nombre}
-                      </option>
+                      <div 
+                        key={comodin.idcomodines} 
+                        className={`modal-item-container ${ruletaData.comodin_id == comodin.idcomodines ? 'selected' : ''}`}
+                        onClick={() => {
+                          setRuletaData(prev => ({ 
+                            ...prev, 
+                            comodin_id: comodin.idcomodines,
+                            nombre: comodin.nombre
+                          }));
+                        }}
+                      >
+                        <img
+                          src={comodin.foto || '/default-comodin.png'}
+                          alt={comodin.nombre}
+                          className="modal-item-avatar"
+                        />
+                        <div className="modal-item-info">
+                          <span className="modal-item-name">{comodin.nombre}</span>
+                          <span className="modal-item-desc">{comodin.descripcion}</span>
+                        </div>
+                      </div>
                     ))}
-                  </select>
+                  </div>
                   {isLoadingComodines && (
                     <div className="text-sm text-gray-500 mt-1">
                       <FaSpinner className="inline animate-spin mr-1" />
@@ -6064,7 +6459,10 @@ export const Perfil = () => {
                   <div className="game-modal-header">
                     <h3 className="game-modal-title">Gestionar Jugadores del Inicio</h3>
                     <button
-                      onClick={() => setShowJugadoresInicioModal(false)}
+                      onClick={() => {
+                        setShowJugadoresInicioModal(false);
+                        setIsLoadingJugadoresDisponiblesInicio(false);
+                      }}
                       className="game-modal-close"
                     >
                       <FaTimes />
@@ -6076,11 +6474,13 @@ export const Perfil = () => {
                       Los usuarios podrán hacer clic en ellos para ver su información.
                     </p>
                     
-                    {jugadoresDisponiblesInicio.length === 0 ? (
+                    {isLoadingJugadoresDisponiblesInicio ? (
                       <div className="loading-spinner">
                         <FaSpinner className="spinner-icon" />
                         <span>Cargando jugadores disponibles...</span>
                       </div>
+                    ) : jugadoresDisponiblesInicio.length === 0 ? (
+                      <div className="no-data">No hay jugadores disponibles</div>
                     ) : (
                       <div className="jugadores-grid">
                         {jugadoresDisponiblesInicio.map(jugador => (
@@ -6093,15 +6493,7 @@ export const Perfil = () => {
                               className="checkbox-input"
                             />
                             <label htmlFor={`jugador-inicio-${jugador.nickname}`} className="checkbox-label">
-                              <img
-                                src={jugador.foto || '/default-profile.png'}
-                                alt={jugador.nickname}
-                                className="jugador-thumbnail"
-                              />
-                              <div className="jugador-info">
-                                <span className="jugador-nickname">{jugador.nickname}</span>
-                                <span className="jugador-email">{jugador.email}</span>
-                              </div>
+                              <span className="jugador-nickname">{jugador.nickname}</span>
                             </label>
                           </div>
                         ))}
@@ -6109,7 +6501,10 @@ export const Perfil = () => {
                     )}
                     <div className="game-form-actions" style={{display:'flex',gap:'1rem'}}>
                       <button
-                        onClick={() => setShowJugadoresInicioModal(false)}
+                        onClick={() => {
+                          setShowJugadoresInicioModal(false);
+                          setIsLoadingJugadoresDisponiblesInicio(false);
+                        }}
                         className="game-form-cancel"
                         type="button"
                       >
